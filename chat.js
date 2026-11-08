@@ -17,7 +17,7 @@
   function tok() {
     var o = tryc(function () { return JSON.parse(localStorage.getItem(LS_TOK) || 'null'); }, null);
     if (!o || !o.token) return null;
-    var exp = +o.exp || 0; if (exp && exp < 1e12) exp *= 1000;
+    var exp = typeof o.exp === 'string' ? Date.parse(o.exp) || 0 : +o.exp || 0; if (exp && exp < 1e12) exp *= 1000;
     return !exp || exp > Date.now() + 30e3 ? o : null;
   }
   function authH() { var t = tg(); if (t) return 'tma ' + t.initData; var k = tok(); return k ? 'Bearer ' + k.token : null; }
@@ -35,7 +35,7 @@
           var j = tryc(function () { return t ? JSON.parse(t) : {}; }, {});
           if (j && j.quota) setQuota(j.quota);
           if (r.ok) return j || {};
-          var e = new Error('http ' + r.status); e.status = r.status;
+          var e = new Error('http ' + r.status); e.status = r.status; e.hint = j && (j.hint || (j.error && j.error.hint)) || '';
           e.code = (j && j.error && j.error.code) || (r.status === 401 ? 'auth' : r.status === 429 ? 'rate' : r.status === 413 ? 'too_long' : r.status === 400 ? 'bad_request' : r.status === 404 ? 'expired' : 'internal');
           throw e;
         });
@@ -145,6 +145,7 @@
       if (j.quota) setQuota(j.quota);
       if (el.who) el.who.textContent = S.me.name ? S.me.name : '';
     }, function (e) {
+      if (e.status === 403) return line('دسترسی این حساب به گفت‌وگو محدود شده است. فهرست پروژه‌ها مثل قبل کار می‌کند.');
       if (e.code === 'auth') return authFail();
       if (el.quota) el.quota.textContent = e.code === 'offline' ? 'اتصال به سرور برقرار نیست' : '';
     });
@@ -181,7 +182,7 @@
       st.textContent = 'در حال ورود…';
       api('POST', '/api/auth/widget', user).then(function (j) {
         if (!j.token) throw Object.assign(new Error('no token'), { code: 'auth' });
-        tryc(function () { localStorage.setItem(LS_TOK, JSON.stringify({ token: j.token, exp: j.exp, uid: user && user.id })); });
+        tryc(function () { localStorage.setItem(LS_TOK, JSON.stringify({ token: j.token, exp: j.expires_at || j.exp, uid: (j.user && j.user.id) || (user && user.id) })); });
         S.view = ''; show();
       }, function (e) { st.textContent = e.code === 'offline' ? 'اتصال به سرور برقرار نیست؛ دوباره تلاش کنید.' : 'ورود تأیید نشد؛ دوباره تلاش کنید.'; });
     };
@@ -313,6 +314,7 @@
     too_long: ['پیام از ' + '۱۵۰۰ نویسه بلندتر است.', ''],
     offline: ['اتصال به سرور برقرار نیست.', 'اینترنت یا فیلترشکن را بررسی کنید؛ پیام شما حفظ شده است.'],
     expired: ['این پاسخ دیگر روی سرور در دسترس نیست.', ''],
+    blocked: ['دسترسی این حساب به گفت‌وگو محدود شده است.', 'فهرست پروژه‌ها و ذخیره‌شده‌ها مثل قبل کار می‌کنند.'],
     internal: ['پاسخ کامل نشد (خطای سرور).', '']
   };
   function errEl(m) {
@@ -322,6 +324,7 @@
     if (c === 'quota') {
       var wq = S.quota && when(S.quota.resets_at);
       w.appendChild(E('p', null, (wq ? 'سهمیه ' + wq + ' دوباره پر می‌شود. ' : 'سهمیه روزانه دوباره پر می‌شود. ') + 'تا آن زمان فهرست پروژه‌ها و ذخیره‌شده‌ها بدون محدودیت در دسترس‌اند.'));
+      if (m.err.hint) { w.appendChild(E('p', null, String(m.err.hint).slice(0, 300))); return w; }   // the server's own hint (text only)
       var more = E('p', null, 'برای پیام بیشتر می‌توانید از دوستان دعوت کنید یا از مایکل در گروه استفاده کنید؛ جزئیات با دستور '), cmd = E('bdi', 'mono', '/help'); cmd.dir = 'ltr';
       more.appendChild(cmd); more.appendChild(document.createTextNode(' در ربات.')); w.appendChild(more);
     } else if (x[1]) w.appendChild(E('p', null, x[1]));
@@ -362,7 +365,7 @@
         var moved = typeof j.seq === 'number' && j.seq !== am.seq;
         if (typeof j.seq === 'number') am.seq = j.seq;
         if (typeof j.text === 'string') am.t = j.text;
-        if (Array.isArray(j.events)) am.ev = j.events.length >= (am.ev || []).length ? j.events : (am.ev || []).concat(j.events);
+        if (Array.isArray(j.events)) mergeEv(am, j.events);
         if (j.status === 'done') { am.st = 'done'; return finish(am); }
         if (j.status === 'error') { var c = j.error && j.error.code || 'internal'; if (c === 'auth') { finish(am); return authFail(); } am.st = 'error'; am.err = { code: c }; return finish(am); }
         update(am); save();
@@ -371,14 +374,19 @@
         clearTimeout(guard);
         if (S.cur !== am) return;
         if (e && e.name === 'AbortError') return setTimeout(poll, 0);   // long-poll guard elapsed: ask again
-        if (e.code === 'auth') { finish(am); return authFail(); }
+        if (e.code === 'auth' && e.status !== 403) { finish(am); return authFail(); }
         if (e.code === 'offline' && ++tries <= 4) return setTimeout(poll, 1500 * tries);
         fail(am, e);
       });
     })();
   }
+  function mergeEv(am, list) { // the server sends only events newer than `after`; tolerate repeats
+    am.ev = am.ev || []; var seen = {};
+    am.ev.forEach(function (e) { seen[e && e.seq != null ? 's' + e.seq : JSON.stringify(e)] = 1; });
+    list.forEach(function (e) { var k = e && e.seq != null ? 's' + e.seq : JSON.stringify(e); if (!seen[k]) { seen[k] = 1; am.ev.push(e); } });
+  }
   function finish(am) { if (S.cur === am) { S.cur = null; S.ctl = null; } update(am); syncComposer(); save(); if (!coarse && C.isDesk() && el.ta) el.ta.focus({ preventScroll: true }); }
-  function fail(am, e) { am.st = 'error'; am.err = { code: e && e.code || 'internal' }; if (am.err.code === 'auth') { finish(am); return authFail(); } finish(am); }
+  function fail(am, e) { am.st = 'error'; am.err = { code: e && e.status === 403 ? 'blocked' : e && e.code || 'internal', hint: e && e.hint || '' }; if (am.err.code === 'auth') { finish(am); return authFail(); } finish(am); }
   function stop(silent) {
     var am = S.cur; if (!am) return;
     S.cur = null; if (S.ctl) tryc(function () { S.ctl.abort(); }); S.ctl = null;

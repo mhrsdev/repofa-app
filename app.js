@@ -540,6 +540,9 @@
       (r && titleWorth(p) ? '<h3 class="d-title"><bdi dir="auto">' + esc(p.title) + '</bdi></h3>' : '') +
       (p.summary ? '<p class="d-sum">' + esc(p.summary) + '</p>' : '') +
       (tags ? '<p class="d-tags">' + tags + '</p>' : '') + engagement(p) +
+      (r ? '<section class="d-sec d-rd"><h3 class="d-h">README</h3>' +
+        (p.repos.length > 1 ? '<div class="seg rd-repos" role="group" aria-label="مخزن">' + p.repos.map(function (x, i) { return '<button type="button" data-rd-i="' + i + '" aria-pressed="' + (i === 0) + '"><bdi dir="ltr">' + esc(x.name) + '</bdi></button>'; }).join('') + '</div>' : '') +
+        '<button type="button" class="btn rd-open" data-readme="1">نمایش README</button><div class="rd" hidden></div></section>' : '') +
       (others ? '<section class="d-sec"><h3 class="d-h">مخزن‌های دیگر این پست</h3>' + others + '</section>' : '') +
       '<div id="d-save"></div>' +
       '<p class="d-links">' + (p.tg_url ? '<a class="link" href="' + esc(p.tg_url) + '" data-ext="tg" target="_blank" rel="noopener noreferrer">' + IC('send') + 'پست کانال</a>' : '') +
@@ -876,6 +879,8 @@
     if ((b = t.closest('[data-col]'))) return setFilter('col', b.getAttribute('data-col'), !!b.closest('.side'));
     if ((b = t.closest('[data-scope]'))) { var scp = b.getAttribute('data-scope'); if (scp === 'fav' || scp === 'chat') return setTab(scp); S.tab = 'all'; return clearFilters(); }
     if (t.closest('[data-chat-retry]')) { chatLoad = 0; return mountChat(); }
+    if ((b = t.closest('[data-readme]'))) { var sec = b.closest('.d-rd'), on = sec.querySelector('[data-rd-i][aria-pressed="true"]'); return loadReadme(sec, on ? +on.getAttribute('data-rd-i') : 0); }
+    if ((b = t.closest('[data-rd-i]'))) { var sc2 = b.closest('.d-rd'); sc2.querySelectorAll('[data-rd-i]').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); if (!sc2.querySelector('.rd').hidden) loadReadme(sc2, +b.getAttribute('data-rd-i')); return; }
     if (t.closest('#scope-x')) { S.cat = ''; S.col = ''; return apply('top'); }
     if ((b = t.closest('[data-untoken]'))) { var k = b.getAttribute('data-untoken'); S[k] = ''; return apply('top'); }
     if ((b = t.closest('[data-clear]'))) return clearFilters(b.getAttribute('data-clear') === 'all');
@@ -963,6 +968,20 @@
       language: it.language || '', repos: repos, tg_url: /^https:\/\/t\.me\//.test(it.tg_url || '') ? it.tg_url : '', _ext: true, _t: 0 };
     p._s = repos[0] && repos[0].stars ? repos[0].stars : 0; p._l = p.language; p._i = P.length; P.push(p); byId.set(id, p);
     return p;
+  }
+  /* README viewer: lazy readme.js/readme.css on the first «نمایش README» */
+  var rdLoad = null;
+  function loadReadme(sec, i) {
+    var p = byId.get(detailId()); if (!p) return;
+    var r = p.repos[i || 0], box = sec.querySelector('.rd'), btn = sec.querySelector('.rd-open'); if (!r || !box) return;
+    box.hidden = false; if (btn) btn.hidden = true;
+    rdLoad = rdLoad || new Promise(function (ok, bad) {
+      var n = 0, fail = false, done = function () { if (++n === 2) (fail || !window.__rfReadme ? bad : ok)(); };
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'readme.css'; l.onload = done; l.onerror = function () { fail = true; done(); }; document.head.appendChild(l);
+      var sc = document.createElement('script'); sc.src = 'readme.js'; sc.async = true; sc.onload = done; sc.onerror = function () { fail = true; done(); }; document.head.appendChild(sc);
+    });
+    box.textContent = 'در حال بارگیری…';
+    rdLoad.then(function () { window.__rfReadme.open(box, r, CORE); }, function () { rdLoad = null; box.textContent = 'نمایشگر README بارگیری نشد.'; if (btn) btn.hidden = false; });
   }
   var chatRowN = 0;
   function rowFor(it) { var p = ensureProject(it); if (!p) return null; var e = buildRow(p, 'c' + (++chatRowN) + '-'); syncRow(e, p.id); return e; }
