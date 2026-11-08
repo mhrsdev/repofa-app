@@ -1,0 +1,224 @@
+<div align="center">
+  <img src="assets/banner.png" alt="ProxyHub Banner" width="100%">
+</div>
+
+# <img src="assets/icons/icon-globe.png" width="32" align="absmiddle"> ProxyHub — Per-Site Proxy Switcher
+
+<div align="center">
+
+[![Persian](https://img.shields.io/badge/_Persian-README.fa.md-blue?style=for-the-badge)](README.fa.md) &nbsp; [![💰 Donate](https://img.shields.io/badge/💰_Support_the_Project-Donate-orange?style=for-the-badge)](#support-the-project--donate) &nbsp; [![Star this repo](https://img.shields.io/github/stars/Mirhajian/ProxyHub?style=for-the-badge&label=Star%20this%20repo&color=e08a68)](../../stargazers) &nbsp; [![License](https://img.shields.io/badge/License-Non--Commercial-c96b46?style=for-the-badge)](LICENSE) &nbsp; [![Version](https://img.shields.io/badge/version-1.1.0-e08a68?style=for-the-badge)](#)
+
+</div>
+
+> نسخه فارسی این راهنما موجود است: [README.fa.md](README.fa.md)
+
+<div align="center">
+  <img src="assets/divider.png" alt="" width="100%">
+</div>
+
+**ProxyHub** is a Chrome extension that lets you route a proxy **per website**, instead of
+turning one proxy on or off for your entire browser. Pick a site, choose which proxy it
+should go through, and everything else — related CDN domains, broken images, rule
+management — is handled for you.
+
+No technical background needed: install it, follow the built-in walkthrough, and you're done.
+
+> **New in 1.1.0:** ProxyHub now also runs on Firefox Desktop 128 or later. See
+> [Option C — Firefox](#install) below.
+
+### <img src="assets/icons/icon-toc.png" width="24" align="absmiddle"> Table of Contents
+
+- [Screenshots](#screenshots)
+- [Features](#features)
+- [Install](#install)
+- [How to use it](#how-to-use-it)
+- [Good to know](#good-to-know)
+- [Support the Project — Donate](#support-the-project--donate)
+
+<div align="center">
+  <img src="assets/divider.png" alt="" width="100%">
+</div>
+
+<a id="screenshots"></a>
+## Screenshots
+
+<p align="center">
+  <img src="assets/screenshots/options.jpg" alt="ProxyHub rules manager — full list of routing rules" width="90%">
+  <br><sub>Manage all your rules and proxy profiles from the full options page.</sub>
+</p>
+
+<table>
+<tr>
+<td width="50%" align="center" valign="top">
+<img src="assets/screenshots/toolbar.png" alt="ProxyHub toolbar icon — active vs inactive state" width="85%">
+<br><sub>The toolbar icon shows at a glance whether ProxyHub is routing the current site.</sub>
+</td>
+<td width="50%" align="center" valign="top">
+<img src="assets/screenshots/popup.png" alt="ProxyHub popup — pick a proxy for the current site" width="70%">
+<br><sub>Pick a proxy for the current tab, right from the toolbar popup.</sub>
+</td>
+</tr>
+</table>
+
+<div align="center">
+  <img src="assets/divider.png" alt="" width="100%">
+</div>
+
+<a id="features"></a>
+## <img src="assets/icons/icon-features.png" width="26" align="absmiddle"> Features
+
+- **One proxy per site** — YouTube through one proxy, another site through another, and
+  everything else loading normally. No more switching a single global proxy on and off.
+- **Smart domain suggestions** — big sites load images/video from separate CDN domains.
+  When you add a site ProxyHub recognizes, it offers to add those related domains too, so
+  thumbnails and video don't silently break.
+- **Fixes broken pages for you** — if something on a page fails to load because a domain
+  isn't covered yet, a small banner appears offering to add the missing rule and reload.
+- **Clear toolbar icon** — glance at the toolbar to see whether the current tab is proxied,
+  direct, or routing is off — no need to open the popup just to check.
+- **Handles thousands of rules** — search, filters, and bulk import/export if you manage a
+  lot of sites.
+- **Optional encrypted vault** — if your proxy needs a username/password, you can lock them
+  behind a master passphrase instead of storing them in plain text.
+- **Dark & light themes.**
+
+<div align="center">
+  <img src="assets/divider.png" alt="" width="100%">
+</div>
+
+<a id="install"></a>
+## <img src="assets/icons/icon-install.png" width="26" align="absmiddle"> Install
+
+### Option A — Chrome Web Store / Firefox Add-ons
+*(Coming soon — this section will be updated with store links once they're published.)*
+
+### Option B — Chrome, Edge, Brave, Arc, Opera (any Chromium browser)
+
+1. Go to the [**Releases** page](../../releases) and download `proxyhub-chrome-X.Y.Z.zip`
+   from the latest release, then unzip it.
+2. Open `chrome://extensions` in your browser.
+   For Brave, use `brave://extensions`, and similarly for Arc and Edge:
+   `arc://extensions` and `edge://extensions`.
+3. Turn on **Developer mode** (top-right toggle).
+4. Click **Load unpacked** and select the unzipped folder.
+5. Pin the extension icon to your toolbar so it's always one click away.
+
+That's it — a welcome guide opens automatically the first time, walking you through
+everything with pictures.
+
+### Option C — Firefox (Desktop 128+)
+
+1. Go to the [**Releases** page](../../releases) and download `proxyhub-firefox-X.Y.Z.zip`
+   from the latest release, then unzip it. (This package already has the right manifest for
+   Firefox — nothing to rename or edit.)
+2. Open `about:debugging#/runtime/this-firefox` in Firefox.
+3. Click **Load Temporary Add-on…** and select the `manifest.json` inside the unzipped
+   folder.
+4. Pin the extension icon to your toolbar.
+
+Two Firefox-specific notes:
+
+- **Temporary add-ons are removed every time Firefox fully restarts** — you'll need to
+  repeat step 3 after each restart (your profiles/rules aren't lost, they're saved in the
+  browser's extension storage; only the "is this add-on loaded" state resets). This is a
+  Firefox restriction on unsigned extensions, not something ProxyHub can change. To install
+  it permanently instead:
+  - Get it signed by Mozilla via [addons.mozilla.org](https://addons.mozilla.org) — either
+    published publicly or as a free "self-distribution" signed `.xpi` you install once and
+    keep. (If you do this, open `manifest.firefox.json` first and change
+    `browser_specific_settings.gecko.id` to an ID you own. AMO also now requires every new
+    submission to declare its data collection practices via
+    `browser_specific_settings.gecko.data_collection_permissions` — this is already set to
+    `{"required": ["none"]}` in `manifest.firefox.json`, since ProxyHub doesn't collect or
+    transmit any data; only change this if that ever stops being true.)
+  - Or, on Firefox Developer Edition/Nightly/ESR only, set
+    `xpinstall.signatures.required` to `false` in `about:config` and install the `.xpi`
+    directly — not available on regular release Firefox.
+  - For active development, Mozilla's [`web-ext run`](https://extensionworkshop.com/documentation/develop/getting-started-with-web-ext/)
+    CLI auto-reloads a temporary add-on for you each time, which removes most of the
+    tedium of Firefox's reload behavior while you're iterating on the code.
+- **How proxying works differs under the hood.** Chrome lets ProxyHub hand it one PAC
+  script; Firefox doesn't allow that for regular extensions, so on Firefox ProxyHub instead
+  decides the proxy for each request live, using the same rules. Behavior is the same either
+  way — this is just plumbing.
+
+### Building from source / for developers
+
+The repository always contains both `manifest.json` (Chrome) and `manifest.firefox.json`
+(Firefox) side by side — you only need to touch one of them if you're testing an unreleased
+change: for Firefox testing, temporarily rename `manifest.firefox.json` to `manifest.json`
+(or delete/rename the existing one first) before loading it unpacked. Every push of a
+`vX.Y.Z` tag automatically builds and attaches both ready-to-use zips
+(`proxyhub-chrome-X.Y.Z.zip` and `proxyhub-firefox-X.Y.Z.zip`) to that tag's GitHub Release
+via [`.github/workflows/release.yml`](.github/workflows/release.yml) — that's what Option B
+and Option C above download, so most people never need to do this manually.
+
+<div align="center">
+  <img src="assets/divider.png" alt="" width="100%">
+</div>
+
+<a id="how-to-use-it"></a>
+
+## <img src="assets/icons/icon-guide.png" width="26" align="absmiddle"> How to use it
+
+1. **Add a proxy** — open the extension's *Options* page → *Proxy profiles* → add your
+   proxy's address, port, and login if it needs one. You only do this once per proxy.
+2. **Pick a site** — click the ProxyHub icon while on any website, choose which proxy
+   profile to route it through, then reload the page. Leave it on *Direct* for sites you
+   don't want to proxy.
+3. **Read the icon** — the toolbar icon always tells you the current tab's state at a
+   glance:
+   - <img src="assets/icons/status-proxied.png" width="14" align="absmiddle"> **Proxied** — this tab is going through a proxy
+   - <img src="assets/icons/status-direct.png" width="14" align="absmiddle"> **Direct** — no rule, loads normally
+   - <img src="assets/icons/status-off.png" width="14" align="absmiddle"> **Off** — routing is paused everywhere
+4. **Let it help you** — if a site needs extra CDN domains, or a page has broken
+   images/scripts, ProxyHub will offer a one-click fix.
+
+<div align="center">
+  <img src="assets/divider.png" alt="" width="100%">
+</div>
+
+<a id="good-to-know"></a>
+## <img src="assets/icons/icon-warning.png" width="26" align="absmiddle"> Good to know
+
+- A single domain can only be routed one way at a time — if two different sites you've
+  added both load assets from the very same generic CDN domain, that domain follows
+  whichever rule was created first.
+- Safari isn't supported: Apple doesn't allow browser extensions to control proxy settings
+  at all, so this isn't something that can be added later — it's a platform limitation.
+- **License**: free for personal use and modification. Commercial use is not permitted
+  without a separate written agreement with the author — see [LICENSE](LICENSE) for details.
+
+<div align="center">
+  <img src="assets/divider.png" alt="" width="100%">
+</div>
+
+<a id="support-the-project--donate"></a>
+## <img src="assets/icons/icon-heart.png" width="26" align="absmiddle"> Support the Project — Donate
+
+<div align="center">
+
+If ProxyHub has been useful to you, consider supporting its continued development.
+Every contribution, big or small, is deeply appreciated. <img src="assets/icons/icon-heart.png" width="16" align="absmiddle">
+
+</div>
+
+<br>
+
+<div align="center">
+
+| Network | Address |
+|:---|:---|
+| ![TON](https://img.shields.io/badge/TON-0088CC?style=flat-square&logo=ton&logoColor=white) | `UQDPxrimgBU6Mil0dhDn0Fc303RLRXKr9hGGDu7bTEBdGGqs` |
+| ![TRC20](https://img.shields.io/badge/TRC20%20(Tron)-FF060A?style=flat-square&logo=tron&logoColor=white) | `TXix7uf6JPUKvWeUbA4A7wmQLVKnDbLRQU` |
+| ![ETH](https://img.shields.io/badge/ERC20%20(Ethereum)-3C3C3D?style=flat-square&logo=ethereum&logoColor=white) | `0x1FC907d3396460f1Cd94E3BC48564b1b46b70026` |
+
+</div>
+
+<br>
+
+<div align="center">
+
+> Thank you for keeping this project alive. <img src="assets/icons/icon-heart.png" width="16" align="absmiddle">
+
+</div>
