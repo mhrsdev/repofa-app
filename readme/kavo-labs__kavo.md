@@ -1,0 +1,107 @@
+<p align="center">
+  <img src=".github/assets/intro.png" alt="A @Kavo-decorated BooksController generates QUERY /books, POST /books, GET /books/:id, PUT /books/:id, DELETE /books/:id, and PATCH /books/:id/restore" />
+</p>
+
+<h3 align="center">Turn models into APIs.</h3>
+
+<p align="center">
+  Define an entity once and get a complete REST and
+  GraphQL CRUD API with filtering, sorting, pagination, and generated routes.
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@kavo/core"><img src="https://img.shields.io/npm/v/%40kavo%2Fcore?label=npm" alt="Latest version on npm" /></a>
+  <a href="https://github.com/kavo-labs/kavo/actions/workflows/ci.yml"><img src="https://img.shields.io/github/check-runs/kavo-labs/kavo/main?nameFilter=build%20(node%20lts%2F*)&label=build" alt="Build status on main" /></a>
+  <a href="https://github.com/kavo-labs/kavo/actions/workflows/ci.yml"><img src="https://img.shields.io/github/check-runs/kavo-labs/kavo/main?nameFilter=test%20(node%20lts%2F*)&label=tests" alt="Test status on main" /></a>
+  <a href="https://github.com/kavo-labs/kavo/blob/main/LICENSE"><img src="https://img.shields.io/github/license/kavo-labs/kavo?label=license" alt="MIT licensed" /></a>
+  <a href="https://www.npmjs.com/package/@kavo/core"><img src="https://img.shields.io/npm/dm/%40kavo%2Fcore?label=downloads" alt="Downloads per month on npm" /></a>
+  <a href="https://kavo.js.org"><img src="https://img.shields.io/badge/docs-kavo.js.org-1f6feb" alt="Documentation" /></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/kavo-labs/kavo"><img src="https://api.scorecard.dev/projects/github.com/kavo-labs/kavo/badge" alt="OpenSSF Scorecard" /></a>
+</p>
+
+# Kavo
+
+Define an entity once, add one decorator, and Kavo generates the rest: create,
+read, update, delete, filtering, sorting, pagination, nested includes, and
+field selection — no hand-written controller methods.
+
+[Read documentation](https://kavo.js.org/getting-started)
+
+## Getting started
+
+```bash
+npm install @kavo/core @kavo/nest @kavo/typeorm
+```
+
+`@kavo/nest` expects `@nestjs/common`, `@nestjs/core`, `reflect-metadata`, and
+`rxjs` as peers, and `@kavo/typeorm` expects `typeorm` — a Nest app already has
+the first four. Kavo needs Node 22+, an ESM app, and `emitDecoratorMetadata`;
+see [Requirements](https://kavo.js.org/getting-started#requirements) and
+[Peer dependencies](https://kavo.js.org/getting-started#peer-dependencies) for
+the exact versions.
+
+```ts
+@Kavo(Book)
+@Controller("books")
+export class BooksController {}
+```
+
+That's a full CRUD API. See [kavo.js.org/getting-started](https://kavo.js.org/getting-started)
+for the full walkthrough, including NestJS wiring and a soft-delete example.
+
+## Built for agentic development
+
+Built with Claude Code, and shipped with skills so your agent moves just as
+fast. [`extensions`](extensions) has ready-made skills for the whole surface —
+`@Kavo()`, global config, the query grammar, schemas, errors, soft delete,
+Swagger, the GraphQL and MCP bindings, and per-ORM wiring for each supported
+adapter — published as a plugin via this repo's own marketplace:
+
+```bash
+npx skills add kavo-labs/kavo
+```
+
+Fewer tokens, ship faster.
+
+## Packages
+
+[`@kavo/core`](packages/core) holds all contracts, the type system, and the
+request engine, with **zero runtime dependencies**. Everything else is a
+swappable adapter or binding on top of it: pick the ORM(s) you store data
+with, and the framework or protocol binding(s) you expose it through.
+
+**Frameworks** — generate routes/handlers from an entity + `@Kavo` config:
+
+| Package                                  | Role                                                           |
+| ---------------------------------------- | -------------------------------------------------------------- |
+| [`@kavo/nest`](packages/frameworks/nest) | NestJS binding — the `@Kavo` decorator and route generation    |
+| [`@kavo/next`](packages/frameworks/next) | Next.js App Router binding — registry-driven catch-all routing |
+
+**ORMs** — adapters that feed the engine from your data layer:
+
+| Package                                    | Role             |
+| ------------------------------------------ | ---------------- |
+| [`@kavo/typeorm`](packages/orms/typeorm)   | TypeORM adapter  |
+| [`@kavo/prisma`](packages/orms/prisma)     | Prisma adapter   |
+| [`@kavo/mongoose`](packages/orms/mongoose) | Mongoose adapter |
+| [`@kavo/mikroorm`](packages/orms/mikroorm) | MikroORM adapter |
+
+**Protocols** — host-framework-agnostic bindings for non-REST surfaces:
+
+| Package                                       | Role                                              |
+| --------------------------------------------- | ------------------------------------------------- |
+| [`@kavo/graphql`](packages/protocols/graphql) | Host-agnostic GraphQL schema binding              |
+| [`@kavo/mcp`](packages/protocols/mcp)         | Host-agnostic MCP binding — entities as MCP tools |
+
+**Realtime** — transports for pushing changes to clients:
+
+| Package                              | Role                                                                                             |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| [`@kavo/sse`](packages/realtime/sse) | Plain HTTP `text/event-stream` transport, usable from `@kavo/nest` with no extra peer dependency |
+
+## Contributing
+
+Bug reports, issues, and pull requests are welcome.
+[`CONTRIBUTING.md`](CONTRIBUTING.md) covers getting a working checkout, the
+`pnpm check` gate every change has to pass, and the architectural invariants a
+PR needs to respect.
