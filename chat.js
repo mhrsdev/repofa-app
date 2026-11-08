@@ -5,7 +5,8 @@
   var BOT_FALLBACK = 'Michael_chatbot'; // FLAG: used only when config.json has no "botUsername"
   var MAX = 1500, KEEP = 30, LS_TOK = 'rf.tok', LS_CHAT = 'rf.chat';
   var C, root, el = {}, coarse = window.matchMedia && matchMedia('(pointer:coarse)').matches;
-  var S = { me: null, quota: null, cid: null, msgs: [], cur: null, ctl: null, uid: null, view: '' };
+  var S = { me: null, meP: null, quota: null, cid: null, msgs: [], cur: null, ctl: null, uid: null, view: '', paused: null, off: false };
+  var mounted = false;
   var tryc = function (f, d) { try { return f(); } catch (e) { return d; } };
   var E = function (t, cls, txt) { var n = document.createElement(t); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
   var fa = function (n) { return C.faN(n); };
@@ -26,20 +27,22 @@
 
   /* ---------- API ---------- */
   function api(method, path, body, signal) {
-    var base = C.api.base;
-    if (!base) { var x = new Error('offline'); x.code = 'offline'; return Promise.reject(x); }
-    var h = { Accept: 'application/json' }, a = authH(); if (a) h.Authorization = a; if (body) h['Content-Type'] = 'application/json';
-    return fetch(base + path, { method: method, headers: h, body: body ? JSON.stringify(body) : undefined, credentials: 'omit', cache: 'no-store', signal: signal })
-      .then(function (r) {
-        return r.text().then(function (t) {
-          var j = tryc(function () { return t ? JSON.parse(t) : {}; }, {});
-          if (j && j.quota) setQuota(j.quota);
-          if (r.ok) return j || {};
-          var e = new Error('http ' + r.status); e.status = r.status; e.hint = j && (j.hint || (j.error && j.error.hint)) || '';
-          e.code = (j && j.error && j.error.code) || (r.status === 401 ? 'auth' : r.status === 429 ? 'rate' : r.status === 413 ? 'too_long' : r.status === 400 ? 'bad_request' : r.status === 404 ? 'expired' : 'internal');
-          throw e;
-        });
-      }, function (e) { if (e && e.name === 'AbortError') throw e; var x = new Error('network'); x.code = 'offline'; C.discover(); throw x; });
+    var go = function (base) {
+      var h = { Accept: 'application/json' }, a = authH(); if (a) h.Authorization = a; if (body) h['Content-Type'] = 'application/json';
+      return fetch(base + path, { method: method, headers: h, body: body ? JSON.stringify(body) : undefined, credentials: 'omit', cache: 'no-store', signal: signal })
+        .then(function (r) {
+          return r.text().then(function (t) {
+            var j = tryc(function () { return t ? JSON.parse(t) : {}; }, {});
+            if (j && j.quota) setQuota(j.quota);
+            if (r.ok) return j || {};
+            var e = new Error('http ' + r.status); e.status = r.status; e.hint = j && (j.hint || (j.error && j.error.hint)) || '';
+            e.code = (j && j.error && j.error.code) || (r.status === 401 ? 'auth' : r.status === 429 ? 'rate' : r.status === 413 ? 'too_long' : r.status === 400 ? 'bad_request' : r.status === 404 ? 'expired' : 'internal');
+            throw e;
+          });
+        }, function (e) { if (e && e.name === 'AbortError') throw e; var x = new Error('network'); x.code = 'offline'; C.discover(true); throw x; });
+    };
+    if (C.api.base) return go(C.api.base);
+    return C.discover().then(function (b) { if (!b) { var x = new Error('offline'); x.code = 'offline'; throw x; } return go(b); });
   }
 
   /* ---------- storage: last ~30 messages per account ---------- */
@@ -48,7 +51,7 @@
     if (o && o.u === S.uid && Array.isArray(o.m)) { S.cid = o.c || null; S.msgs = o.m.slice(-KEEP); } else { S.cid = null; S.msgs = []; }
   }
   var saveT;
-  function save() { clearTimeout(saveT); saveT = setTimeout(function () { tryc(function () { localStorage.setItem(LS_CHAT, JSON.stringify({ u: S.uid, c: S.cid, m: S.msgs.slice(-KEEP) })); }); }, 250); }
+  function save() { clearTimeout(saveT); saveT = setTimeout(function () { tryc(function () { localStorage.setItem(LS_CHAT, JSON.stringify({ u: S.uid, c: S.cid, m: S.msgs.slice(-KEEP) }, function (k, v) { return k.charAt(0) === '_' ? undefined : v; })); }); }, 250); }
 
   /* ---------- safe tiny markdown: paragraphs, lists, `code`, ``` fences, **bold**, http(s) links ---------- */
   var LIST = /^\s*([-*•]|\d+[.)])\s+/;
@@ -105,8 +108,16 @@
     if (s < 86400) return 'ساعت ' + tryc(function () { return new Intl.DateTimeFormat('fa-IR', { hour: '2-digit', minute: '2-digit' }).format(t); }, '');
     return fa(Math.round(s / 86400)) + ' روز دیگر';
   }
+  var resetMs = function (v) { var t = typeof v === 'number' ? (v < 1e12 ? v * 1000 : v) : Date.parse(v); return t || 0; };
+  var qLast = '';
+  function cachedQuota() { // last known quota; /api/me corrects it
+    if (S.quota) return;
+    var o = tryc(function () { return JSON.parse(localStorage.getItem('rf.quota') || 'null'); }, null);
+    if (o && o.q && o.u === S.uid && Date.now() - o.t < 3600e3 && (!o.q.resets_at || resetMs(o.q.resets_at) > Date.now())) S.quota = o.q;
+  }
   function setQuota(q) {
     if (!q || typeof q !== 'object') return; S.quota = q;
+    var qs = q.remaining + '/' + q.used + '/' + q.limit; if (qs !== qLast) { qLast = qs; tryc(function () { localStorage.setItem('rf.quota', JSON.stringify({ u: S.uid, q: q, t: Date.now() })); }); }
     if (!el.quota) return;
     var w = when(q.resets_at), rem = +q.remaining || 0, txt;
     if (q.limit != null && rem <= 0) txt = 'سهمیه‌ی امروز تمام شده' + (w ? '؛ بازنشانی ' + w : '');
@@ -124,17 +135,24 @@
     if (retry) { var b = E('button', 'btn', 'تلاش دوباره'); b.type = 'button'; b.onclick = retry; w.appendChild(b); }
     root.appendChild(w); S.view = 'line';
   }
-  /* redirect-mode login (mirror): Telegram appends id, first_name, …, auth_date, hash to the auth URL */
-  function consumeRedirectAuth() {
-    var q = tryc(function () { return new URLSearchParams(location.search); }, null);
-    if (!q || !q.get('tgauth') || !q.get('hash') || !q.get('id')) return false;
-    var user = {}; ['id', 'first_name', 'last_name', 'username', 'photo_url', 'auth_date', 'hash'].forEach(function (k) { if (q.get(k) != null) user[k] = k === 'id' || k === 'auth_date' ? +q.get(k) : q.get(k); });
-    tryc(function () { history.replaceState(null, '', location.pathname + '#/chat'); });   // the signed fields leave the address bar at once
-    loginView(); window.__rfTgAuth(user); return true;
+  /* the login screen lives in chat-login.js and is fetched only when a browser visitor needs it */
+  function X() { return { C: C, E: E, S: S, tryc: tryc, root: root, api: api, show: show, tok: LS_TOK, login: loginView, bot: botName() || BOT_FALLBACK }; }
+  function loginView(note, search) {
+    clear(); S.view = 'login';
+    var run = function () { if (S.view === 'login') window.__rfChatLogin(X(), note, search); };
+    if (window.__rfChatLogin) return run();
+    var sc = document.createElement('script'); sc.src = 'chat-login.js'; sc.onload = run;
+    sc.onerror = function () { line('بارگیری صفحه‌ی ورود ناموفق بود.', function () { loginView(note); }); }; document.head.appendChild(sc);
+  }
+  function consumeRedirectAuth() { // back from the Login Widget in redirect mode
+    if (!/[?&]tgauth=1\b/.test(location.search)) return false;
+    var q = location.search; tryc(function () { history.replaceState(null, '', location.pathname + '#/chat'); });   // signed fields leave the address bar
+    loginView(null, q); return true;
   }
   function show() {
     if (consumeRedirectAuth()) return;
-    if (!C.api.base) {
+    if (S.off) return line('گفت‌وگو برای این حساب فعال نیست.');
+    if (!C.api.base && C.api.state === 'none') {
       line('گفت‌وگو در حال حاضر در دسترس نیست. فهرست پروژه‌ها بدون آن کار می‌کند.', function () { line('در حال اتصال…'); C.discover(true).then(show); });
       return;
     }
@@ -142,22 +160,37 @@
     var u = uid();
     if (S.uid !== u) { S.uid = u; load(); }
     if (S.view !== 'chat') chatView();
+    watchConnect();
     if (!S.me) me();
     var last = S.msgs[S.msgs.length - 1];
-    if (last && last.r === 'a' && last.st === 'running' && last.job && !S.cur) run(last);
+    if (last && last.r === 'a' && last.st === 'running' && last.job && !S.cur) run(last);   // resume
+  }
+  /* the composer never waits for the network; «در حال اتصال…» only after 600 ms */
+  function watchConnect() {
+    if (C.api.base || S.cw) return;
+    S.cw = setTimeout(function () { S.cw = 0; if (!C.api.base && el.quota && !S.quota) el.quota.textContent = 'در حال اتصال…'; }, 600);
   }
   function me() {
-    if (el.quota && !S.quota) el.quota.textContent = tg() ? 'در حال ورود…' : '';
-    api('GET', '/api/me').then(function (j) {
-      S.me = j.user || {};
-      if (j.features && j.features.chat === false) return line('گفت‌وگو برای این حساب فعال نیست.');
+    if (S.meP) return S.meP;
+    if (mounted && el.quota && !S.quota) el.quota.textContent = tg() ? 'در حال ورود…' : '';
+    return S.meP = api('GET', '/api/me').then(function (j) {
+      S.meP = null; S.me = j.user || {};
+      if (j.features && j.features.chat === false) { S.off = true; if (mounted) line('گفت‌وگو برای این حساب فعال نیست.'); return; }
       if (j.quota) setQuota(j.quota);
       if (el.who) el.who.textContent = S.me.name ? S.me.name : '';
     }, function (e) {
+      S.meP = null; if (!mounted || S.view !== 'chat') return;
       if (e.status === 403) return line('دسترسی این حساب به گفت‌وگو محدود شده است. فهرست پروژه‌ها مثل قبل کار می‌کند.');
       if (e.code === 'auth') return authFail();
+      if (e.code === 'offline' && !C.api.base && C.api.state === 'none') return show();
       if (el.quota) el.quota.textContent = e.code === 'offline' ? 'اتصال به سرور برقرار نیست' : '';
     });
+  }
+  /* idle warm-up before the tab is opened */
+  function warm(core) {
+    C = core; var a = authH(); if (!a) return;
+    var u = uid(); if (S.uid !== u) { S.uid = u; load(); }
+    cachedQuota(); if (!S.me && C.api.base) me();
   }
   /* inside Telegram a 401 means the app was launched from another bot (initData is signed with that bot's token):
      never a login prompt — point to Michael's bot instead. The catalog keeps working without any API call. */
@@ -174,42 +207,6 @@
     tryc(function () { localStorage.removeItem(LS_TOK); }); S.me = null; loginView('نشست شما منقضی شده است؛ دوباره وارد شوید.');
   }
 
-  function loginView(note) {
-    clear(); S.view = 'login';
-    var bot = botName() || BOT_FALLBACK;
-    var w = E('div', 'c-login');
-    w.appendChild(E('h2', null, 'ورود به گفت‌وگو'));
-    if (note) w.appendChild(E('p', 'c-note', note));
-    w.appendChild(E('p', null, 'گفت‌وگو با مایکل به حساب تلگرام شما وصل است و از همان سهمیه‌ی روزانه‌ی ربات استفاده می‌کند. فهرست پروژه‌ها بدون ورود هم کار می‌کند.'));
-    var box = E('div', 'c-widget'); box.id = 'c-widget'; w.appendChild(box);
-    var st = E('p', 'c-sub', 'در حال بارگیری دکمه‌ی ورود تلگرام…'); w.appendChild(st);
-    w.appendChild(E('p', 'c-sub', 'تلگرام فقط نام، نام کاربری و شناسه‌ی عمومی حساب را به ربات می‌فرستد؛ نه شماره‌ی تلفن و نه پیام‌ها.'));
-    var open = E('p', 'c-sub'); open.appendChild(document.createTextNode('داخل تلگرام ورود لازم نیست: '));
-    var a = E('a', 'link', 'باز کردن ربات'); a.href = 'https://t.me/' + bot; a.setAttribute('data-ext', 'tg'); a.target = '_blank'; a.rel = 'noopener noreferrer'; open.appendChild(a); w.appendChild(open);
-    root.appendChild(w);
-    window.__rfTgAuth = function (user) {
-      st.textContent = 'در حال ورود…';
-      api('POST', '/api/auth/widget', user).then(function (j) {
-        if (!j.token) throw Object.assign(new Error('no token'), { code: 'auth' });
-        tryc(function () { localStorage.setItem(LS_TOK, JSON.stringify({ token: j.token, exp: j.expires_at || j.exp, uid: (j.user && j.user.id) || (user && user.id) })); });
-        S.view = ''; show();
-      }, function (e) { st.textContent = e.code === 'offline' ? 'اتصال به سرور برقرار نیست؛ دوباره تلاش کنید.' : 'ورود تأیید نشد؛ دوباره تلاش کنید.'; });
-    };
-    var failed = function () {
-      if (S.view !== 'login' || box.querySelector('iframe,button')) return;
-      st.textContent = 'دکمه‌ی ورود تلگرام بارگیری نشد (telegram.org در دسترس نیست).';
-      var r = E('button', 'btn', 'تلاش دوباره'); r.type = 'button'; r.onclick = function () { loginView(note); }; st.after(r);
-    };
-    var s = document.createElement('script');
-    s.async = true; s.src = 'https://telegram.org/js/telegram-widget.js?22';
-    s.setAttribute('data-telegram-login', bot); s.setAttribute('data-size', 'large'); s.setAttribute('data-radius', '6');
-    // the widget runs data-onauth through eval; under the mirror's strict CSP use its redirect mode instead (signed fields come back in the query)
-    if (C.mirror) s.setAttribute('data-auth-url', location.origin + location.pathname + '?tgauth=1#/chat'); else s.setAttribute('data-onauth', '__rfTgAuth(user)');
-    s.setAttribute('data-request-access', 'write'); s.setAttribute('data-lang', 'fa');
-    s.onerror = failed; box.appendChild(s);
-    setTimeout(function () { if (box.querySelector('iframe,button')) st.textContent = ''; else failed(); }, 8000);
-    var obs = new MutationObserver(function () { if (box.querySelector('iframe,button')) { st.textContent = ''; obs.disconnect(); } }); obs.observe(box, { childList: true, subtree: true });
-  }
 
   var EXAMPLES = ['یک کلاینت سبک Xray برای اندروید پیشنهاد بده', 'برای مانیتورینگ سرور خانگی چه ابزار سلف‌هاستی هست؟', 'برای ساخت ایجنت با MCP از کدام پروژه‌ها شروع کنم؟'];
   function chatView() {
@@ -242,7 +239,7 @@
     });
     el.stop.onclick = function () { stop(); };
     if (window.ResizeObserver) new ResizeObserver(function () { document.documentElement.style.setProperty('--comp-h', f.offsetHeight + 'px'); }).observe(f);
-    renderAll(); if (S.quota) setQuota(S.quota); syncComposer();
+    renderAll(); cachedQuota(); if (S.quota) setQuota(S.quota); if (S.me && S.me.name) el.who.textContent = S.me.name; syncComposer();
     if (!coarse && C.isDesk()) el.ta.focus({ preventScroll: true });
   }
   function grow() {
@@ -279,7 +276,7 @@
   function msgEl(m) {
     var n;
     if (m.r === 'u') { n = E('div', 'm m-u'); var p = E('p', null, m.t); p.dir = dirOf(m.t); n.appendChild(p); return n; }
-    n = E('div', 'm m-a'); m._el = n; fill(m); return n;
+    n = E('div', 'm m-a'); m._el = n; m._p = null; fill(m); return n;
   }
   function evs(m) { // derive tool activity + result rows from events (cumulative or incremental)
     var tool = null, items = [], seen = {};
@@ -290,32 +287,51 @@
     });
     return { tool: tool, items: items };
   }
+  /* an answer is always [text] → [tool line] → [cards], built once and updated in place; cards stay hidden until the first text (or the end) */
+  function typing() {
+    var p = E('p', 'm-wait'), d = E('span', 'm-dots'); p.appendChild(E('span', 'sr', 'در حال نوشتن')); d.setAttribute('aria-hidden', 'true');
+    d.appendChild(E('i')); d.appendChild(E('i')); d.appendChild(E('i')); p.appendChild(d); return p;
+  }
   function fill(m) {
     var n = m._el; if (!n) return;
-    var d = evs(m), running = m.st === 'running';
-    n.textContent = ''; n.setAttribute('aria-busy', running ? 'true' : 'false');
-    if (d.tool) {
-      var search = d.tool.name === 'repofa_search' || !d.tool.name, fin = d.tool.done || !running;
-      var tl = E('p', 'm-tool' + (fin ? '' : ' on')), add = function (x) { tl.appendChild(document.createTextNode(x)); };
-      add(fin ? (search ? 'جستجوی کاتالوگ' : 'ابزار ' + d.tool.name) : (search ? 'در حال جستجوی کاتالوگ' : 'در حال اجرای ' + d.tool.name));
-      if (d.tool.q) { add(': «'); tl.appendChild(E('bdi', null, d.tool.q)); add('»'); }
-      add(fin ? ' · ' + (d.items.length ? fa(d.items.length) + ' نتیجه' : 'نتیجه‌ای نبود') : '…');
-      n.appendChild(tl);
+    var d = evs(m), running = m.st === 'running', P = m._p;
+    if (!P) {
+      P = m._p = { body: E('div', 'm-body'), tool: E('p', 'm-tool'), items: E('div', 'm-items'), err: E('div', 'm-errw'), foot: E('div', 'm-foot'), k: {} };
+      P.items.setAttribute('role', 'list'); P.items.setAttribute('aria-label', 'پروژه‌های پیداشده');
+      P.tool.hidden = P.items.hidden = P.err.hidden = P.foot.hidden = true;
+      [P.body, P.tool, P.items, P.err, P.foot].forEach(function (x) { n.appendChild(x); });
     }
-    if (d.items.length) {
-      var list = E('div', 'm-items'); list.setAttribute('role', 'list'); list.setAttribute('aria-label', 'پروژه‌های پیداشده');
-      d.items.slice(0, 8).forEach(function (it) { var r = tryc(function () { return C.rowFor(it); }, null); if (r) list.appendChild(r); });
-      n.appendChild(list);
+    var k = P.k; n.setAttribute('aria-busy', running ? 'true' : 'false');
+    // 1. text (a quiet typing indicator until anything is written)
+    var bk = m.t + '\u0001' + (running ? 1 : 0);
+    if (k.body !== bk) { k.body = bk; P.body.textContent = ''; if (m.t) md(m.t, P.body); else if (running) P.body.appendChild(typing()); }
+    // 2. what the model is doing
+    var fin = !!d.tool && (d.tool.done || !running), tk = d.tool ? [d.tool.name, d.tool.q, fin ? 1 : 0, d.items.length].join('\u0001') : '';
+    if (k.tool !== tk) {
+      k.tool = tk; P.tool.textContent = ''; P.tool.hidden = !d.tool;
+      if (d.tool) {
+        var search = d.tool.name === 'repofa_search' || !d.tool.name, add = function (x) { P.tool.appendChild(document.createTextNode(x)); };
+        P.tool.className = 'm-tool' + (fin ? '' : ' on');
+        add(fin ? (search ? 'جستجوی کاتالوگ' : 'ابزار ' + d.tool.name) : (search ? 'در حال جستجوی کاتالوگ' : 'در حال اجرای ' + d.tool.name));
+        if (d.tool.q) { add(': «'); P.tool.appendChild(E('bdi', null, d.tool.q)); add('»'); }
+        add(fin ? ' · ' + (d.items.length ? fa(d.items.length) + ' نتیجه' : 'نتیجه‌ای نبود') : '…');
+      }
     }
-    var body = E('div', 'm-body'); md(m.t, body);
-    if (running && !m.t && !d.tool) body.appendChild(E('p', 'm-wait', 'در حال نوشتن…'));
-    n.appendChild(body);
-    if (m.err) n.appendChild(errEl(m));
-    if (!running && (m.t || m.st === 'stopped')) {
-      var foot = E('div', 'm-foot');
-      if (m.t) { var cp = E('button', 'link'); cp.type = 'button'; cp.innerHTML = C.IC('copy'); cp.appendChild(document.createTextNode('کپی پاسخ')); cp.onclick = function () { C.copyText(m.t, 'پاسخ کپی شد'); }; foot.appendChild(cp); }
-      if (m.st === 'stopped') foot.appendChild(E('span', 'm-st', 'متوقف شد'));
-      n.appendChild(foot);
+    // 3. cards — below the text, and only once there is text (or the answer is over)
+    var reveal = !!(m.t || !running), ik = reveal ? d.items.slice(0, 8).map(function (it) { return it.id; }).join(',') : '';
+    if (k.items !== ik) {
+      k.items = ik; P.items.textContent = '';
+      if (reveal) d.items.slice(0, 8).forEach(function (it) { var r = tryc(function () { return C.rowFor(it); }, null); if (r) P.items.appendChild(r); });
+      P.items.hidden = !P.items.firstChild;
+    }
+    // 4. error, 5. footer
+    var ek = m.err ? m.err.code + '|' + (m.err.hint || '') : '';
+    if (k.err !== ek) { k.err = ek; P.err.textContent = ''; P.err.hidden = !m.err; if (m.err) P.err.appendChild(errEl(m)); }
+    var fk = !running && (m.t || m.st === 'stopped') ? (m.t ? 'c' : '') + (m.st === 'stopped' ? 's' : '') : '';
+    if (k.foot !== fk) {
+      k.foot = fk; P.foot.textContent = ''; P.foot.hidden = !fk;
+      if (m.t && fk) { var cp = E('button', 'link'); cp.type = 'button'; cp.innerHTML = C.IC('copy'); cp.appendChild(document.createTextNode('کپی پاسخ')); cp.onclick = function () { C.copyText(m.t, 'پاسخ کپی شد'); }; P.foot.appendChild(cp); }
+      if (m.st === 'stopped') P.foot.appendChild(E('span', 'm-st', 'متوقف شد'));
     }
   }
   var ERR = {
@@ -336,7 +352,7 @@
     if (c === 'quota') {
       var wq = S.quota && when(S.quota.resets_at);
       w.appendChild(E('p', null, (wq ? 'سهمیه ' + wq + ' دوباره پر می‌شود. ' : 'سهمیه روزانه دوباره پر می‌شود. ') + 'تا آن زمان فهرست پروژه‌ها و ذخیره‌شده‌ها بدون محدودیت در دسترس‌اند.'));
-      if (m.err.hint) { w.appendChild(E('p', null, String(m.err.hint).slice(0, 300))); return w; }   // the server's own hint (text only)
+      if (m.err.hint) { w.appendChild(E('p', null, String(m.err.hint).slice(0, 300))); return w; }
       var more = E('p', null, 'برای پیام بیشتر می‌توانید از دوستان دعوت کنید یا از مایکل در گروه استفاده کنید؛ جزئیات با دستور '), cmd = E('bdi', 'mono', '/help'); cmd.dir = 'ltr';
       more.appendChild(cmd); more.appendChild(document.createTextNode(' در ربات.')); w.appendChild(more);
     } else if (x[1]) w.appendChild(E('p', null, x[1]));
@@ -360,17 +376,17 @@
     el.ta.value = ''; grow(); save();
     S.cur = am; syncComposer(); C.haptic('impact', 'light');
     api('POST', '/api/chat', { message: text, conversation_id: S.cid || undefined }).then(function (j) {
-      if (S.cur !== am) return;
+      if (S.cur !== am && S.paused !== am) return;
       if (j.conversation_id) S.cid = j.conversation_id;
-      am.job = j.job; am.seq = 0; save(); run(am);
+      am.job = j.job; am.seq = 0; save(); if (S.cur === am || (S.paused === am && !root.hidden)) run(am);
     }, function (e) { fail(am, e); });
   }
   function run(am) {
-    S.cur = am; syncComposer();
+    S.cur = am; S.paused = null; syncComposer();
     var tries = 0;
     (function poll() {
       if (S.cur !== am) return;
-      var ctl = window.AbortController ? new AbortController() : null, guard = setTimeout(function () { if (ctl) ctl.abort(); }, 25000);
+      var t0 = Date.now(), ctl = window.AbortController ? new AbortController() : null, guard = setTimeout(function () { if (ctl) ctl.abort(); }, 25000);
       S.ctl = ctl;
       api('GET', '/api/chat/' + encodeURIComponent(am.job) + '?after=' + (am.seq || 0), null, ctl && ctl.signal).then(function (j) {
         clearTimeout(guard); if (S.cur !== am) return; tries = 0;
@@ -381,18 +397,18 @@
         if (j.status === 'done') { am.st = 'done'; return finish(am); }
         if (j.status === 'error') { var c = j.error && j.error.code || 'internal'; if (c === 'auth') { finish(am); return authFail(); } am.st = 'error'; am.err = { code: c }; return finish(am); }
         update(am); save();
-        setTimeout(poll, moved ? 0 : 900);
+        setTimeout(poll, moved || Date.now() - t0 > 400 ? 0 : 500);   // no delay when seq moved or the server held the request
       }, function (e) {
         clearTimeout(guard);
         if (S.cur !== am) return;
-        if (e && e.name === 'AbortError') return setTimeout(poll, 0);   // long-poll guard elapsed: ask again
+        if (e && e.name === 'AbortError') return setTimeout(poll, 0);
         if (e.code === 'auth' && e.status !== 403) { finish(am); return authFail(); }
         if (e.code === 'offline' && ++tries <= 4) return setTimeout(poll, 1500 * tries);
         fail(am, e);
       });
     })();
   }
-  function mergeEv(am, list) { // the server sends only events newer than `after`; tolerate repeats
+  function mergeEv(am, list) { // events newer than `after`; tolerate repeats
     am.ev = am.ev || []; var seen = {};
     am.ev.forEach(function (e) { seen[e && e.seq != null ? 's' + e.seq : JSON.stringify(e)] = 1; });
     list.forEach(function (e) { var k = e && e.seq != null ? 's' + e.seq : JSON.stringify(e); if (!seen[k]) { seen[k] = 1; am.ev.push(e); } });
@@ -403,6 +419,10 @@
     var am = S.cur; if (!am) return;
     S.cur = null; if (S.ctl) tryc(function () { S.ctl.abort(); }); S.ctl = null;
     am.st = 'stopped'; if (!silent) { update(am); syncComposer(); save(); }
+  }
+  function leave() { // tab left: end the long-poll; show() resumes
+    var am = S.cur; if (!am) return;
+    S.paused = am; S.cur = null; if (S.ctl) tryc(function () { S.ctl.abort(); }); S.ctl = null; clearTimeout(S.cw); S.cw = 0;
   }
   function retry(m) {
     var i = S.msgs.indexOf(m); if (i < 1) return;
@@ -423,5 +443,5 @@
     vv.addEventListener('resize', kb); vv.addEventListener('scroll', kb);
   }
 
-  window.__rfChat = { ready: false, init: function (r, core) { C = core; root = r; this.ready = true; show(); }, show: function () { show(); }, _md: md, _s: S };
+  window.__rfChat = { ready: false, init: function (r, core) { C = core; root = r; mounted = true; this.ready = true; show(); }, show: function () { show(); }, warm: warm, leave: leave, _md: md, _s: S };
 })();

@@ -167,6 +167,8 @@ body.tg-mb .sheet .d{padding-bottom:calc(1.5rem + var(--tg-sa-b) + 12px)}
 .sheet .d-path{padding-inline-end:44px}
 
 
+.chat-skel i{display:block;height:.75rem;margin:1.25rem 16px;border-radius:3px;background:var(--bg-3)}
+.chat-skel i:nth-child(1){width:38%}.chat-skel i:nth-child(2){width:84%}.chat-skel i:nth-child(3){width:62%}
 .chat-boot{padding:2.5rem 16px;font-size:var(--t-14);color:var(--muted)}
 
 /* browser-only line: open in Telegram */

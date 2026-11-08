@@ -249,9 +249,11 @@
     document.documentElement.style[lg ? 'setProperty' : 'removeProperty']('--logo', lg ? 'url("' + lg + '")' : '');
     return changed;
   }
-  function loadCfg() { // early, same origin, cache-busted; the last copy is remembered so a dataBase applies before the first data fetch
-    return fetch('./config.json?t=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }, function () { return undefined; })
-      .then(function (cfg) { if (cfg === undefined) return false; ls.set('rf.cfg', JSON.stringify(cfg || null)); return applyCfg(cfg); }, function () { return false; });
+  var cfgFresh = false;
+  function loadCfg(fresh) { // early, same origin; the last copy is remembered so a dataBase applies before the first data fetch
+    /* boot: plain fetch, so it reuses the head preload (and the HTTP cache); `fresh`: revalidate, used when a base stopped answering */
+    return fetch('./config.json', fresh ? { cache: 'no-cache', credentials: 'same-origin' } : { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }, function () { return undefined; })
+      .then(function (cfg) { if (cfg === undefined) return false; cfgFresh = !!fresh; ls.set('rf.cfg', JSON.stringify(cfg || null)); return applyCfg(cfg); }, function () { return false; });
   }
   applyCfg(CFG);
   function boot() { // skeleton paints first; the index is built in the next task
@@ -426,13 +428,14 @@
     return 'همه‌ی پروژه‌ها';
   }
   function apply(scroll) {
-    if (!indexReady) return;
+    if (!indexReady && S.tab !== 'chat') return;   // the chat needs no catalog
     var t = S.tab;
     el.app.setAttribute('data-tab', t);
     el['q-clear'].hidden = !el.q.value;
     el.tabs.querySelectorAll('button').forEach(function (b) { b.getAttribute('data-tab') === t ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'); });
     syncSide();
     var chat = t === 'chat', pubs = t === 'pubs', other = chat || pubs; syncTgLine();
+    if (!chat && window.__rfChat && window.__rfChat.ready) window.__rfChat.leave();   // stop the long-poll cleanly; it resumes on return
     el.chat.hidden = !chat; el.pubs.hidden = !pubs; el.toolbar.hidden = other; el.list.hidden = other; el.sentinel.hidden = other;
     if (other) { el.state.hidden = true; el['fav-tools'].hidden = true; if (chat) mountChat(); else mountPubs(); updateBack(); return; }
     el['fav-seg'].hidden = t !== 'fav'; el.sort.hidden = t === 'fav' || (!!S.col && !S.q);
@@ -959,7 +962,7 @@
     if ((b = t.closest('[data-cat]'))) return setFilter('cat', b.getAttribute('data-cat'), !!b.closest('.side'));
     if ((b = t.closest('[data-col]'))) return setFilter('col', b.getAttribute('data-col'), !!b.closest('.side'));
     if ((b = t.closest('[data-scope]'))) { var scp = b.getAttribute('data-scope'); if (scp === 'fav' || scp === 'chat' || scp === 'pubs') return setTab(scp); S.tab = 'all'; return clearFilters(); }
-    if (t.closest('[data-chat-retry]')) { chatLoad = 0; return mountChat(); }
+    if (t.closest('[data-chat-retry]')) { chatP = null; return mountChat(); }
     if ((b = t.closest('[data-comments]'))) { var cs = b.closest('.d-cm'), cid = +b.getAttribute('data-comments'), box2 = cs.querySelector('.cm'); b.hidden = true; box2.hidden = false; box2.textContent = 'در حال بارگیری…';
       return loadCommunity().then(function (m) { m.comments(box2, byId.get(cid), CORE); }, function () { box2.textContent = 'بارگیری کامنت‌ها ناموفق بود.'; b.hidden = false; }); }
     if ((b = t.closest('[data-readme]'))) { var sec = b.closest('.d-rd'), on = sec.querySelector('[data-rd-i][aria-pressed="true"]'); return loadReadme(sec, on ? +on.getAttribute('data-rd-i') : 0); }
@@ -984,34 +987,77 @@
   var tgs = document.getElementById('tg-sdk'); if (tgs) tgs.addEventListener('load', initTelegram);
   if (window.matchMedia) tryc(function () { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { if (!ls.get('rf.theme')) applyTheme(); }); });
 
-  /* ---------- chat: API discovery (off the critical path) + lazily loaded chat.js/chat.css ---------- */
-  var API = { state: 'idle', base: null, cfg: null, next: 0, fails: 0, busy: null, seen: false };
-  function probe(b) {
-    var c = window.AbortController ? new AbortController() : null, tm = setTimeout(function () { if (c) c.abort(); }, 4000);
-    return fetch(b + '/api/health', { signal: c && c.signal, credentials: 'omit', cache: 'no-store' })
-      .then(function (r) { clearTimeout(tm); return r.ok; }, function () { clearTimeout(tm); return false; });
+  /* ---------- chat: API discovery + pre-warm (off the critical path) and the lazily loaded chat.js/chat.css ---------- */
+  var API = { state: 'idle', base: null, cfg: null, next: 0, fails: 0, busy: null, seen: false, hinted: false, cfgDone: false };
+  var HINT_S = 'rf.apib', HINT_L = 'rf.apih', preconnected = {};
+  function baseOk(b) { return typeof b === 'string' && /^https?:\/\/[^\s?#]+$/.test(b); }
+  function readHint() { // a base that answered recently: this session ≤10 min, this device ≤6 h
+    var now = Date.now(), r = function (get, ttl) { var o = tryc(function () { return JSON.parse(get() || 'null'); }, null); return o && baseOk(o.b) && now - o.t < ttl && o.t <= now + 6e4 ? o.b : ''; };
+    return r(function () { return sessionStorage.getItem(HINT_S); }, 10 * 60e3) || r(function () { return ls.get(HINT_L); }, 6 * 3600e3);
   }
-  function discover(force) { // config.json lists tunnel URLs; the first base whose /api/health answers wins
+  function writeHint(b) { var v = JSON.stringify({ b: b, t: Date.now() }); tryc(function () { sessionStorage.setItem(HINT_S, v); }); ls.set(HINT_L, v); }
+  function clearHint() { tryc(function () { sessionStorage.removeItem(HINT_S); }); tryc(function () { localStorage.removeItem(HINT_L); }); }
+  function preconnect(b) { if (preconnected[b] || b === location.origin) return; preconnected[b] = 1; tryc(function () { var l = document.createElement('link'); l.rel = 'preconnect'; l.href = b; l.crossOrigin = 'anonymous'; document.head.appendChild(l); }); }
+  function idle(fn, ms) { if (window.requestIdleCallback) requestIdleCallback(fn, { timeout: ms || 2000 }); else setTimeout(fn, 250); }
+  /* every base is probed at once (2.5 s each); the first /api/health that answers wins and the rest are cancelled */
+  function raceBases(bases) {
+    return new Promise(function (ok) {
+      var left = bases.length, done = false, ctls = [];
+      if (!left) return ok(null);
+      bases.forEach(function (b, i) {
+        var c = window.AbortController ? new AbortController() : null; ctls[i] = c;
+        var tm = setTimeout(function () { if (c) c.abort(); }, 2500);
+        fetch(b + '/api/health', { signal: c && c.signal, credentials: 'omit', cache: 'no-store' }).then(function (r) { return r.ok; }, function () { return false; }).then(function (good) {
+          clearTimeout(tm); if (done) return;
+          if (good) { done = true; ctls.forEach(function (x, k) { if (x && k !== i) x.abort(); }); return ok(b); }
+          if (--left === 0) { done = true; ok(null); }
+        });
+      });
+    });
+  }
+  function discover(force) { // config.json lists the tunnel URLs (the first discovery reuses the fetch boot already started); health probes run in parallel
     if (API.busy) return API.busy;
     if (!force && Date.now() < API.next) return Promise.resolve(API.base);
-    API.busy = fetch('./config.json?t=' + Date.now(), { cache: 'no-store', credentials: 'omit' })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (cfg) {
-        API.cfg = cfg && typeof cfg === 'object' ? cfg : null; if (applyCfg(API.cfg)) { etag = null; fetchData(); }
-        var bases = (onMirror ? [location.origin] : []).concat(apiList(API.cfg)).filter(function (b, k, a) { return a.indexOf(b) === k; }), i = 0;
-        var next = function () { if (i >= bases.length) return null; var b = String(bases[i++]).replace(/\/+$/, ''); return probe(b).then(function (ok) { return ok ? b : next(); }); };
-        return next();
-      })
-      .catch(function () { return null; })
-      .then(function (b) {
-        API.busy = null; API.base = b; API.state = b ? 'ok' : 'none'; if (b) API.seen = true;
-        API.fails = b ? 0 : API.fails + 1;
-        API.next = Date.now() + (b ? 30e3 : Math.min(30e3 * Math.pow(2, API.fails - 1), 300e3));   // ≥30 s, backoff to 5 min
-        syncChatTab();
-        if (b && (location.hash === '#chat' || pendingChat) && S.tab !== 'chat') { pendingChat = false; setTab('chat'); }
-        return b;
+    var first = !API.cfgDone && cfgReady;
+    var bases = function () {
+      var l = (onMirror ? [location.origin] : []).concat(apiList(CFG));
+      if (!l.length && API.hinted && API.base) l = [API.base];   // no config at hand (offline): at least verify the remembered base
+      return l.filter(function (b, k, a) { return a.indexOf(b) === k; });
+    };
+    API.busy = (first ? cfgReady : loadCfg(true).then(function (changed) { if (changed) { etag = null; fetchData(); } })).then(function () {
+      API.cfgDone = true; API.cfg = CFG;
+      return raceBases(bases()).then(function (b) {
+        if (b || cfgFresh || onMirror) return b;   // a possibly cached config.json may name a tunnel that has since changed: revalidate once and look again
+        return loadCfg(true).then(function (changed) { API.cfg = CFG; if (changed) { etag = null; fetchData(); } return raceBases(bases()); });
       });
+    }).catch(function () { return null; }).then(function (b) {
+      API.busy = null;
+      if (b) {
+        API.base = b; API.state = 'ok'; API.seen = true; API.fails = 0; API.hinted = false; API.next = Date.now() + 30e3;
+        writeHint(b); preconnect(b); warmChat();
+      } else {
+        API.fails++;
+        if (API.hinted && API.fails < 2) API.next = Date.now() + 5e3;   // one miss on a remembered base: keep it, look again soon
+        else { API.base = null; API.state = 'none'; API.hinted = false; clearHint(); API.next = Date.now() + Math.min(30e3 * Math.pow(2, API.fails - 1), 300e3); }
+      }
+      syncChatTab();
+      if (b && (location.hash === '#chat' || pendingChat) && S.tab !== 'chat') { pendingChat = false; setTab('chat'); }
+      return API.base;
+    });
     return API.busy;
+  }
+  /* a remembered base makes the tab and the composer available at once; discovery then only verifies it */
+  function hintInit() {
+    var h = onMirror ? location.origin : readHint();
+    if (!h) return;
+    API.base = h; API.seen = true; API.hinted = !onMirror; API.state = onMirror ? 'ok' : 'hint'; preconnect(h); syncChatTab(); warmChat();
+  }
+  var warmed = false;
+  function warmChat() { // fetch + run the chat chunk and ask /api/me in idle time, so the tab opens instantly and the quota is ready
+    if (warmed) return; var c = navigator.connection || {};
+    if (c.saveData || /(^|-)(2|3)g$/.test(c.effectiveType || '')) return;
+    warmed = true;
+    idle(function () { loadChat().then(function () { if (window.__rfChat) window.__rfChat.warm(CORE); }, function () { warmed = false; }); }, 3000);
   }
   /* browser (not Telegram): a slim line that deep-links to the bot; the login entry appears once chat is reachable */
   function syncTgLine() {
@@ -1026,18 +1072,20 @@
   function syncChatTab() { // hidden until a base has answered once; afterwards the chat view reports its own connection state
     var on = API.seen; el['tab-chat'].hidden = !on; el['nav-chat'].parentNode.hidden = !on; syncTgLine();
   }
-  var chatLoad = 0;
+  var chatP = null;
+  function loadChat() { // chat.js + chat.css once; resolves when both have loaded
+    if (window.__rfChat) return Promise.resolve();
+    return chatP = chatP || new Promise(function (ok, bad) {
+      var n = 0, fail = false, done = function () { if (++n === 2) { if (fail || !window.__rfChat) { chatP = null; bad(); } else ok(); } };
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'chat.css'; l.onload = done; l.onerror = function () { fail = true; done(); }; document.head.appendChild(l);
+      var sc = document.createElement('script'); sc.src = 'chat.js'; sc.async = true; sc.onload = done; sc.onerror = function () { fail = true; done(); }; document.head.appendChild(sc);
+    });
+  }
   function mountChat() {
     if (window.__rfChat && window.__rfChat.ready) return window.__rfChat.show();
-    if (chatLoad) return; chatLoad = 1;
-    el.chat.innerHTML = '<p class="chat-boot">در حال بارگیری گفت‌وگو…</p>';
-    var n = 0, ok = true, done = function () {
-      if (++n < 2) return;
-      if (ok && window.__rfChat) window.__rfChat.init(el.chat, CORE);
-      else { chatLoad = 0; el.chat.innerHTML = '<p class="chat-boot">بارگیری گفت‌وگو ناموفق بود. <button type="button" class="link" data-chat-retry="1">تلاش دوباره</button></p>'; }
-    };
-    var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'chat.css'; l.onload = done; l.onerror = function () { ok = false; done(); }; document.head.appendChild(l);
-    var sc = document.createElement('script'); sc.src = 'chat.js'; sc.async = true; sc.onload = done; sc.onerror = function () { ok = false; done(); }; document.head.appendChild(sc);
+    var t = setTimeout(function () { if (!(window.__rfChat && window.__rfChat.ready)) el.chat.innerHTML = '<div class="chat-skel" aria-hidden="true"><i></i><i></i><i></i></div>'; }, 180);   // only if it takes a moment; never a spinner page
+    loadChat().then(function () { clearTimeout(t); if (S.tab === 'chat' && !window.__rfChat.ready) window.__rfChat.init(el.chat, CORE); },
+      function () { clearTimeout(t); el.chat.innerHTML = '<p class="chat-boot">بارگیری گفت‌وگو ناموفق بود. <button type="button" class="link" data-chat-retry="1">تلاش دوباره</button></p>'; });
   }
   /* a project from a chat answer: the catalog's own record when known, else a normalised stand-in */
   function ensureProject(it) {
@@ -1127,7 +1175,7 @@
   var chatRowN = 0;
   function rowFor(it) { var p = ensureProject(it); if (!p) return null; var e = buildRow(p, 'c' + (++chatRowN) + '-'); syncRow(e, p.id); return e; }
   var CORE = { S: S, api: API, discover: discover, tg: function () { return TG; }, rowFor: rowFor, openDetail: openDetail, isDesk: isDesk, faN: faN, rel: rel,
-    toast: toast, haptic: haptic, openUrl: openUrl, copyText: copyText, setTab: setTab, IC: IC, compact: compact, fullDate: fullDate, esc: esc,
+    toast: toast, haptic: haptic, openUrl: openUrl, idle: idle, copyText: copyText, setTab: setTab, IC: IC, compact: compact, fullDate: fullDate, esc: esc,
     data: function () { return D; }, project: function (id) { return byId.get(id); }, openPanel: openPanel, setPub: setPub, notice: notice,
     dataUrl: dataUrl, feed: feed, mirror: onMirror,
     sweptAt: function () { return D && Date.parse(D.swept_at) || 0; } };
@@ -1176,8 +1224,9 @@
   }
   document.getElementById('mark-btn').addEventListener('click', function () { haptic('impact', 'light'); playIntro(0); });
 
-  loadFavs(); applyTheme(); initTelegram(); measure(); boot();
-  setTimeout(function () { discover(true); syncTgLine(); }, 1200);
+  loadFavs(); applyTheme(); initTelegram(); measure(); hintInit(); boot();
+  if (/^#\/?chat$/.test(location.hash)) { S.tab = 'chat'; apply(); discover(true); }   // a chat link needs neither the catalog nor an idle wait
+  else idle(function () { discover(true); syncTgLine(); }, 1500);
   window.addEventListener('load', function () { setTimeout(registerSW, 2000); });
   window.__rf = { core: CORE, S: S, get view() { return view; }, get P() { return P; }, compute: compute, norm: norm, apply: apply, favs: favs, select: select, openDetail: openDetail, hl: hl };
 })();
