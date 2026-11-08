@@ -1,0 +1,93 @@
+/* RepoFA chat view — loaded with chat.js on first open. Uses the tokens of app.css. */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.cv{display:flex;flex-direction:column}
+.c-head{padding:.75rem 16px .5rem;border-bottom:1px solid var(--line)}
+.c-hl{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;min-height:2.25rem}
+.c-title{font-size:var(--t-15);font-weight:700;line-height:1.4}
+.c-who{font-size:var(--t-12);color:var(--muted)}
+.c-acts{display:flex;gap:16px;margin-inline-start:auto}
+.c-acts .link{min-height:2.25rem}
+.c-quota{font-size:var(--t-12);line-height:1.6;color:var(--muted);min-height:1.2rem}
+.c-quota.out{color:var(--danger)}
+.c-log{padding:.25rem 16px calc(var(--comp-h,4.5rem) + 1.5rem)}
+
+/* messages: plain blocks, the user's line on the start edge, answers as prose */
+.m-u{display:flex;margin:1.25rem 0 .5rem}
+.m-u p{max-width:88%;padding:.375rem .75rem;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r-m);font-size:var(--t-15);line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
+.m-a{margin-bottom:.75rem}
+.m-body p,.m-body li{font-size:var(--t-15);line-height:1.9;color:var(--ink);overflow-wrap:anywhere;white-space:pre-line}
+.m-body p{margin:.375rem 0}
+.m-body .m-h{font-weight:700}
+.m-body ul,.m-body ol{margin:.375rem 0;padding-inline-start:1.25rem}
+.m-body li{margin:.125rem 0}
+.m-body ol[dir=rtl]{list-style-type:persian}
+.m-body strong{font-weight:700}
+.m-body code{font:400 .875em/1 var(--mono);direction:ltr;unicode-bidi:isolate;background:var(--bg-2);border:1px solid var(--line);border-radius:3px;padding:.1em .3em;overflow-wrap:anywhere}
+.m-body pre{margin:.5rem 0;padding:.625rem 12px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-m);overflow-x:auto;text-align:left;direction:ltr}
+.m-body pre code{background:none;border:0;padding:0;font-size:var(--t-13);line-height:1.6;white-space:pre;overflow-wrap:normal}
+.m-body a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px;overflow-wrap:anywhere}
+.m-body a:hover{color:var(--accent)}
+.m-wait{color:var(--muted)}
+/* tool activity: the commit ring of the period markers */
+.m-tool{display:flex;align-items:center;gap:8px;margin:.5rem 0 .25rem;font-size:var(--t-12);line-height:1.6;color:var(--muted)}
+.m-tool::before{content:"";width:7px;height:7px;border-radius:50%;border:1.5px solid var(--ink-2);flex:none}
+.m-tool.on::before{border-color:var(--accent)}
+@media (prefers-reduced-motion:no-preference){.m-tool.on::before{animation:ring 1s ease-in-out infinite alternate}}
+@keyframes ring{to{background:var(--accent)}}
+.m-items{margin:.25rem -16px .5rem;border-block:1px solid var(--line)}
+.m-items .row:last-child{border-bottom:0}
+.m-foot{display:flex;align-items:center;gap:16px}
+.m-foot .link{min-height:2.25rem;font-size:var(--t-12)}
+.m-st{font-size:var(--t-12);color:var(--muted)}
+.m-err{margin:.5rem 0;padding:.5rem 12px;border-inline-start:2px solid var(--danger);background:var(--bg-2);font-size:var(--t-14);line-height:1.8;color:var(--ink-2)}
+.m-err.quota{border-inline-start-color:var(--ctl)}
+.m-err-h{font-weight:700;color:var(--ink)}
+.m-err .btn{margin-top:.5rem}
+
+/* empty state */
+.c-empty{padding:1.25rem 0}
+.c-empty h3{font-size:var(--t-15);font-weight:700}
+.c-empty p{margin-top:4px;font-size:var(--t-14);color:var(--ink-2)}
+.c-ex{margin-top:1rem;border-top:1px solid var(--line)}
+.c-ex button{display:flex;align-items:center;gap:10px;width:100%;min-height:2.75rem;padding:.5rem 0;border-bottom:1px solid var(--line);text-align:start;font-size:var(--t-14);line-height:1.6;color:var(--ink)}
+.c-ex button .ic{color:var(--muted)}
+.c-ex button:hover{color:var(--accent)}
+.c-ex button:hover .ic{color:var(--accent)}
+
+/* composer: fixed above the tab bar on phone, sticky at the column bottom on desktop */
+.composer{position:fixed;z-index:25;inset-inline:max(0px,calc((100% - 45rem) / 2));bottom:calc(3.5rem + var(--tg-sa-b));display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;
+  padding:.5rem 12px;background:var(--bg);border-top:1px solid var(--line)}
+body.kb-open .composer{bottom:var(--kb,0px)}
+body.kb-open .tabs{display:none}
+.composer textarea{flex:1;min-width:0;min-height:2.75rem;max-height:9.5rem;resize:none;padding:.5rem 12px;border:1px solid var(--ctl);border-radius:var(--r-m);background:var(--bg);
+  font-size:var(--t-15);line-height:1.6;outline:0;overflow-y:auto}
+.composer textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
+.composer textarea::placeholder{color:var(--muted);opacity:1}
+.c-send,.c-stop{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:2.75rem;min-height:2.75rem;border-radius:var(--r-m);flex:none}
+.c-send{background:var(--primary);color:var(--on-primary)}
+.c-send .ic{transform:scaleX(-1)}
+.c-send:disabled{opacity:.4;cursor:not-allowed}
+.c-stop{padding-inline:12px;border:1px solid var(--ctl);color:var(--ink);font-size:var(--t-13)}
+.c-stop:hover{background:var(--bg-2)}
+.c-cnt{align-self:center;font-size:var(--t-12);color:var(--muted)}
+.c-cnt.over{color:var(--danger)}
+.c-hint{flex-basis:100%;order:9;font-size:var(--t-11);color:var(--muted);line-height:1.4;padding-inline:2px}
+
+/* login, unavailable */
+.c-login,.c-line{padding:2.5rem 16px;max-width:34rem}
+.c-login h2{font-size:var(--t-17);font-weight:700}
+.c-login p{margin-top:8px;font-size:var(--t-14);line-height:1.8;color:var(--ink-2)}
+.c-login .c-sub{font-size:var(--t-13);color:var(--muted)}
+.c-login .c-note{padding:.375rem 12px;border-inline-start:2px solid var(--ctl);background:var(--bg-2);color:var(--ink)}
+.c-widget{min-height:3rem;margin:1.25rem 0 .25rem}
+.c-login .btn,.c-line .btn{margin-top:.75rem}
+.c-line p{font-size:var(--t-14);color:var(--ink-2)}
+
+@media (min-width:960px){
+  .cv{min-height:calc(100vh - var(--top-hm))}
+  .c-head{padding-inline:20px}
+  .c-log{flex:1;padding:.25rem 20px 1.25rem}
+  .m-items{margin-inline:-20px}
+  .composer{position:sticky;bottom:0;inset-inline:auto;padding:.625rem 20px .5rem}
+  .c-login,.c-line{padding-inline:20px}
+}

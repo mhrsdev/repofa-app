@@ -1,0 +1,16 @@
+{
+  "name": "ریپو فا — فهرست پروژه‌های متن‌باز",
+  "short_name": "ریپو فا",
+  "description": "فهرست جست‌وجوپذیر مخزن‌ها و ابزارهای متن‌باز معرفی‌شده در کانال ریپو فا",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FDFCFA",
+  "theme_color": "#FDFCFA",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

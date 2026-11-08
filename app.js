@@ -22,11 +22,13 @@
   var nfEn = new Intl.NumberFormat('en-US');
   var mkDF = function (o) { return tryc(function () { return new Intl.DateTimeFormat('fa-IR-u-ca-persian', o); }, null); };
   var jal = mkDF({ day: 'numeric', month: 'long', year: 'numeric' }), jalMonth = mkDF({ month: 'long', year: 'numeric' });
+  /* star counts: <1000 exact · 1.0k–99.9k one decimal · 100k–999k whole k · ≥1M one decimal M (rounded half up, trailing .0 dropped) */
   function compact(n) {
     if (n == null) return '';
-    if (n >= 1e6) return (Math.round(n / 1e5) / 10) + 'm';
-    if (n >= 1e4) return Math.round(n / 1e3) + 'k';
-    if (n >= 1000) return (Math.round(n / 100) / 10) + 'k';
+    var d = function (x) { return String(Math.round(x * 10) / 10); };
+    if (n >= 999950) return d(n / 1e6) + 'M';
+    if (n >= 99950) return Math.round(n / 1e3) + 'k';
+    if (n >= 1000) return d(n / 1e3) + 'k';
     return String(n);
   }
   function rel(t) {
@@ -95,7 +97,7 @@
   /* ---------- state ---------- */
   var S = { tab: 'all', q: '', cat: '', col: '', tag: '', lang: '', sort: 'new', fs: '', sel: null };
   var D = null, P = [], byId = new Map(), colById = new Map();
-  var rankNew = [], rankStars = [], order = [], orderStars = [];
+  var rankNew = [], rankStars = [], rankViews = [], order = [], orderStars = [], orderViews = [], hasViews = false;
   var catIdx = new Map(), catCount = {}, tagCount = new Map(), langCount = new Map(), repoTotal = 0;
   var indexReady = false, view = [], shown = 0, newestT = 0, rows = new Map(), grpCount = null, lastGk = null, curTokens = [];
   var favs = new Map();   // id -> {s:'l'|'f', n:note, t:savedAt}
@@ -104,7 +106,7 @@
   var el = {};
   ['app', 'top', 'q', 'q-clear', 'list', 'sentinel', 'state', 'toolbar', 'scope-h', 'scope-x', 'count', 'sort', 'fav-seg', 'tokens', 'notice', 'notice-t', 'notice-x', 'tabs', 'fav-n', 'theme',
     'toast', 't-msg', 't-act', 'sheet', 'sheet-root', 'backdrop', 'updated', 'search-form', 'side', 'cat-list', 'col-list', 'sec-cols', 'lang-list', 'tag-list', 'n-all', 'n-fav',
-    'pane', 'fav-tools', 'brand-meta', 'k-hint']
+    'pane', 'fav-tools', 'brand-meta', 'k-hint', 'chat', 'tab-chat', 'nav-chat']
     .forEach(function (id) { el[id] = document.getElementById(id); });
 
   /* ---------- data load ---------- */
@@ -126,7 +128,7 @@
   function buildIndex() { // ONCE per data payload — never on filter / sort / search
     var t0 = performance.now(), i, p, k, r, now = Date.now();
     P = D.projects.filter(function (p) { return p && p.id != null; });
-    byId = new Map(); rows = new Map(); catCount = {}; tagCount = new Map(); langCount = new Map(); catIdx = new Map(); colById = new Map(); repoTotal = 0;
+    hasViews = false; byId = new Map(); rows = new Map(); catCount = {}; tagCount = new Map(); langCount = new Map(); catIdx = new Map(); colById = new Map(); repoTotal = 0;
     (D.categories || []).forEach(function (c) { catIdx.set(c.id, c); });
     (D.collections || []).forEach(function (c) { if (c && c.id && Array.isArray(c.project_ids)) colById.set(c.id, { id: c.id, title: c.title, ids: c.project_ids, set: new Set(c.project_ids) }); });
     for (i = 0; i < P.length; i++) {
@@ -140,7 +142,8 @@
       for (k = 0; k < p.repos.length; k++) { r = p.repos[k]; if (r.stars > best) best = r.stars; names += ' ' + (r.owner || '') + ' ' + (r.name || ''); }
       repoTotal += p.repos.length;
       r = p.repos[0];
-      p._s = r && r.stars ? r.stars : 0;   // the shown repo's stars (sort and meta agree with the anchor)
+      p._s = r && r.stars ? r.stars : 0;
+      p._v = typeof p.views === 'number' && p.views >= 0 ? p.views : -1; if (p._v >= 0) hasViews = true;   // the shown repo's stars (sort and meta agree with the anchor)
       p._l = (r && r.lang) || p.language || '';
       p._n = norm(names + ' ' + p.title);
       var ct = catIdx.get(p.category);
@@ -158,13 +161,16 @@
     order = idx; rankNew = new Array(P.length); idx.forEach(function (v, r) { rankNew[v] = r; });
     orderStars = idx.slice().sort(function (a, b) { return P[b]._s - P[a]._s || rankNew[a] - rankNew[b]; });
     rankStars = new Array(P.length); orderStars.forEach(function (v, r) { rankStars[v] = r; });
+    // views: unknown sorts last (-1), ties keep recency
+    orderViews = idx.slice().sort(function (a, b) { return P[b]._v - P[a]._v || rankNew[a] - rankNew[b]; });
+    rankViews = new Array(P.length); orderViews.forEach(function (v, r) { rankViews[v] = r; });
     newestT = idx.length ? P[idx[0]]._t : 0;
     window.__indexMs = Math.round((performance.now() - t0) * 10) / 10;
   }
 
   function fetchData(manual) {
     lastFetch = Date.now();
-    return fetch(DATA_URL, { cache: 'no-cache', credentials: 'omit' }).then(function (res) {
+    return fetch(DATA_URL, { cache: D ? 'no-cache' : 'default', credentials: 'same-origin' }).then(function (res) {   // first fetch can take the <link rel=preload>
       if (!res.ok) throw new Error('HTTP ' + res.status);
       var et = res.headers.get('etag') || res.headers.get('last-modified');
       if (D && et && et === etag) { notice(''); if (manual) toast('فهرست به‌روز است'); return; }
@@ -203,7 +209,7 @@
   function tokensOf(q) { return q ? norm(q.replace(/^#/, '')).split(' ').filter(Boolean) : []; }
   function compute(noFilters) {
     var out = [], tokens = tokensOf(S.q), i, j, p, sc;
-    var rank = S.sort === 'stars' ? rankStars : rankNew;
+    var rank = S.sort === 'stars' ? rankStars : S.sort === 'views' ? rankViews : rankNew;
     if (!tokens.length) {
       if (S.tab === 'fav') {
         favs.forEach(function (f, id) { var q = byId.get(id); if (q && pass(q)) out.push(q._i); });
@@ -213,13 +219,13 @@
         colById.get(S.col).ids.forEach(function (id) { var q = byId.get(id); if (q && pass(q)) out.push(q._i); });
         return out;
       }
-      var src = S.sort === 'stars' ? orderStars : order;
+      var src = S.sort === 'stars' ? orderStars : S.sort === 'views' ? orderViews : order;
       for (i = 0; i < src.length; i++) if (pass(P[src[i]])) out.push(src[i]);
       return out;
     }
     var scores = {};
     for (i = 0; i < P.length; i++) {
-      p = P[i]; if (!pass(p, noFilters)) continue; sc = 0;
+      p = P[i]; if (p._ext || !pass(p, noFilters)) continue; sc = 0;
       for (j = 0; j < tokens.length; j++) {
         var t = tokens[j], n = p._n.indexOf(t);
         if (n >= 0) sc += (n === 0 || p._n.charAt(n - 1) === ' ') ? 8 : 5;
@@ -250,7 +256,7 @@
   }
   function syncSide() {
     var cur = function (sel, on) { el.side.querySelectorAll(sel).forEach(function (b) { b.setAttribute('aria-current', on(b) ? 'true' : 'false'); }); };
-    cur('[data-scope]', function (b) { var s = b.getAttribute('data-scope'); return s === 'fav' ? S.tab === 'fav' : S.tab !== 'fav' && !S.cat && !S.col && !S.tag && !S.lang; });
+    cur('[data-scope]', function (b) { var s = b.getAttribute('data-scope'); return s === 'fav' || s === 'chat' ? S.tab === s : S.tab === 'all' && !S.cat && !S.col && !S.tag && !S.lang; });
     cur('[data-cat]', function (b) { return S.tab !== 'fav' && b.getAttribute('data-cat') === S.cat; });
     cur('[data-col]', function (b) { return S.tab !== 'fav' && b.getAttribute('data-col') === S.col; });
     cur('[data-lang]', function (b) { return S.tab !== 'fav' && b.getAttribute('data-lang') === S.lang; });
@@ -265,16 +271,20 @@
   /* ---------- rows ---------- */
   function rowEl(i) {
     var p = P[i], e = rows.get(p.id); if (e) return e;
+    e = buildRow(p, 'r-'); rows.set(p.id, e); syncRow(e, p.id);
+    return e;
+  }
+  function buildRow(p, idp) {
     var r = p.repos[0], c = catIdx.get(p.category), f = favs.get(p.id);
-    var arch = !!(r && r.archived);
-    e = document.createElement('article'); e.className = 'row'; e.id = 'r-' + p.id; e.setAttribute('data-id', p.id); e.setAttribute('role', 'listitem');
+    var arch = !!(r && r.archived), e = document.createElement('article'), sid = idp + p.id + '-s';
+    e.className = 'row'; e.id = idp + p.id; e.setAttribute('data-id', p.id); e.setAttribute('role', 'listitem');
     e.innerHTML = '<div class="r-main">' +
-      '<div class="r-a"><button type="button" class="r-open" style="--ol:' + (r && r.owner ? String(r.owner).length : 0) + '" data-open="' + p.id + '" tabindex="-1" aria-describedby="s-' + p.id + '">' +
+      '<div class="r-a"><button type="button" class="r-open" style="--ol:' + (r && r.owner ? String(r.owner).length : 0) + '" data-open="' + p.id + '" tabindex="-1" aria-describedby="' + sid + '">' +
       (r ? (r.owner ? '<span class="o"></span><span class="sl">/</span>' : '') + '<span class="nm"></span>' : '<span class="t"></span>') + '</button>' +
       (p.repos.length > 1 ? '<span class="r-more" title="' + faN(p.repos.length) + ' مخزن در این پست"><bdi dir="ltr">+' + faN(p.repos.length - 1) + '</bdi></span>' : '') +
       (arch ? '<span class="r-arch">بایگانی‌شده</span>' : '') +
       '<button type="button" class="r-save" tabindex="-1" data-fav="' + p.id + '" aria-pressed="false">' + IC('bm') + '</button></div>' +
-      (p.summary ? '<p class="r-sum" id="s-' + p.id + '"></p>' : '') +
+      (p.summary ? '<p class="r-sum" id="' + sid + '"></p>' : '') +
       (f && f.n ? '<p class="r-note">' + esc(f.n) + '</p>' : '') +
       '<p class="r-meta">' +
       (p._t ? '<time class="mi" datetime="' + esc(p.date) + '">' + esc(rel(p._t)) + '</time>' : '') +
@@ -285,7 +295,6 @@
       (p.tags.length ? '<span class="r-tags">' + p.tags.map(function (t) { return tagBtn(t, ' tabindex="-1"'); }).join('') + '</span>' : '') +
       '</p></div>';
     e._q = null; decorate(e, p, []);
-    rows.set(p.id, e); syncRow(e, p.id);
     return e;
   }
   function decorate(e, p, tokens) { // (re)write the matchable text with or without <mark>
@@ -352,6 +361,9 @@
     el['q-clear'].hidden = !el.q.value;
     el.tabs.querySelectorAll('button').forEach(function (b) { b.getAttribute('data-tab') === t ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'); });
     syncSide();
+    var chat = t === 'chat'; syncTgLine();
+    el.chat.hidden = !chat; el.toolbar.hidden = chat; el.list.hidden = chat; el.sentinel.hidden = chat;
+    if (chat) { el.state.hidden = true; el['fav-tools'].hidden = true; mountChat(); updateBack(); return; }
     el['fav-seg'].hidden = t !== 'fav'; el.sort.hidden = t === 'fav' || (!!S.col && !S.q);
     el['fav-tools'].hidden = !(t === 'fav' && favs.size);
     curTokens = tokensOf(S.q);
@@ -364,6 +376,7 @@
     el['scope-x'].hidden = !(t !== 'fav' && (S.cat || S.col));
     el['scope-x'].setAttribute('aria-label', S.col ? 'حذف فیلتر مجموعه' : 'حذف فیلتر دسته');
     el.count.textContent = faN(view.length) + (S.q ? ' نتیجه' : ' پروژه');
+    el.sort.querySelector('[data-sort="views"]').hidden = !hasViews; if (!hasViews && S.sort === 'views') S.sort = 'new';
     el.sort.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-sort') === S.sort ? 'true' : 'false'); });
     el['fav-seg'].querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-fs') === S.fs ? 'true' : 'false'); });
     renderTokens();
@@ -463,6 +476,7 @@
   }
   function afterFavChange(id) {
     saveFavs(); updateFavUI(); refreshRow(id);
+    document.querySelectorAll('.row[data-id="' + id + '"]').forEach(function (x) { if (rows.get(id) !== x) syncRow(x, id); });
     if (detailId() === id) renderSave();
     if (indexReady) el['fav-tools'].hidden = !(S.tab === 'fav' && favs.size);
   }
@@ -525,11 +539,28 @@
       '<button type="button" class="btn" id="d-fav" data-fav="' + p.id + '"></button></div>' +
       (r && titleWorth(p) ? '<h3 class="d-title"><bdi dir="auto">' + esc(p.title) + '</bdi></h3>' : '') +
       (p.summary ? '<p class="d-sum">' + esc(p.summary) + '</p>' : '') +
-      (tags ? '<p class="d-tags">' + tags + '</p>' : '') +
+      (tags ? '<p class="d-tags">' + tags + '</p>' : '') + engagement(p) +
       (others ? '<section class="d-sec"><h3 class="d-h">مخزن‌های دیگر این پست</h3>' + others + '</section>' : '') +
       '<div id="d-save"></div>' +
       '<p class="d-links">' + (p.tg_url ? '<a class="link" href="' + esc(p.tg_url) + '" data-ext="tg" target="_blank" rel="noopener noreferrer">' + IC('send') + 'پست کانال</a>' : '') +
       '<button type="button" class="link" data-share="1">' + IC('share') + 'اشتراک‌گذاری</button></p></article>';
+  }
+  /* channel numbers for the post (optional fields; nothing is shown for unknown values) */
+  function faCompact(n) { return toFa(compact(n)).replace('.', '٫'); }
+  function engagement(p) {
+    var parts = [], num = function (v) { return typeof v === 'number' && v >= 0 ? v : null; }, rx = p.reactions, rt = null, top = [];
+    if (typeof rx === 'number') rt = rx;
+    else if (rx && typeof rx === 'object') {
+      rt = num(rx.total) != null ? rx.total : num(rx.n);
+      var t = rx.top; if (Array.isArray(t)) top = t.map(function (x) { return [x.emoji || x.e || x.r, x.count || x.n]; }); else if (t && typeof t === 'object') top = Object.keys(t).map(function (k) { return [k, t[k]]; });
+      top = top.filter(function (x) { return typeof x[0] === 'string' && x[0].length <= 8 && num(x[1]) != null; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 3);
+    }
+    if (num(p.views) != null) parts.push('بازدید ' + faCompact(p.views));
+    if (num(p.forwards) != null) parts.push('فوروارد ' + faCompact(p.forwards));
+    if (num(rt) != null) parts.push('واکنش ' + faCompact(rt) + (top.length ? ' <span class="rx">' + top.map(function (x) { return '<span>' + esc(x[0]) + ' ' + faCompact(x[1]) + '</span>'; }).join('') + '</span>' : ''));
+    if (!parts.length) return '';
+    var at = Date.parse(p.engagement_at);
+    return '<p class="d-eng"' + (at ? ' title="آمار تا ' + esc(fullDate(at)) + '"' : '') + '>' + parts.join(SEP) + (at ? '<span class="d-eng-at">آمار تا ' + esc(fullDate(at)) + '</span>' : '') + '</p>';
   }
   function renderSave() {
     var box = detailBox(), id = detailId(), f = favs.get(id), b = $('#d-fav', box), sv = $('#d-save', box); if (!b || !sv) return;
@@ -673,7 +704,7 @@
       return focusRow(rl[i + (down ? 1 : -1)]);
     }
     if (row && e.key === 'Escape') { e.preventDefault(); el.q.focus(); return; }
-    if (!row && !el.pane.contains(a) && !el.side.contains(a) && (e.key === 'ArrowDown' || e.key === 'j') && isDesk() && indexReady) { e.preventDefault(); return focusRow(curRow()); }
+    if (!row && !el.pane.contains(a) && !el.side.contains(a) && (e.key === 'ArrowDown' || e.key === 'j') && isDesk() && indexReady && S.tab !== 'chat') { e.preventDefault(); return focusRow(curRow()); }
     var id = keyTarget(); if (id == null || !byId.has(id)) return;
     var p = byId.get(id), r = p.repos[0], k = e.key.toLowerCase();
     if (k === 's') { e.preventDefault(); toggleFav(id); }
@@ -815,7 +846,7 @@
 
   /* ---------- events ---------- */
   var qt;
-  function runSearch() { S.q = el.q.value; if (S.tab === 'cats') S.tab = 'all'; apply('top'); }
+  function runSearch() { S.q = el.q.value; if (S.tab === 'cats' || S.tab === 'chat') S.tab = 'all'; apply('top'); }
   el.q.addEventListener('input', function () { el['q-clear'].hidden = !el.q.value; clearTimeout(qt); qt = setTimeout(runSearch, DEBOUNCE); });
   el['search-form'].addEventListener('submit', function (e) {
     e.preventDefault(); clearTimeout(qt); runSearch();
@@ -843,7 +874,8 @@
     if ((b = t.closest('[data-lang]'))) return setFilter('lang', b.getAttribute('data-lang'), !!b.closest('.side'));
     if ((b = t.closest('[data-cat]'))) return setFilter('cat', b.getAttribute('data-cat'), !!b.closest('.side'));
     if ((b = t.closest('[data-col]'))) return setFilter('col', b.getAttribute('data-col'), !!b.closest('.side'));
-    if ((b = t.closest('[data-scope]'))) { if (b.getAttribute('data-scope') === 'fav') return setTab('fav'); S.tab = 'all'; return clearFilters(); }
+    if ((b = t.closest('[data-scope]'))) { var scp = b.getAttribute('data-scope'); if (scp === 'fav' || scp === 'chat') return setTab(scp); S.tab = 'all'; return clearFilters(); }
+    if (t.closest('[data-chat-retry]')) { chatLoad = 0; return mountChat(); }
     if (t.closest('#scope-x')) { S.cat = ''; S.col = ''; return apply('top'); }
     if ((b = t.closest('[data-untoken]'))) { var k = b.getAttribute('data-untoken'); S[k] = ''; return apply('top'); }
     if ((b = t.closest('[data-clear]'))) return clearFilters(b.getAttribute('data-clear') === 'all');
@@ -860,10 +892,101 @@
   if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { if (en[0].isIntersecting) more(); }, { rootMargin: '800px 0px' }).observe(el.sentinel);
   else window.addEventListener('scroll', function () { if (innerHeight + scrollY > document.body.scrollHeight - 900) more(); }, { passive: true });
   document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - lastFetch > MAX_AGE_REFRESH) fetchData(); });
-  window.addEventListener('online', function () { fetchData(); });
+  window.addEventListener('online', function () { fetchData(); discover(true); });
   var tgs = document.getElementById('tg-sdk'); if (tgs) tgs.addEventListener('load', initTelegram);
   if (window.matchMedia) tryc(function () { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { if (!ls.get('rf.theme')) applyTheme(); }); });
 
+  /* ---------- chat: API discovery (off the critical path) + lazily loaded chat.js/chat.css ---------- */
+  var API = { state: 'idle', base: null, cfg: null, next: 0, fails: 0, busy: null, seen: false };
+  function probe(b) {
+    var c = window.AbortController ? new AbortController() : null, tm = setTimeout(function () { if (c) c.abort(); }, 4000);
+    return fetch(b + '/api/health', { signal: c && c.signal, credentials: 'omit', cache: 'no-store' })
+      .then(function (r) { clearTimeout(tm); return r.ok; }, function () { clearTimeout(tm); return false; });
+  }
+  function discover(force) { // config.json lists tunnel URLs; the first base whose /api/health answers wins
+    if (API.busy) return API.busy;
+    if (!force && Date.now() < API.next) return Promise.resolve(API.base);
+    API.busy = fetch('./config.json?t=' + Date.now(), { cache: 'no-store', credentials: 'omit' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (cfg) {
+        API.cfg = cfg && typeof cfg === 'object' ? cfg : null;
+        var bases = API.cfg && Array.isArray(API.cfg.apiBases) ? API.cfg.apiBases.filter(function (b) { return /^https?:\/\/[^\s]+$/.test(b); }) : [], i = 0;
+        var next = function () { if (i >= bases.length) return null; var b = String(bases[i++]).replace(/\/+$/, ''); return probe(b).then(function (ok) { return ok ? b : next(); }); };
+        return next();
+      })
+      .catch(function () { return null; })
+      .then(function (b) {
+        API.busy = null; API.base = b; API.state = b ? 'ok' : 'none'; if (b) API.seen = true;
+        API.fails = b ? 0 : API.fails + 1;
+        API.next = Date.now() + (b ? 30e3 : Math.min(30e3 * Math.pow(2, API.fails - 1), 300e3));   // ≥30 s, backoff to 5 min
+        syncChatTab();
+        if (b && location.hash === '#chat' && S.tab !== 'chat') setTab('chat');
+        return b;
+      });
+    return API.busy;
+  }
+  /* browser (not Telegram): a slim line that deep-links to the bot; the login entry appears once chat is reachable */
+  function syncTgLine() {
+    var inTg = !!(TG || (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData));
+    var off = tryc(function () { return localStorage.getItem('rf.tgline') === '0'; }, false);
+    var el2 = document.getElementById('tgline'); if (!el2) return;
+    el2.hidden = inTg || off;
+    var bot = API.cfg && /^[A-Za-z0-9_]{5,32}$/.test(API.cfg.botUsername || '') ? API.cfg.botUsername : 'Michael_chatbot';
+    document.getElementById('tgl-open').href = 'https://t.me/' + bot + '?start=repofa';
+    document.getElementById('tgl-login').hidden = !API.seen || S.tab === 'chat' || !!tryc(function () { return localStorage.getItem('rf.tok'); }, null);
+  }
+  function syncChatTab() { // hidden until a base has answered once; afterwards the chat view reports its own connection state
+    var on = API.seen; el['tab-chat'].hidden = !on; el['nav-chat'].parentNode.hidden = !on; syncTgLine();
+  }
+  var chatLoad = 0;
+  function mountChat() {
+    if (window.__rfChat && window.__rfChat.ready) return window.__rfChat.show();
+    if (chatLoad) return; chatLoad = 1;
+    el.chat.innerHTML = '<p class="chat-boot">در حال بارگیری گفت‌وگو…</p>';
+    var n = 0, ok = true, done = function () {
+      if (++n < 2) return;
+      if (ok && window.__rfChat) window.__rfChat.init(el.chat, CORE);
+      else { chatLoad = 0; el.chat.innerHTML = '<p class="chat-boot">بارگیری گفت‌وگو ناموفق بود. <button type="button" class="link" data-chat-retry="1">تلاش دوباره</button></p>'; }
+    };
+    var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'chat.css'; l.onload = done; l.onerror = function () { ok = false; done(); }; document.head.appendChild(l);
+    var sc = document.createElement('script'); sc.src = 'chat.js'; sc.async = true; sc.onload = done; sc.onerror = function () { ok = false; done(); }; document.head.appendChild(sc);
+  }
+  /* a project from a chat answer: the catalog's own record when known, else a normalised stand-in */
+  function ensureProject(it) {
+    var id = it && it.id; if (id == null) return null;
+    if (byId.has(id)) return byId.get(id);
+    var repos = (Array.isArray(it.repos) ? it.repos : []).map(function (r) {
+      var m = /github\.com\/([^\/\s]+)\/([^\/\s#?]+)/i.exec(String(r && r.url || ''));
+      return m ? { url: r.url, owner: m[1], name: m[2].replace(/\.git$/, ''), stars: typeof r.stars === 'number' ? r.stars : undefined } : null;
+    }).filter(Boolean);
+    var p = { id: id, title: String(it.title || (repos[0] && repos[0].name) || '—'), summary: proseDigits(it.summary || ''), tags: Array.isArray(it.tags) ? it.tags.map(String) : [],
+      language: it.language || '', repos: repos, tg_url: /^https:\/\/t\.me\//.test(it.tg_url || '') ? it.tg_url : '', _ext: true, _t: 0 };
+    p._s = repos[0] && repos[0].stars ? repos[0].stars : 0; p._l = p.language; p._i = P.length; P.push(p); byId.set(id, p);
+    return p;
+  }
+  var chatRowN = 0;
+  function rowFor(it) { var p = ensureProject(it); if (!p) return null; var e = buildRow(p, 'c' + (++chatRowN) + '-'); syncRow(e, p.id); return e; }
+  var CORE = { S: S, api: API, discover: discover, tg: function () { return TG; }, rowFor: rowFor, openDetail: openDetail, isDesk: isDesk, faN: faN, rel: rel,
+    toast: toast, haptic: haptic, openUrl: openUrl, copyText: copyText, setTab: setTab, IC: IC };
+
+  /* service worker: versioned by the deployer's .site-hash; every step guarded (Telegram WebViews may not have SW) */
+  function registerSW() {
+    if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
+    tryc(function () {
+      if (localStorage.getItem('rf.swnew') === '1') { localStorage.removeItem('rf.swnew'); setTimeout(function () { toast('نسخه‌ی جدید فعال شد'); }, 800); }
+    });
+    fetch('./.site-hash', { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : 'dev'; }, function () { return null; }).then(function (h) {
+      if (h == null) return;   // offline: keep whatever worker is installed
+      var v = (String(h).trim().match(/^[0-9a-f]{8,64}$/) || ['dev'])[0].slice(0, 16), had = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.register('sw.js?v=' + v).catch(function () { });
+      navigator.serviceWorker.addEventListener('controllerchange', function () { if (had) tryc(function () { localStorage.setItem('rf.swnew', '1'); }); });   // shown on next open; no reload
+    });
+    navigator.serviceWorker.addEventListener('message', function (e) { if (e.data && e.data.type === 'data-updated') fetchData(); });
+  }
+  document.getElementById('tgl-x').addEventListener('click', function () { tryc(function () { localStorage.setItem('rf.tgline', '0'); }); syncTgLine(); });
+
   loadFavs(); applyTheme(); initTelegram(); measure(); boot();
-  window.__rf = { S: S, get view() { return view; }, get P() { return P; }, compute: compute, norm: norm, apply: apply, favs: favs, select: select, openDetail: openDetail, hl: hl };
+  setTimeout(function () { discover(true); syncTgLine(); }, 1200);
+  window.addEventListener('load', function () { setTimeout(registerSW, 2000); });
+  window.__rf = { core: CORE, S: S, get view() { return view; }, get P() { return P; }, compute: compute, norm: norm, apply: apply, favs: favs, select: select, openDetail: openDetail, hl: hl };
 })();
