@@ -1,0 +1,953 @@
+# 📈 TradingView Mini
+
+A lightweight yet powerful trading chart application built with React and Django, featuring real-time price updates, technical indicators, and interactive drawing tools for technical analysis.
+
+---
+
+## 📑 Table of Contents
+
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Getting Started](#-getting-started)
+- [Project Structure](#-project-structure)
+- [Configuration](#-configuration)
+- [API Documentation](#-api-documentation)
+- [Customization](#-customization)
+- [Contributing](#-contributing)
+- [Known Issues](#-known-issues)
+- [License](#-license)
+- [Support](#-support)
+
+---
+
+## 🌟 Features
+
+### 📊 Chart Capabilities
+
+**Real-Time Data Visualization**
+- Live price updates with WebSocket-like polling mechanism
+- Smooth candlestick rendering using lightweight-charts library
+- Support for multiple timeframes: 1 minute, 5 minutes, 15 minutes, 1 hour, 4 hours, and daily intervals
+- Interactive zoom and pan functionality
+- Crosshair with detailed price and time information
+
+**Market Support**
+- 💱 **Cryptocurrency Markets**: Bitcoin, Ethereum, and major altcoins
+- 💵 **Forex Markets**: Major currency pairs (EUR/USD, GBP/USD, etc.)
+- Real-time price feeds from reliable market data providers
+
+### 📐 Drawing Tools
+
+TradingView Mini includes professional-grade drawing tools for technical analysis:
+
+- **📏 Trend Lines**: Draw support and resistance lines to identify market trends
+- **⬜ Rectangles**: Highlight consolidation zones and important price ranges
+- **↔️ Horizontal Lines**: Mark key price levels for entry and exit points
+- **🔢 Fibonacci Retracement**: Automatically calculate and draw Fibonacci levels for retracement analysis
+- **✏️ Free-Form Brush**: Draw custom annotations and notes directly on the chart
+- **💾 Persistent Storage**: All drawings are automatically saved to your browser's local storage and restored when you return
+
+### 📉 Technical Indicators
+
+**Built-in Indicators**
+
+1. **RSI (Relative Strength Index)**
+   - Measures momentum with values from 0 to 100
+   - Overbought level at 70 (red line)
+   - Oversold level at 30 (green line)
+   - Customizable period (default: 14)
+
+2. **MACD (Moving Average Convergence Divergence)**
+   - MACD line (12-period EMA - 26-period EMA)
+   - Signal line (9-period EMA of MACD)
+   - Histogram showing divergence
+   - Color-coded for easy trend identification
+
+3. **EMA (Exponential Moving Average)**
+   - Multiple periods supported (9, 21, 50, 200)
+   - Gives more weight to recent prices
+   - Excellent for identifying short-term trends
+
+4. **SMA (Simple Moving Average)**
+   - Multiple periods supported (20, 50, 100, 200)
+   - Classic moving average calculation
+   - Ideal for identifying long-term trends
+
+**Indicator Features**
+- Toggle indicators on/off with a single click
+- Customize colors and parameters
+- Real-time calculation and updates
+- Multiple indicators can be displayed simultaneously
+
+### 🎨 Customization
+
+- **Dark Mode Theme**: Eye-friendly dark interface for extended trading sessions
+- **Customizable Colors**: Adjust chart colors, grid lines, and backgrounds
+- **Flexible Layouts**: Resize and arrange indicator panels
+- **Save Preferences**: Your settings are remembered across sessions
+
+
+---
+
+## 🏗️ Architecture
+
+TradingView Mini is built using a modern full-stack architecture with clear separation of concerns.
+
+### 🎨 Frontend Architecture (React + Vite)
+
+**Technology Stack**
+- **React 18.x**: Component-based UI library for building interactive interfaces
+- **Vite**: Next-generation frontend build tool providing lightning-fast development
+- **lightweight-charts**: High-performance financial charting library by TradingView
+- **Tailwind CSS**: Utility-first CSS framework for rapid UI development
+- **Axios**: Promise-based HTTP client for API communication
+
+**Key Features**
+- **Component-Based Design**: Modular components for chart, toolbar, and indicators
+- **State Management**: React hooks (useState, useEffect) for local state
+- **Real-Time Updates**: Polling mechanism fetches new data every few seconds
+- **Local Storage**: Browser storage API for persisting user drawings and preferences
+- **Responsive Design**: Adapts to different screen sizes (desktop-focused)
+
+**Data Flow**
+```
+User Interaction → React Component → API Service → Django Backend
+                                                          ↓
+    Browser Local Storage ← Drawing Data ← Chart State ← Market Data
+```
+
+### 🐍 Backend Architecture (Django)
+
+**Technology Stack**
+- **Django 4.x**: High-level Python web framework
+- **Django REST Framework**: Powerful toolkit for building Web APIs
+- **SQLite**: Lightweight database for development (easily upgradable to PostgreSQL)
+- **Python Requests**: HTTP library for fetching external market data
+- **python-dotenv**: Environment variable management
+
+**Key Components**
+
+1. **API Layer** (`market/views.py`)
+   - RESTful endpoints for market data
+   - Request validation and error handling
+   - Response serialization
+
+2. **Service Layer** (`market/services/`)
+   - Business logic for market data retrieval
+   - Integration with external APIs (Binance, forex providers)
+   - Data transformation and formatting
+
+3. **URL Routing** (`market/urls.py`)
+   - Clean URL patterns
+   - API versioning support
+
+4. **Configuration** (`backend/settings.py`)
+   - CORS configuration for frontend communication
+   - Database settings
+   - Security configurations
+
+**API Design Principles**
+- RESTful conventions
+- JSON responses
+- Query parameter filtering
+- Error handling with appropriate HTTP status codes
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to set up TradingView Mini on your local machine.
+
+### 📋 Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Python 3.8 or higher** - [Download Python](https://www.python.org/downloads/)
+- **Node.js 14 or higher** - [Download Node.js](https://nodejs.org/)
+- **npm** (comes with Node.js) or **yarn**
+- **Git** - [Download Git](https://git-scm.com/)
+
+
+---
+
+### 🔧 Backend Setup
+
+**Step 1: Clone the Repository**
+```bash
+git clone <repository-url>
+cd tradingview-mini
+```
+
+**Step 2: Navigate to Backend Directory**
+```bash
+cd backend
+```
+
+**Step 3: Create a Virtual Environment**
+
+This isolates your project dependencies from other Python projects.
+
+```bash
+# On macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
+
+# On Windows
+python -m venv venv
+.\venv\Scripts\activate
+```
+
+You should see `(venv)` in your terminal prompt, indicating the virtual environment is active.
+
+**Step 4: Install Python Dependencies**
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+This installs all required packages including:
+- Django
+- Django REST Framework
+- django-cors-headers
+- requests
+- python-dotenv
+
+**Step 5: Configure Environment Variables**
+
+Create a `.env` file in the `backend/` directory:
+```bash
+touch .env  # On macOS/Linux
+type nul > .env  # On Windows
+```
+
+Add the following configuration:
+```env
+# Django Settings
+DEBUG=True
+SECRET_KEY=your-secret-key-here-change-in-production
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# SQLite is the default. These optional variables match backend/settings.py.
+DB_ENGINE=django.db.backends.sqlite3
+DB_NAME=db.sqlite3
+
+# Required only for TwelveData forex market data
+TWELVEDATA_KEY=your-twelvedata-api-key
+```
+
+**Important**: Replace `your-secret-key-here-change-in-production` with a strong secret key. You can generate one using:
+```bash
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+```
+
+**Step 6: Run Database Migrations**
+
+This creates all necessary database tables:
+```bash
+python manage.py migrate
+```
+
+You should see output showing migrations being applied.
+
+**Step 7: Create a Superuser (Optional)**
+
+If you want to access the Django admin panel:
+```bash
+python manage.py createsuperuser
+```
+
+Follow the prompts to create an admin account.
+
+**Step 8: Start the Development Server**
+```bash
+python manage.py runserver
+```
+
+Your backend should now be running at `http://localhost:8000/`
+
+You can test it by visiting:
+- API endpoint: `http://localhost:8000/api/market/crypto/?symbol=BTCUSDT&interval=1h&limit=200`
+- Admin panel: `http://localhost:8000/admin/` (if you created a superuser)
+
+---
+
+### ⚛️ Frontend Setup
+
+Open a **new terminal window** (keep the backend server running) and follow these steps:
+
+**Step 1: Navigate to Frontend Directory**
+```bash
+cd frontend  # From project root
+```
+
+**Step 2: Install Node Dependencies**
+
+Using npm:
+```bash
+npm install
+```
+
+Or using yarn:
+```bash
+yarn install
+```
+
+This installs all required packages including:
+- React
+- React DOM
+- lightweight-charts
+- Tailwind CSS
+- Axios
+- Vite
+
+**Step 3: Configure Environment Variables**
+
+Create a `.env` file in the `frontend/` directory:
+```bash
+touch .env  # On macOS/Linux
+type nul > .env  # On Windows
+```
+
+The current frontend hardcodes its backend origin in `frontend/src/api/api.js`; `VITE_API_BASE_URL` is not read by the application. Configure the frontend API origin there if deploying it away from localhost.
+The former example was:
+```env
+# VITE_API_BASE_URL=http://localhost:8000 (not currently consumed)
+```
+
+**Note**: Vite requires environment variables to be prefixed with `VITE_`.
+
+**Step 4: Start the Development Server**
+
+Using npm:
+```bash
+npm run dev
+```
+
+Or using yarn:
+```bash
+yarn dev
+```
+
+Your frontend should now be running at `http://localhost:5173/` (or another port if 5173 is busy).
+
+**Step 5: Open in Browser**
+
+Visit `http://localhost:5173/` in your web browser. You should see the TradingView Mini interface!
+
+---
+
+### ✅ Verify Installation
+
+1. **Backend Check**: Visit `http://localhost:8000/api/market/crypto/?symbol=BTCUSDT&interval=1h&limit=200` and verify you get JSON response
+2. **Frontend Check**: Open `http://localhost:5173/` and verify the chart loads with data
+3. **Integration Check**: Try switching symbols and intervals in the UI to ensure frontend-backend communication works
+
+---
+
+## 📁 Project Structure
+
+### Frontend Directory Structure
+
+```
+frontend/
+├── public/                      # Static assets
+│   └── vite.svg                # Vite logo
+│
+├── src/                        # Source code
+│   ├── api/                    # API integration layer
+│   │   └── api.js             # Axios instance and API calls
+│   │
+│   ├── components/            # React components
+│   │   ├── ChartContainer.jsx # Main chart component
+│   │   │                      # - Renders candlestick chart
+│   │   │                      # - Handles drawing tools
+│   │   │                      # - Manages indicators
+│   │   │
+│   │   ├── ChartToolbar.jsx  # Toolbar component
+│   │   │                     # - Symbol selector
+│   │   │                     # - Interval selector
+│   │   │                     # - Drawing tool buttons
+│   │   │                     # - Indicator toggles
+│   │   │
+│   │   └── indicators.js     # Technical indicator calculations
+│   │                         # - RSI calculation
+│   │                         # - MACD calculation
+│   │                         # - EMA/SMA calculation
+│   │
+│   ├── App.jsx              # Root application component
+│   ├── App.css              # Global styles
+│   ├── index.css            # Tailwind CSS imports
+│   └── main.jsx             # Application entry point
+│
+├── index.html               # HTML template
+├── package.json            # Node dependencies and scripts
+├── vite.config.js         # Vite configuration
+├── tailwind.config.js     # Tailwind CSS configuration
+├── postcss.config.js      # PostCSS configuration
+└── .env                   # Environment variables
+```
+
+**Key Frontend Files Explained**
+
+- **`api.js`**: Centralizes all API calls to the Django backend. Uses Axios for HTTP requests.
+- **`ChartContainer.jsx`**: The heart of the application. Manages the chart instance, drawing tools, and real-time data updates.
+- **`ChartToolbar.jsx`**: Provides UI controls for changing symbols, intervals, and activating tools.
+- **`indicators.js`**: Contains pure functions for calculating technical indicators from price data.
+
+### Backend Directory Structure
+
+```
+backend/
+├── market/                    # Market data Django app
+│   ├── migrations/           # Database migrations
+│   │   └── __init__.py
+│   │
+│   ├── services/            # Business logic layer
+│   │   ├── __init__.py
+│   │   ├── crypto_service.py    # Cryptocurrency data
+│   │   └── forex_service.py     # Forex data
+│   │
+│   ├── __init__.py
+│   ├── admin.py            # Django admin configuration
+│   ├── apps.py             # App configuration
+│   ├── models.py           # Database models
+│   ├── serializers.py      # DRF serializers (if used)
+│   ├── tests.py            # Unit tests
+│   ├── urls.py             # App-specific URL routing
+│   └── views.py            # API endpoint views
+│
+├── backend/                 # Project settings directory
+│   ├── __init__.py
+│   ├── asgi.py            # ASGI configuration
+│   ├── settings.py        # Django settings
+│   ├── urls.py            # Root URL configuration
+│   └── wsgi.py            # WSGI configuration
+│
+├── manage.py              # Django management script
+├── requirements.txt       # Python dependencies
+├── .env                  # Environment variables
+└── db.sqlite3           # SQLite database (generated)
+```
+
+**Key Backend Files Explained**
+
+- **`views.py`**: Contains API endpoint logic. Handles requests, validates parameters, calls services, and returns responses.
+- **`services/`**: Separates business logic from views. Each service handles a specific data source (crypto, forex).
+- **`models.py`**: Defines database schema (if storing historical data or user preferences).
+- **`settings.py`**: Central configuration for Django, including database, CORS, installed apps, and middleware.
+
+---
+
+## 🔧 Configuration
+
+### Backend Configuration
+
+**Django Settings** (`backend/settings.py`)
+
+1. **Database Configuration**
+```python
+# Default: SQLite for development
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+# Production: PostgreSQL (recommended)
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'tradingview_db',
+#         'USER': 'your_user',
+#         'PASSWORD': 'your_password',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+```
+
+2. **CORS Configuration**
+```python
+# Allow frontend to make requests to backend
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Vite dev server
+    "http://127.0.0.1:5173",
+]
+
+# For development only (allow all origins)
+# CORS_ALLOW_ALL_ORIGINS = True
+```
+
+3. **Installed Apps**
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'rest_framework',      # Django REST Framework
+    'corsheaders',         # CORS headers
+    'market',              # Your market data app
+]
+```
+
+4. **API Rate Limiting** (optional)
+```python
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/hour'
+    }
+}
+```
+
+5. **Market Data Providers**
+
+Edit `market/services/crypto_service.py` to configure cryptocurrency data sources:
+```python
+# Example: Binance API configuration
+BINANCE_BASE_URL = "https://api.binance.com/api/v3"
+
+# Add API keys if required (usually not needed for public data)
+BINANCE_API_KEY = os.getenv('BINANCE_API_KEY', '')
+```
+
+### Frontend Configuration
+
+**Environment Variables** (`.env`)
+```env
+# Backend API URL
+VITE_API_BASE_URL=http://localhost:8000
+
+# Optional: API Keys for client-side calls
+# VITE_MARKET_API_KEY=your-key-here
+```
+
+**Vite Configuration** (`vite.config.js`)
+```javascript
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    proxy: {
+      // Proxy API requests to Django during development
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      }
+    }
+  }
+})
+```
+
+**Tailwind Configuration** (`tailwind.config.js`)
+```javascript
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // Custom colors for dark theme
+        'dark-bg': '#0b0f14',
+        'dark-surface': '#1e232a',
+      }
+    },
+  },
+  plugins: [],
+}
+```
+
+---
+
+## 📡 API Documentation
+
+### Base URL
+```
+http://localhost:8000/api/market
+```
+
+For current backend setup, supported intervals, and API response contracts, see [backend/README.md](backend/README.md). The notes API is intentionally anonymous and shared; notes are not private. The endpoint examples later in this legacy section are not current.
+
+### Endpoints
+
+#### 1. Get Candlestick Data
+
+**Endpoint**: `GET /crypto/` or `GET /forex/`
+
+**Description**: Retrieves historical candlestick (OHLCV) data for a trading pair.
+
+**Query Parameters**:
+| Parameter | Type | Required | Description | Example |
+|-----------|------|----------|-------------|---------|
+| `symbol` | string | Yes | Trading pair symbol | `BTCUSDT`, `EUR/USD` |
+| `interval` | string | No | Time interval (default: `1h`) | `1m`, `5m`, `15m`, `1h`, `4h`, `1d`, `1w`, `1M` |
+| `limit` | integer | No | Number of candles (default: 200; max: 1000 crypto, 5000 forex) | `500` |
+
+The market type is selected by the URL path; forex symbols are URL-encoded as needed.
+
+**Example Request**:
+```bash
+curl "http://localhost:8000/api/market/crypto/?symbol=BTCUSDT&interval=1h&limit=100"
+```
+
+**Example Response**:
+```json
+{
+  "symbol": "BTCUSDT",
+  "interval": "1h",
+  "candles": [
+    {
+      "time": 1699564800,
+      "open": 35000.50,
+      "high": 35250.00,
+      "low": 34800.00,
+      "close": 35100.25,
+      "volume": 1250.5
+    }
+  ]
+}
+```
+
+**Response Fields** (crypto responses include `volume`; forex responses do not):
+- `time`: UTC Unix timestamp (seconds)
+- `open`: Opening price
+- `high`: Highest price in interval
+- `low`: Lowest price in interval
+- `close`: Closing price
+- `volume`: Trading volume
+
+---
+
+#### 2. Get Latest Price
+
+**Endpoint**: `GET /crypto/latest_price/` or `GET /forex/latest_price/`
+
+**Description**: Retrieves the current real-time price for a trading pair.
+
+**Query Parameters**:
+| Parameter | Type | Required | Description | Example |
+|-----------|------|----------|-------------|---------|
+| `symbol` | string | Yes | Trading pair symbol | `BTCUSDT` |
+
+**Example Request**:
+```bash
+curl "http://localhost:8000/api/market/crypto/latest_price/?symbol=BTCUSDT"
+```
+
+**Example Response**:
+```json
+{
+  "symbol": "BTCUSDT",
+  "price": 35400.75,
+  "timestamp": null
+}
+```
+
+**Response Fields**:
+- `symbol`: Trading pair
+- `price`: Current price
+- `timestamp`: `null` when the provider supplies no normalized quote timestamp
+
+---
+
+### Error Responses
+
+**400 Bad Request** - Invalid query parameters
+```json
+{
+  "error": "Invalid query parameters.",
+  "details": {"symbol": ["This field is required."]}
+}
+```
+
+**502/503/504** - Provider unavailable, rate limited, timed out, or returned invalid data
+```json
+{
+  "error": "Market data provider timed out.",
+  "code": "provider_timeout"
+}
+```
+
+---
+
+## 🎨 Customization
+
+### Chart Appearance
+
+You can customize the chart's visual appearance by modifying the options in `ChartContainer.jsx`:
+
+```javascript
+const chartOptions = {
+  layout: {
+    background: { color: "#0b0f14" },  // Dark background
+    textColor: "#d1d5db"               // Light gray text
+  },
+  grid: {
+    vertLines: { color: "#1e232a" },   // Vertical grid lines
+    horzLines: { color: "#1e232a" }    // Horizontal grid lines
+  },
+  crosshair: {
+    mode: 0,  // Normal crosshair
+    vertLine: {
+      color: "#6b7280",
+      width: 1,
+      style: 0,  // Solid
+      labelBackgroundColor: "#374151"
+    },
+    horzLine: {
+      color: "#6b7280",
+      width: 1,
+      style: 0,
+      labelBackgroundColor: "#374151"
+    }
+  },
+  timeScale: {
+    borderColor: "#1e232a",
+    timeVisible: true,
+    secondsVisible: false
+  },
+  rightPriceScale: {
+    borderColor: "#1e232a"
+  }
+};
+```
+
+**Color Scheme Options**:
+- **Dark Theme** (default): Professional dark background
+- **Light Theme**: Change `#0b0f14` to `#ffffff` and adjust text colors
+- **Custom Theme**: Use your brand colors
+
+### Adding New Indicators
+
+Create a new indicator in `indicators.js`:
+
+```javascript
+/**
+ * Calculate Bollinger Bands
+ * @param {Array} data - Array of {time, close} objects
+ * @param {number} period - Period for calculation (default: 20)
+ * @param {number} stdDev - Standard deviation multiplier (default: 2)
+ * @returns {Array} Array of {time, upper, middle, lower} objects
+ */
+export const calculateBollingerBands = (data, period = 20, stdDev = 2) => {
+  const result = [];
+
+  for (let i = period - 1; i < data.length; i++) {
+    const slice = data.slice(i - period + 1, i + 1);
+    const closes = slice.map(d => d.close);
+
+    // Calculate SMA (middle band)
+    const sma = closes.reduce((a, b) => a + b, 0) / period;
+
+    // Calculate standard deviation
+    const squaredDiffs = closes.map(close => Math.pow(close - sma, 2));
+    const variance = squaredDiffs.reduce((a, b) => a + b, 0) / period;
+    const standardDeviation = Math.sqrt(variance);
+
+    result.push({
+      time: data[i].time,
+      upper: sma + (stdDev * standardDeviation),
+      middle: sma,
+      lower: sma - (stdDev * standardDeviation)
+    });
+  }
+
+  return result;
+};
+```
+
+Then integrate it in `ChartContainer.jsx`:
+
+```javascript
+// In your component
+const [showBB, setShowBB] = useState(false);
+const bbSeriesRef = useRef(null);
+
+// Add toggle in toolbar
+<button onClick={() => setShowBB(!showBB)}>
+  BB {showBB ? '✓' : ''}
+</button>
+
+// In useEffect for indicators
+if (showBB && !bbSeriesRef.current) {
+  const bbData = calculateBollingerBands(candlestickData);
+  // Create three line series for upper, middle, lower bands
+  // ... implementation
+}
+```
+
+### Customizing Drawing Tools
+
+Modify drawing tool styles in `ChartContainer.jsx`:
+
+```javascript
+const drawingStyles = {
+  trendline: {
+    color: '#3b82f6',    // Blue
+    width: 2,
+    style: 0             // Solid line
+  },
+  horizontal: {
+    color: '#8b5cf6',    // Purple
+    width: 1,
+    style: 2             // Dashed line
+  },
+  rectangle: {
+    borderColor: '#f59e0b',  // Amber
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    borderWidth: 2
+  }
+};
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from the community! Here's how you can help:
+
+### How to Contribute
+
+1. **Fork the Repository**
+   - Click the "Fork" button at the top right of the repository page
+   - This creates a copy of the repository in your GitHub account
+
+2. **Clone Your Fork**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/tradingview-mini.git
+   cd tradingview-mini
+   ```
+
+3. **Create a Feature Branch**
+   ```bash
+   git checkout -b feature/AmazingFeature
+   ```
+
+   Branch naming conventions:
+   - `feature/` - New features
+   - `fix/` - Bug fixes
+   - `docs/` - Documentation updates
+   - `refactor/` - Code refactoring
+
+4. **Make Your Changes**
+   - Write clean, readable code
+   - Follow the existing code style
+   - Add comments for complex logic
+   - Update documentation if needed
+
+5. **Test Your Changes**
+   ```bash
+   # Backend tests
+   cd backend
+   python manage.py test
+
+   # Frontend (if tests exist)
+   cd frontend
+   npm run test
+   ```
+
+6. **Commit Your Changes**
+   ```bash
+   git add .
+   git commit -m "Add some AmazingFeature"
+   ```
+
+   Commit message guidelines:
+   - Use present tense ("Add feature" not "Added feature")
+   - Be descriptive but concise
+   - Reference issues if applicable (#123)
+
+7. **Push to Your Fork**
+   ```bash
+   git push origin feature/AmazingFeature
+   ```
+
+8. **Open a Pull Request**
+   - Go to the original repository
+   - Click "New Pull Request"
+   - Select your fork and branch
+   - Describe your changes in detail
+   - Link any related issues
+
+### Contribution Guidelines
+
+**Code Style**
+- **Python**: Follow PEP 8 style guide
+- **JavaScript**: Use ESLint configuration provided
+- **React**: Use functional components and hooks
+- **CSS**: Use Tailwind utility classes
+
+**Documentation**
+- Update README.md for new features
+- Add JSDoc comments for functions
+- Include docstrings for Python functions
+
+**Testing**
+- Write tests for new features
+- Ensure existing tests pass
+- Aim for >80% code coverage
+
+### Areas We Need Help With
+
+- 📱 Mobile responsiveness improvements
+- 🎨 Additional drawing tools (Andrews' Pitchfork, Gann Fan)
+- 📊 More technical indicators (Stochastic, ATR, Volume Profile)
+- 🔔 Price alert system
+- 💾 Cloud storage integration
+- 🌐 Internationalization (i18n)
+- 📈 Performance optimizations
+- 🧪 Unit and integration tests
+
+---
+
+## 🐛 Known Issues
+
+We're aware of these issues and working on fixes:
+
+1. **RSI Indicator Refresh**
+   - **Issue**: RSI may not update immediately when changing timeframes
+   - **Workaround**: Toggle the RSI indicator off and on again
+   - **Status**: Investigating caching issue
+
+2. **Drawing Tool Calibration**
+   - **Issue**: Drawings may shift position after window resize
+   - **Workaround**: Redraw after resizing, or refresh the page
+   - **Status**: Working on responsive scaling solution
+
+3. **Browser Performance**
+   - **Issue**: Some browsers (especially older versions) may lag with multiple indicators
+   - **Workaround**: Disable unused indicators, use a modern browser
+   - **Status**: Optimizing rendering pipeline
+
+4. **Local Storage Limits**
+   - **Issue**: Many drawings can exceed browser storage limits
+   - **Workaround**: Clear old drawings periodically
+   - **Status**: Planning cloud storage feature
+
+5. **Forex Data Latency**
+   - **Issue**: Forex prices may have slight delay compared to real-time feeds
+   - **Workaround**: Use for analysis, not live trading
+   - **Status**: Evaluating premium data providers
+
+**Report a Bug**: If you find a new issue, please [open an issue](https://github.com/YOUR_USERNAME/tradingview-mini/issues) on GitHub with:
+- Detailed description
+- Steps to reproduce
+- Expected vs actual behavior
+- Screenshots if applicable
+- Browser and OS information
+
+---
+Made with ❤️ by AmirRezaiyan
