@@ -1,0 +1,268 @@
+<h1 align="center">Push-to-Talk for Anywhere</h1>
+
+<p align="center"><b>Hold a key to unmute your mic in any app.</b><br>
+Browser meetings, games, OBS: no built-in push-to-talk needed.</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20%7C%20Linux%20(X11)%20%7C%20macOS-blue" alt="Windows 10/11, Linux (X11), macOS">
+  <img src="https://img.shields.io/github/license/opadips/push-to-talk-for-anywhere" alt="MIT license">
+  <a href="https://github.com/opadips/push-to-talk-for-anywhere/releases"><img src="https://img.shields.io/github/downloads/opadips/push-to-talk-for-anywhere/total" alt="Downloads"></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Core-Rust-b7410e?logo=rust&logoColor=white" alt="Core: Rust">
+  <img src="https://img.shields.io/badge/App%20shell-Tauri-24C8D8?logo=tauri&logoColor=white" alt="App shell: Tauri">
+</p>
+
+<p align="center"><a href="https://github.com/opadips/push-to-talk-for-anywhere/releases/latest"><b>⬇ Download</b></a></p>
+
+<p align="center"><img src="demo/push-to-talk-demo.gif" width="800" alt="Hold a key and the mic unmutes; let go and it mutes again"></p>
+
+https://github.com/user-attachments/assets/91435ad1-81fe-4a5f-88dd-35855c953adb
+
+
+A small tray app that keeps your microphone muted and only unmutes it while you
+hold a key (or a mouse button). Whatever you're in — a browser tab, a game, a
+stream — the mic opens when you press and closes when you let go.
+
+**Why you'd want it:**
+
+- **Mic off by default.** No more hot-mic moments — the mic is muted until your
+  finger is on the key, and back to muted the instant you're done.
+- **One key works everywhere.** Same hold-to-talk in every app, even ones that
+  have no push-to-talk setting at all.
+- **Doesn't clip your words.** A short release delay keeps the last syllable
+  from getting cut off (default 200 ms, adjustable).
+- **Your key, your call.** Any keyboard key or mouse button, including side
+  buttons (Linux: Left/Middle/Right only), a single modifier like Left Alt, or
+  a whole combination such as
+  Ctrl+Shift or Right Ctrl+N. Optionally swallow it so it never reaches other
+  apps.
+- **Press once to talk.** An optional toggle key in settings latches the mic
+  open — press it again to go back to muted.
+- **You can hear it.** Optional start/stop sound cues with a volume slider, so
+  you always know when you're live.
+- **Leaves things as it found them.** Mute state is handed back on quit.
+
+## What people use it for
+
+- **Web-based meetings** — Google Meet, Teams and Zoom in a browser tab rarely
+  give you a push-to-talk key. Now you have one, no extension needed.
+- **Games without built-in push-to-talk** — plenty of co-op and multiplayer
+  games only offer "mic always on". Hold a key instead of muting your system mic
+  by hand.
+- **Streamers on OBS** — cut the mic between takes, during coughs or keyboard
+  pauses, without touching OBS. Works alongside your existing OBS mic settings.
+- **Screen sharing** — kill the mic instantly while sharing your screen, without
+  hunting for the right mute button in the right app.
+- **Quiet rooms** — kids, pets, keyboard clack: mute the noise between
+  sentences instead of staying muted the whole call.
+- **Apps with no mute** — old VOIP clients and web apps that expose no mic
+  control at all. The system mic is fair game, so anything can get push-to-talk.
+
+## Getting it and running
+
+Download the archive for your operating system from the [Releases](https://github.com/opadips/push-to-talk-for-anywhere/releases) page (`SHA256SUMS.txt` is available alongside releases to verify checksums).
+
+### Windows (10 / 11)
+- Download `push-to-talk-for-anywhere-vX.Y.Z-windows-x64.zip` (or the standalone `...-windows-x64.exe`).
+- Unzip and run `push-to-talk-for-anywhere.exe`.
+- *Note:* If the active application you are talking into runs with elevated/administrator privileges, run `push-to-talk-for-anywhere.exe` as administrator too so Windows allows the global input hook to function while that window has focus.
+
+### Linux (X11)
+- Download `push-to-talk-for-anywhere-vX.Y.Z-linux-x64.tar.gz`.
+- Unpack and enter the directory:
+  ```bash
+  tar -xzf push-to-talk-for-anywhere-v*-linux-x64.tar.gz
+  cd push-to-talk-for-anywhere-v*-linux-x64
+  ```
+- Run the tray application:
+  ```bash
+  ./push-to-talk-for-anywhere
+  ```
+  Or run via command-line:
+  ```bash
+  ./ptt ptt
+  ```
+- **Requirements & Setup:**
+  - **Desktop Session:** Requires an X11 or XWayland session (pure Wayland sessions cannot capture global input hooks yet).
+  - **Audio System:** Uses PulseAudio or PipeWire (`pipewire-pulse`).
+  - **Dependencies:** Standard desktop packages (`libwebkit2gtk-4.1`, `libgtk-3`, `libpulse`, `libxdo`). On Debian/Ubuntu:
+    ```bash
+    sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libpulse0 libxdo3
+    ```
+  - **Key Blocking (Swallowing):** To allow the app to intercept and swallow bound keys before other apps see them, your user needs read/write access to `/dev/input/event*` and `/dev/uinput`:
+    ```bash
+    sudo usermod -aG input,uinput $USER
+    ```
+    Log out and log back in for group changes to take effect. If not in these groups, the app automatically falls back to listening mode (push-to-talk unmutes the microphone normally, but the bound key also reaches other apps).
+
+### macOS (Apple Silicon, macOS 12+)
+- Download `push-to-talk-for-anywhere-vX.Y.Z-macos-arm64.zip`.
+- Unzip the archive:
+  ```bash
+  unzip push-to-talk-for-anywhere-v*-macos-arm64.zip
+  cd push-to-talk-for-anywhere-v*-macos-arm64
+  ```
+- Run the tray application or CLI:
+  ```bash
+  ./push-to-talk-for-anywhere
+  # or ./ptt ptt
+  ```
+- **Requirements & Permissions:**
+  - **Accessibility Permission:** macOS requires Accessibility permission to detect global hotkeys. On first launch, open **System Settings → Privacy & Security → Accessibility** and toggle on `push-to-talk-for-anywhere` (or Terminal/iTerm if running via command line).
+  - **Microphone Permission:** When prompted, grant microphone access so the app can control input volume and mute state.
+  - **Gatekeeper:** Because release binaries are unsigned, macOS Gatekeeper may show a warning. Right-click the binary and click **Open**, or clear the quarantine attribute:
+    ```bash
+    xattr -d com.apple.quarantine ./push-to-talk-for-anywhere ./ptt
+    ```
+
+Heads up: the app installs a global keyboard hook, which some antivirus tools and anti-cheat systems find suspicious. Nothing shady is going on, see Privacy below, but expect the occasional false positive on an unsigned build.
+
+## Using it
+
+The app sits in the tray. Three icon states: **Disabled**, **Muted**,
+**Talking**.
+
+- Left click the icon → settings window
+- Right click → menu (Enable/Disable, Open settings, Quit)
+- Closing the window just hides it; the session keeps running
+
+The settings window is a card grid: Hotkeys, Microphone, Sounds, Overlay and
+General, with the live state, Disable/Enable and Save in the header.
+
+In settings:
+- **Hotkeys** — two panels: *Hold to talk* and *Toggle* (press once to talk,
+  again to mute; *Clear* removes it). Press *Change*, then press any key or
+  mouse button. To bind a combination, hold the modifiers and press the final
+  key, or hold two or more modifiers and let go. To bind a modifier by itself
+  (Left Alt, say), press and release it alone. *On-screen* opens a keyboard you
+  can click instead, where you can arm modifiers to build a combination. A
+  combination gets Ctrl / Shift / Alt / Win selectors (Off, Any, Left, Right),
+  so a binding captured on the right Ctrl doesn't fire on the left one. "Block
+  key from other apps" stops the bound key from reaching other apps (handy for
+  Caps Lock, a bad idea for Shift/Ctrl/Alt unless you mean it); for a
+  combination it blocks only the final key, so Ctrl+C keeps working.
+- **Microphone** — pick a device or follow the system default.
+- **Release delay** — how long the mic stays open after you let go (default
+  200 ms, so you don't clip the end of words). 0–2000 ms.
+- **On exit** — hand the mic back the way you found it, or always leave it
+  unmuted.
+- **Sounds** — a short cue when you start and stop talking, with a volume
+  slider.
+- **Overlay** — an optional on-screen indicator for fullscreen games where the
+  tray icon can't be seen: a small pill with a mic icon and level bars while
+  you talk. In "always" mode it stays up as a dimmed, struck-through mic while
+  muted. It's off by default; the same card turns it on and picks the mode,
+  position (top or bottom, left, center or right) and distance from the edge.
+  It sits above the taskbar, follows the primary monitor's scaling, and clicks
+  always pass through it.
+- **General** — start automatically at login, start hidden in the tray.
+
+Only one hold-to-talk session at a time. If `ptt ptt` (the CLI) is already
+running, the tray app says so instead of fighting it.
+
+## Command line (optional)
+
+There's a `ptt` command if you prefer a terminal (`ptt.exe` on Windows). Not required for normal use.
+
+```text
+ptt devices                       list mics
+ptt status                        prints 'muted' or 'unmuted'
+ptt mute  /  ptt unmute
+
+ptt ptt                           hold-to-talk using config.toml
+ptt ptt --key 0x14                Caps Lock
+ptt ptt --mouse x1                a side button
+ptt ptt --release-delay 0 --no-swallow --device <id>
+```
+
+Enter or Ctrl+C quits a session and restores the mute state it found at start-up.
+
+## Platform differences
+
+Everything above works the same on Windows 10/11, Linux (X11 sessions) and
+macOS (releases are packaged for Apple Silicon; Intel Macs can build from
+source). A few things differ per platform:
+
+- **Input and permissions.** Linux needs an X11 session — on Wayland there is
+  no global input hook. The tray app refuses before capturing and shows
+  *"Wayland detected — global hotkeys need an X11 session (try logging out
+  into an X11 session or use XWayland for this app)"* in the settings error
+  banner; the `ptt` CLI session reports
+  *"no X display on this Wayland session (DISPLAY unset): global push-to-talk
+  needs X11 or an X11 desktop — Wayland is not supported yet"*. macOS asks
+  for **Accessibility** permission the first time
+  (System Settings → Privacy & Security → Accessibility) — without it the app
+  cannot see key presses. If key *blocking* (swallow) is not available,
+  Linux/macOS fall back to listening and warn once.
+- **Bindables.** On Linux, mouse buttons X1/X2 (side buttons) cannot be bound —
+  only Left/Middle/Right reach the backend. Left, Right and Middle work the
+  same everywhere.
+- **Autostart at login.** Windows writes a registry run key
+  (`HKCU\...\CurrentVersion\Run`), Linux installs a desktop entry in
+  `~/.config/autostart`, macOS builds a LaunchAgent. Same setting, per-OS
+  mechanism.
+- **Tray click.** Windows and macOS: left click opens settings, right click
+  opens the menu. Linux desktops open the menu on left click too — right
+  click does the same.
+- **Audio.** Windows and macOS mute your mic device directly (CoreAudio on
+  macOS; if macOS refuses a mute, it records the volume and restores that).
+  Linux uses PulseAudio/PipeWire source mute, so "default" follows whatever
+  source the desktop points at.
+- Files it keeps (next section) live in the usual per-OS places.
+
+## Files it keeps
+
+| What | Windows | Linux | macOS |
+|---|---|---|---|
+| Config | `%APPDATA%\ptt-tool\config.toml` | `~/.config/ptt-tool/config.toml` | `~/Library/Application Support/ptt-tool/config.toml` |
+| Log | `%LOCALAPPDATA%\ptt-tool\logs\ptt.log` | `~/.local/state/ptt-tool/logs/ptt.log` | `~/Library/Logs/ptt-tool/ptt.log` |
+| Recovery state | `%LOCALAPPDATA%\ptt-tool\state.json` | `~/.local/state/ptt-tool/state.json` | `~/Library/Application Support/ptt-tool/state.json` |
+
+(`~/.config` and `~/.local/state` respect `XDG_CONFIG_HOME` /
+`XDG_STATE_HOME` when set.)
+
+A corrupt config falls back to defaults and gets renamed `config.toml.bad`
+rather than taking the app down with it.
+
+## Building it
+
+You need Rust and Node.
+
+```text
+npm ci --prefix ui
+npm run build --prefix ui
+cargo build --release
+```
+
+`ui/dist` is generated, so build the frontend before Cargo — the settings window
+lives in there. Output: `target\release\ptt-tool.exe` and `ptt.exe` (on Linux
+and macOS the same two land in `target/release` as `ptt-tool` and `ptt`;
+Linux and macOS are supported system targets, nothing to configure).
+
+Before pushing, the usual:
+
+```text
+cargo fmt --all -- --check
+cargo clippy --all-targets -- -D warnings
+cargo test
+```
+
+Manual test checklist is in [docs/MANUAL_TESTS.md](docs/MANUAL_TESTS.md).
+Cutting a release: [docs/RELEASING.md](docs/RELEASING.md) (GitHub Actions does
+the work).
+
+## Privacy
+
+No network access anywhere. No telemetry. The hook compares your input against
+the one bound key/button and that's all — nothing else is captured, logged, or
+stored.
+
+## have idea or found a bug? 
+
+[🐛 Report Bug](https://github.com/opadips/push-to-talk-for-anywhere/issues) · [💡 Request Feature](https://github.com/opadips/push-to-talk-for-anywhere/issues)
+
+## License
+
+MIT. See [LICENSE](LICENSE).

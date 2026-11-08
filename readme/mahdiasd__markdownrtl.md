@@ -1,0 +1,151 @@
+# Markdown RTL for IntelliJ IDEA & Android Studio
+
+<p align="center">
+  <img src="docs/preview-showcase.png" alt="Markdown RTL in Action" width="100%"/>
+</p>
+
+<p align="center">
+  <b>Intelligent Right-to-Left (RTL) Balancing, Smart BiDi Detection, and Persian/Arabic Typography for Markdown Previews in IntelliJ IDEA & Android Studio</b>
+</p>
+
+<p align="center">
+  <a href="https://plugins.jetbrains.com/plugin/34457-markdown-rtl"><img src="https://img.shields.io/jetbrains/plugin/v/34457-markdown-rtl?style=for-the-badge&logo=jetbrains&label=Marketplace&color=007ACC" alt="JetBrains Marketplace"/></a>
+  <a href="https://plugins.jetbrains.com/plugin/34457-markdown-rtl"><img src="https://img.shields.io/jetbrains/plugin/d/34457-markdown-rtl?style=for-the-badge&logo=jetbrains&label=Downloads&color=success" alt="Marketplace Downloads"/></a>
+  <a href="https://plugins.jetbrains.com/plugin/34457-markdown-rtl"><img src="https://img.shields.io/jetbrains/plugin/r/rating/34457-markdown-rtl?style=for-the-badge&logo=jetbrains&label=Rating&color=ffb400" alt="Rating"/></a>
+  <a href="https://github.com/mahdiasd/MarkdownRTL"><img src="https://img.shields.io/github/stars/mahdiasd/MarkdownRTL?style=for-the-badge&logo=github&color=gold" alt="GitHub Stars"/></a>
+  <a href="https://github.com/mahdiasd/MarkdownRTL/issues"><img src="https://img.shields.io/github/issues/mahdiasd/MarkdownRTL?style=for-the-badge&logo=github&color=critical" alt="GitHub Issues"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge" alt="Apache 2.0 License"/></a>
+</p>
+
+<p align="center">
+  <a href="#-quick-start--installation"><b>⚡ Install Now</b></a> •
+  <a href="https://plugins.jetbrains.com/plugin/34457-markdown-rtl"><b>📦 Marketplace Page</b></a> •
+  <a href="https://github.com/mahdiasd/MarkdownRTL/issues"><b>🐛 Report Issue</b></a> •
+  <a href="#️-architecture--system-structure"><b>🏛️ Architecture</b></a> •
+  <a href="#-support--feedback"><b>⭐ Star Project</b></a>
+</p>
+
+---
+
+## 🚀 Quick Start & Installation
+
+You can install **Markdown RTL** directly inside your IDE or download the distribution archive.
+
+### Method 1: JetBrains Marketplace (In-IDE) — Recommended
+1. Open **IntelliJ IDEA**, **Android Studio**, or any JetBrains IDE.
+2. Open Settings:
+   - **Windows / Linux:** <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>S</kbd>
+   - **macOS:** <kbd>Cmd</kbd> + <kbd>,</kbd>
+3. Navigate to **Plugins** ➔ **Marketplace** tab.
+4. Search for **`Markdown RTL`**.
+5. Click **Install**, then restart the IDE.
+
+### Method 2: JetBrains Marketplace (Web)
+Visit the official plugin page:  
+👉 **[https://plugins.jetbrains.com/plugin/34457-markdown-rtl](https://plugins.jetbrains.com/plugin/34457-markdown-rtl)**  
+Click **Get** ➔ **Install to...** to install directly into your running IDE.
+
+### Method 3: Offline / Manual Installation (.ZIP)
+1. Download the latest `PersianMarkdown-x.x.x.zip` from [GitHub Releases](https://github.com/mahdiasd/MarkdownRTL/releases).
+2. Open **Settings / Preferences** ➔ **Plugins**.
+3. Click the **Gear icon (⚙️)** ➔ **Install Plugin from Disk...**.
+4. Select the downloaded `.zip` file and restart your IDE.
+
+---
+
+## 👁️ Usage in IntelliJ IDEA & Android Studio
+
+Markdown RTL works natively inside the **Markdown Preview Pane**:
+
+1. Open any Markdown file (`.md`).
+2. Switch the view mode in the top-right corner to **Split View** (Editor and Preview) or **Preview Only**.
+3. Persian and Arabic prose will automatically render Right-to-Left with proper punctuation and *Vazirmatn* typography, while all code blocks remain strictly Left-to-Right.
+4. ` ```mermaid ` fenced code blocks are automatically rendered offline as interactive SVG diagram cards with language-aware fonts (*Vazirmatn* for Persian/Arabic, *JetBrains Mono* for English) and inline zoom (`−` / `100%` / `+`) controls.
+5. YAML Front Matter blocks (`--- ... ---`) are automatically rendered as an interactive metadata table card with BiDi support, array badges, and Raw YAML / Copy controls.
+6. Click the floating **Markdown RTL** capsule at the bottom-left to adjust fonts, sizes, line heights, direction modes, or toggle **Front Matter** and **Mermaid** rendering live.
+
+---
+
+## ✨ Key Features
+
+- 🔄 **Smart BiDi Detection (Auto Mode):** Analyzes paragraphs, headings, and lists dynamically. Persian and Arabic align right; pure English stays left.
+- 📊 **Offline Mermaid Diagram Rendering:** Automatically renders ` ```mermaid ` code blocks into crisp SVG diagrams completely offline (and enhances native IDE Mermaid output when enabled) across all major diagram types (`Flowchart`, `Sequence`, `Class`, `State`, `ER Model`, `Gantt`, `Pie`, `Git Graph`, `Mindmap`, `Timeline`, `Architecture`, etc.).
+- 🌐 **Language-Aware Diagram Typography & BiDi:** Detects diagram language automatically—pure English diagrams render with *JetBrains Mono* (`EN` badge), while Persian/Arabic diagrams render with *Vazirmatn* (`FA` badge), right-to-left node alignment, and automatic ZWNJ (`نیم‌فاصله`) sanitization.
+- 🔍 **Interactive Diagram Controls & Live-Edit Resilience:** Features header badges for language and diagram type, inline zoom controls (`−` / `100%` / `+` from `40%` to `300%`), automatic IDE Dark/Light theme adaptation, and live-editing resilience that preserves the last valid diagram (`● Editing...`) while typing incomplete syntax.
+- 📑 **Smart YAML Front Matter Card:** Seamlessly parses and renders document metadata blocks (`--- ... ---`) into a structured card with field-level BiDi alignment, array badges, clickable URLs, and **Raw YAML / Table View** & **Copy** buttons.
+- 🛡️ **Bulletproof Code Isolation:** Monospace code fences (`<pre>`, `.code-fence`, `<code>`) are strictly protected as LTR and left-aligned.
+- 🎛️ **In-Preview Bento Controller & IDE Sync:** Floating modern widget to switch direction modes, choose fonts (Persian, English, Code), adjust font size/line height, and toggle **Front Matter** or **Mermaid** features on the fly—fully synchronized with IDE settings and keyboard shortcuts.
+- 🖋️ **Embedded Fonts Included:** Bundled with high-legibility **Vazirmatn** and **JetBrains Mono**—works out of the box on Windows, macOS, and Linux without installing fonts.
+- 💾 **Instant Persistence:** Changes made in the floating widget are automatically persisted across IDE sessions.
+- ⚡ **Zero Markdown Mutation:** Operates completely in the preview DOM layer without touching or dirtying your raw `.md` files.
+
+---
+
+## 🔄 Direction Modes & Shortcuts
+
+| Mode | Key Action | Description |
+| :--- | :--- | :--- |
+| **Auto RTL** *(Default)* | Auto BiDi | Detects language per element. Best for bilingual notes and mixed documentation. |
+| **Force RTL** | <kbd>Alt</kbd> + <kbd>R</kbd> *(or <kbd>⌥R</kbd>)* | Aligns all prose to the right. Ideal for Persian/Arabic articles and books. |
+| **Force LTR** | Revert LTR | Standard Left-to-Right layout for pure English technical specifications. |
+
+### Shortcuts Reference:
+- <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>R</kbd> (or <kbd>⇧⌥R</kbd>): Global Editor Shortcut (scoped to Markdown files) to cycle modes (**Auto** ➔ **Force RTL** ➔ **Force LTR**)
+- <kbd>Alt</kbd> + <kbd>R</kbd> / <kbd>⌥R</kbd>: Inside preview pane to toggle between **Auto RTL** and **Force RTL**
+- <kbd>Alt</kbd> + <kbd>E</kbd> / <kbd>⌥E</kbd>: Inside preview pane to toggle **Plugin Enabled / Disabled**
+- <kbd>Esc</kbd>: Inside preview pane to close floating Bento widget
+
+---
+
+## 🏛️ Architecture & System Structure
+
+<p align="center">
+  <img src="docs/architecture.svg" alt="Markdown RTL Architecture" width="100%"/>
+</p>
+
+---
+
+## ⭐ Support & Feedback
+
+If you find **Markdown RTL** helpful, please consider supporting the project:
+
+- **⭐ Star on GitHub:** [github.com/mahdiasd/MarkdownRTL](https://github.com/mahdiasd/MarkdownRTL)
+- **🌟 Rate on Marketplace:** [plugins.jetbrains.com/plugin/34457-markdown-rtl](https://plugins.jetbrains.com/plugin/34457-markdown-rtl)
+- **🐛 Report Issues & Suggestions:** [GitHub Issues](https://github.com/mahdiasd/MarkdownRTL/issues)
+
+---
+
+## 🛠️ Building from Source
+
+```bash
+# 1. Clone repository
+git clone https://github.com/mahdiasd/MarkdownRTL.git
+cd MarkdownRTL
+
+# 2. Run unit tests
+./gradlew test
+
+# 3. Build distributable plugin archive
+./gradlew buildPlugin
+```
+The output package will be generated at: `build/distributions/PersianMarkdown-1.1.1.zip`.
+
+---
+
+## 🙏 Acknowledgements
+
+- **UI & Settings Card Inspiration:** [antigravity-rtl](https://github.com/mmnaderi/antigravity-rtl) by [@mmnaderi](https://github.com/mmnaderi) — special thanks for the insightful floating controller concept and RTL tooling efforts.
+
+---
+
+## 📄 License
+
+Distributed under the **Apache License 2.0**. See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE) for details.
+
+- **Vazirmatn Font:** By Saber Rastikerdar ([SIL Open Font License 1.1](src/main/resources/fonts/OFL.txt)).
+- **JetBrains Mono:** By JetBrains ([Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0)).
+- **Mermaid.js:** By Knut Sveidqvist & Contributors ([MIT License](src/main/resources/js/LICENSE-MERMAID.txt)).
+
+<p align="center">
+  Crafted with ❤️ for the Persian and RTL developer community.
+</p>

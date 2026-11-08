@@ -1,0 +1,159 @@
+<p align="center">
+  <img src="assets/codecity.svg" alt="CodeCity logo" width="96">
+</p>
+
+# CodeCity
+
+[English](README.md) · [فارسی](README.fa.md)
+
+[![npm version](https://img.shields.io/npm/v/codecity-viewer)](https://www.npmjs.com/package/codecity-viewer)
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/Amin-Tz.codecity?label=VS%20Code%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=Amin-Tz.codecity)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/Amin-Tz.codecity)](https://marketplace.visualstudio.com/items?itemName=Amin-Tz.codecity)
+[![Rating](https://img.shields.io/visual-studio-marketplace/r/Amin-Tz.codecity)](https://marketplace.visualstudio.com/items?itemName=Amin-Tz.codecity)
+
+Explore your codebase as an interactive **3D city**. Classes and modules become
+buildings and folders become districts. Select a building to illuminate related
+buildings and explore its dependencies in an interactive map beside the city.
+CodeCity scans source locally without installing or executing your project's code.
+
+## Install from npm (recommended)
+
+**npm package:** [npmjs.com/package/codecity-viewer](https://www.npmjs.com/package/codecity-viewer)
+
+```bash
+npm install -g codecity-viewer
+codecity .
+```
+
+**Latest version: 0.4.2.** Requires Node.js **22.13.0 or newer** and npm.
+No Git installation, repository clone, or build is required. Git is optional
+for history features. Repository-based setup is documented under
+[Development and documentation](#development-and-documentation).
+
+**VS Code extension:** install
+[CodeCity 3D Viewer](https://marketplace.visualstudio.com/items?itemName=Amin-Tz.codecity)
+from the Marketplace, or search for **CodeCity** in the Extensions view
+(`Ctrl+Shift+X`). You can also run `code --install-extension Amin-Tz.codecity`.
+
+![CodeCity showing a locally scanned project](docs/images/codecity.png)
+
+## Features
+
+- Open mixed-language projects: JavaScript/TypeScript, Python, C/C++, Java, C#, Go, and more.
+- Map methods to height, attributes to footprint, and source lines to colour; customize and save defaults.
+- Explore members, dependencies, metric evidence, and source previews by selecting buildings.
+- Play Git history, inspect past commit structures, and compare them with the current project.
+- Start in Simple mode; use Advanced for filters, investigations, and scan diagnostics.
+- Choose from eight interface languages, including Persian and Arabic with right-to-left layouts.
+
+Bundled three.js and parsers let the installed app run offline. Git is optional
+and needed for history. Metrics and dependency estimates guide source review;
+they do not establish code quality or a complete runtime call graph.
+
+Large projects open the viewer while scanning continues. For JavaScript/TypeScript
+projects above 256 source files or 4 MiB of source, CodeCity keeps syntax metrics
+and local module dependencies and skips the memory-intensive compiler call/alias
+pass. Scan diagnostics disclose this limit. Scans are limited to 20,000 source
+files, 2 MB per file, and two minutes of analysis.
+
+## Get started
+
+**Latest release: [0.4.2](https://github.com/Amin-Tgz/CodeCity/releases/tag/v0.4.2).**
+
+### 1. Use the installed CLI (Windows, macOS, Linux)
+
+```bash
+# Run in any directory:
+codecity
+# Open current folder directly:
+codecity .
+# Open any project directory:
+codecity /path/to/project
+```
+
+Or run the published package without a global installation:
+
+```bash
+npx --yes --package=codecity-viewer codecity /path/to/project
+```
+
+The latest npm version is **0.4.2**. To install that exact version, use
+`npm install -g codecity-viewer@0.4.2`. Git is only needed for Git history features.
+
+### 2. VS Code Extension
+Explore 3D code cities directly inside Visual Studio Code. The extension is
+published on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=Amin-Tz.codecity):
+
+1. Install **CodeCity 3D Viewer** from the
+   [Marketplace page](https://marketplace.visualstudio.com/items?itemName=Amin-Tz.codecity),
+   or search for it in the Extensions view (`Ctrl+Shift+X`).
+2. Click the `$(globe) CodeCity` status bar item, the CodeCity Activity Bar
+   icon, or right-click any folder in the File Explorer and choose
+   **CodeCity: Open 3D View**.
+
+You can also install from the command line:
+
+```bash
+code --install-extension Amin-Tz.codecity
+```
+
+Prefer an offline package? Download `codecity-0.4.2.vsix` from
+[release v0.4.2](https://github.com/Amin-Tgz/CodeCity/releases/tag/v0.4.2), press
+`Ctrl+Shift+P`, choose `Extensions: Install from VSIX...`, and select it.
+
+See the [extension README](extensions/vscode/README.md) for commands, settings,
+and troubleshooting.
+
+### Key Features and Improvements:
+- **Open Project Folder**: Direct topbar action (`📁 Open folder`) to open the project root in your OS file manager.
+- **File Manager Bug Fix**: Reliable file and folder reveal on Windows (no hidden windows) and Linux (`xdg-open`).
+- **Open in Editor**: Choose your preferred editor (VS Code, Cursor, or System Default) and jump to specific line numbers directly.
+- **Show Less / Collapse**: Expand and collapse dependency maps on demand.
+- **Active District Filter Breadcrumbs**: Clear active/inactive styling and toggle-off on repeat clicks.
+- **Enriched Help Guide**: Interactive visual SVG diagrams of building dimensions, emoji indicators, and navigation cards.
+
+See the [guide](docs/GUIDE.md) for installer and uninstall options, launcher
+options, controls, exclusions, metric rules, and analysis limits.
+
+## Development and documentation
+
+The repository, GitHub source archive, and source installers are for developing
+CodeCity or trying unreleased changes. Start a development checkout with:
+
+```bash
+git clone https://github.com/Amin-Tgz/CodeCity.git
+cd CodeCity
+npm start
+# Open a project immediately:
+npm start -- --root /path/to/project
+# Optional: link this checkout as a global CLI command:
+npm install -g .
+```
+
+To try the current development branch without cloning:
+
+```bash
+npx --yes --package=https://codeload.github.com/Amin-Tgz/CodeCity/tar.gz/refs/heads/main codecity
+```
+
+These source-based commands use development code rather than the published npm
+release. The [source installers](docs/GUIDE.md#source-installers-development-only)
+can set up a private Node runtime for this development workflow.
+
+For development checks:
+
+```bash
+npm test
+# Only when refreshing bundled parsers / the analysis worker:
+npm ci
+npm run build:parsers
+```
+
+- [Full guide](docs/GUIDE.md): usage, architecture, browser checks, and benchmarks.
+- [VS Code extension](extensions/vscode/README.md): commands, settings, and troubleshooting.
+- [Research](docs/RESEARCH.md): real-project analysis and remaining limitations.
+- [Review](docs/REVIEW.md): recorded findings and verification.
+- [End-to-end results](docs/E2E.md): public-project browser testing.
+
+The city metaphor follows Richard Wettel and Michele Lanza's *Visualizing
+Software Systems as Cities* (VISSOFT 2007).
