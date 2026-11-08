@@ -1,0 +1,120 @@
+<p align="center"><picture><source media="(prefers-color-scheme: light)" srcset="docs/logo-light.svg"><img src="docs/logo.svg" width="64" alt=""></picture></p>
+
+<h1 align="center">Stackyard</h1>
+
+<p align="center"><b>A self-hosted homelab dashboard you actually want to look at.</b></p>
+
+<p align="center">
+  <a href="https://github.com/SandObserver/stackyard/pkgs/container/stackyard"><img alt="ghcr.io" src="https://img.shields.io/badge/ghcr.io-stackyard-2496ED?logo=github&logoColor=white"></a>
+  <a href="https://github.com/SandObserver/stackyard/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/SandObserver/stackyard"></a>
+  <a href="https://github.com/SandObserver/stackyard/actions/workflows/test.yml"><img alt="Tests Status" src="https://img.shields.io/github/actions/workflow/status/SandObserver/stackyard/test.yml?branch=main&label=tests"></a>
+  <a href="https://www.bestpractices.dev/projects/14462"><img alt="OpenSSF Best Practices" src="https://www.bestpractices.dev/projects/14462/badge"></a>
+</p>
+
+<p align="center"><img src="docs/screenshot.png" width="85%" alt="Stackyard dashboard"></p>
+
+
+<p align="center">Try it: <b><a href="https://demo.sandobserver.com">demo.sandobserver.com</a></b>
+
+Most dashboards are a wall of numbers and charts. Stackyard is the opposite: a calm, launcher-style grid of app tiles, folders, and a small number of
+*genuinely useful* widgets, running in a single container. Built to be glanced at a hundred times a day without feeling cluttered.
+
+**Documentation: [stackyard.sandobserver.com/docs](https://stackyard.sandobserver.com/docs/)**
+
+## Why Stackyard
+
+- **Attention goes where it's needed, not everywhere at once.** A calm grid, no charts or counters. Health badges only appear when something's wrong.
+- **A glance should tell you more than a number would.** Widgets are small visuals, not readouts.
+- **Anything can be a badge.** Point Stackyard at any API and show what it reports as a [live activity badge](https://stackyard.sandobserver.com/docs/badges/). One poll can carry several labelled values, each with its own colour and threshold. No custom widget, no code.
+- **Configured by clicking, not by editing files.** Everything is set up in the web UI, with config import and export.
+- **No runtime npm dependencies.** The image adds only nginx and supervisor, from Alpine, to the official Node base.
+- **Six languages, right-to-left included.** Contrast and screen-reader labels are covered by tests.
+- **Installs like an app.** A mobile layout that opens in its own window from a home screen. No offline mode: every tile is live.
+
+## Widgets
+
+Widgets and the services they read:
+
+- **Clock**
+- **Now Playing**: Plex, Jellyfin, Emby, Navidrome
+- **Weather**: Open-Meteo (no API key required) or OpenWeather (free API key), with UV and air quality warnings
+- **DNS**: AdGuard, Pi-hole, Technitium, NextDNS
+- **GitHub**: contribution graph and pull requests
+- **Books**: Audiobookshelf, Komga, Kavita
+- **System summary**: CPU, memory, disk, throughput, uptime, and network speed from SpeedTest Tracker or MySpeed. Reports on this machine, or on a host running Glances, Beszel, the Unraid API, Proxmox VE or TrueNAS
+- **Disk health**: TrueNAS, Unraid, Scrutiny
+- **Backup**: Duplicati, Kopia, Proxmox Backup Server, Backrest 1.14 or newer
+- **Downloads**: qBittorrent, Transmission, Deluge, SABnzbd, NZBGet
+- **Up Next**: the next episodes, films and albums from Sonarr, Radarr and Lidarr
+- **Connections**: Gluetun, Psiphon Conduit, Netbird, Plausible, Umami
+- **Dashboard switch**: links to your other Stackyard dashboards
+
+Each widget is documented at [Widgets](https://stackyard.sandobserver.com/docs/widgets/). Adding one is a folder, with no changes to the rest of the app; see [Build your first widget](https://stackyard.sandobserver.com/docs/create-a-widget/).
+
+## Getting started
+
+You need [Docker](https://docs.docker.com/get-started/get-docker/).
+
+```yaml
+services:
+  stackyard:
+    image: ghcr.io/sandobserver/stackyard:latest
+    container_name: stackyard
+    restart: unless-stopped
+    ports:
+      - "8700:80"
+    volumes:
+      - data:/data
+      - icons:/icons
+
+volumes:
+  data:
+  icons:
+```
+
+```sh
+docker compose up -d
+```
+
+Then open `http://localhost:8700` and set everything up at `/admin`. Config and uploaded icons persist in the two volumes.
+
+On Unraid, install it from [Community Apps](https://ca.unraid.net/apps/stackyard-0ara4ku0sjjwqy).
+
+On TrueNAS, install it from the [Apps catalog](https://apps.truenas.com/catalog/stackyard_community/).
+
+The same image is on Docker Hub as `sandobserver/stackyard`. Prefer `ghcr.io`: it is the registry the [release signature](https://stackyard.sandobserver.com/docs/security/#verifying-a-release-image) covers.
+
+The repo's [`docker-compose.yml`](docker-compose.yml) is the recommended version: it adds resource limits, dropped capabilities, and commented options for a reverse proxy, host access, and Docker health checks.
+
+Full instructions, including building from source, are at [Installation](https://stackyard.sandobserver.com/docs/installation/docker/).
+
+## Documentation
+
+- [First setup](https://stackyard.sandobserver.com/docs/first-setup/)
+- [Settings reference](https://stackyard.sandobserver.com/docs/settings-reference/)
+- [Badges](https://stackyard.sandobserver.com/docs/badges/)
+- [Wallpaper and themes](https://stackyard.sandobserver.com/docs/customization/)
+- [Widgets](https://stackyard.sandobserver.com/docs/widgets/)
+- [Build a widget](https://stackyard.sandobserver.com/docs/create-a-widget/)
+- [Contributing](https://stackyard.sandobserver.com/docs/contributing/)
+- [Troubleshooting](https://stackyard.sandobserver.com/docs/troubleshooting/) and [Support](https://stackyard.sandobserver.com/docs/support/)
+
+## Security
+
+Stackyard never returns stored secrets to the browser, guards the URLs you test in the admin UI against SSRF and pins the resolved IP, and bounds every upstream call so one slow service cannot hang the dashboard. Some features trade safety for convenience and are opt-in with warnings. Read [Security](https://stackyard.sandobserver.com/docs/security/) before exposing Stackyard beyond your LAN.
+
+## Accessibility
+
+Stackyard targets WCAG 2.2 level AA and is partially conformant. What is supported, the known limitations, and how this was assessed are in [ACCESSIBILITY.md](ACCESSIBILITY.md).
+
+## Contributing
+
+Contributions are welcome, within the constraints that keep Stackyard small and auditable (one container, no backend dependencies, vanilla frontend). See [Contributing](https://stackyard.sandobserver.com/docs/contributing/). Participation is covered by the [Code of Conduct](CODE_OF_CONDUCT.md). Who maintains Stackyard and how decisions are made is in [GOVERNANCE.md](GOVERNANCE.md).
+
+## Changelog
+
+Notable changes are listed in [CHANGELOG.md](CHANGELOG.md); per-release notes are on the [GitHub Releases](https://github.com/SandObserver/stackyard/releases) page.
+
+## License
+
+Licensed under the [Apache License 2.0](LICENSE). You are free to use, modify, fork, and build on Stackyard, including commercially. In return you must keep the existing copyright and attribution notices, and the license does not grant rights to the **Stackyard** name or logo: forks are welcome but must use their own name and not present themselves as the original project. See [NOTICE](NOTICE).
