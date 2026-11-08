@@ -1,6 +1,6 @@
 /* RepoFA README viewer — lazy chunk, loaded on the first «نمایش README».
-   Order: our copy (localStorage, then ./readme/<owner>__<name>.md on Pages) at once → the live README from GitHub (conditional,
-   falls back to raw.githubusercontent.com) → if it changed, swap (or offer «نسخه‌ی تازه‌تر») and ask the server to refresh its copy.
+   Source: ./readme/<owner>__<name>.md on the Pages origin only (the bot refreshes READMEs in one nightly pass; clients never call
+   GitHub). localStorage keeps the last copy for instant and offline display.
    Untrusted text only ever reaches the DOM through createElement / textContent / validated attributes. */
 (function () {
   'use strict';
@@ -9,70 +9,40 @@
   var E = function (t, cls, txt) { var n = document.createElement(t); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
   var dirOf = function (t) { return /[؀-ۿ]/.test(t) ? 'rtl' : 'ltr'; };
 
-  /* ---------- fetching ---------- */
+  /* ---------- fetching: only our Pages copy (the server refreshes READMEs once a night; clients never call GitHub) ---------- */
   function lsGet(k) { return tryc(function () { return JSON.parse(localStorage.getItem('rf.rd.' + k) || 'null'); }, null); }
-  function lsSet(k, v) { tryc(function () { localStorage.setItem('rf.rd.' + k, JSON.stringify(v)); }, null) || tryc(function () { pruneLS(); localStorage.setItem('rf.rd.' + k, JSON.stringify(v)); }); }
+  function lsSet(k, v) { if (!tryc(function () { localStorage.setItem('rf.rd.' + k, JSON.stringify(v)); return 1; }, 0)) tryc(function () { pruneLS(); localStorage.setItem('rf.rd.' + k, JSON.stringify(v)); }); }
   function pruneLS() { var ks = []; for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf('rf.rd.') === 0) ks.push(k); } ks.slice(0, Math.ceil(ks.length / 2)).forEach(function (k) { localStorage.removeItem(k); }); }
-  function getText(url, opt) { return fetch(url, opt).then(function (r) { return r.ok ? r.text().then(function (t) { return { t: t, etag: r.headers.get('etag') || '' }; }) : Promise.reject(r.status); }); }
-  function live(r, etag) { // GitHub API (CORS, 60/h per IP) → raw fallbacks on rate limit / errors
-    var h = { Accept: 'application/vnd.github.raw' }; if (etag) h['If-None-Match'] = etag;
-    return fetch('https://api.github.com/repos/' + r.owner + '/' + r.name + '/readme', { headers: h, credentials: 'omit', referrerPolicy: 'no-referrer' }).then(function (res) {
-      if (res.status === 304) return { same: true };
-      if (res.ok) return res.text().then(function (t) { return { t: t, etag: res.headers.get('etag') || '' }; });
-      if (res.status === 404) return { none: true };
-      return Promise.reject(res.status);
-    }).catch(function (st) {
-      if (st && st.none) return st;
-      var names = ['README.md', 'readme.md', 'Readme.md', 'README.rst', 'README.txt', 'README'], i = 0;
-      var next = function () { if (i >= names.length) return Promise.reject('raw'); var n = names[i++];
-        return getText('https://raw.githubusercontent.com/' + r.owner + '/' + r.name + '/HEAD/' + n, { credentials: 'omit', referrerPolicy: 'no-referrer' }).then(function (x) { x.plain = !/\.md$/i.test(n); return x; }, next); };
-      return next();
-    });
-  }
-  function refresh(r) { // fire and forget: the server keeps the copy for everyone; failures are ignored
-    var b = C.api && C.api.base; if (!b) return;
-    var t = C.tg && C.tg(), h = { 'Content-Type': 'application/json' };
-    if (t && t.initData) h.Authorization = 'tma ' + t.initData;
-    else { var k = tryc(function () { return JSON.parse(localStorage.getItem('rf.tok') || 'null'); }, null); if (k && k.token) h.Authorization = 'Bearer ' + k.token; else return; }
-    fetch(b + '/api/readme/refresh', { method: 'POST', headers: h, body: JSON.stringify({ repo: r.owner + '/' + r.name }), credentials: 'omit' }).catch(function () { });
-  }
 
   /* ---------- view ---------- */
   function open(box, r, core) {
     C = core; var key = (r.owner + '__' + r.name).toLowerCase(), gh = 'https://github.com/' + r.owner + '/' + r.name;
     box.textContent = ''; box.setAttribute('aria-busy', 'true');
-    var note = E('p', 'rd-note'), body = E('div', 'md'), shown = null, scroller = box.closest('.s-scroll, .pane') || document.scrollingElement;
+    var note = E('p', 'rd-note'), body = E('div', 'md'), shown = null;
     var sk = E('div', 'rd-skel'); for (var i = 0; i < 5; i++) sk.appendChild(E('i')); sk.setAttribute('aria-label', 'در حال بارگیری README');
     box.appendChild(note); box.appendChild(sk); box.appendChild(body);
-    var cached = lsGet(key), y0 = 0;
-    var show = function (t, src, plain) {
-      shown = t; sk.remove(); body.textContent = ''; render(t, body, r, plain, gh);
-      note.textContent = src === 'live' ? '' : 'نسخه‌ی ذخیره‌شده' + (src === 'offline' ? ' (اتصال به GitHub برقرار نشد)' : '');
-      y0 = scroller ? scroller.scrollTop : 0; box.setAttribute('aria-busy', 'false');
-    };
-    if (cached && cached.t) show(cached.t, 'cache', cached.plain);
-    var pages = getText('./readme/' + key + '.md', { cache: 'no-cache' }).then(function (x) { if (!shown) show(x.t, 'pages'); return x.t; }, function () { return null; });
-    live(r, cached && cached.etag).then(function (x) {
-      if (x.none) { if (!shown) { sk.remove(); box.setAttribute('aria-busy', 'false'); note.textContent = 'این مخزن README ندارد.'; } return; }
-      if (x.same) { note.textContent = ''; return; }
-      lsSet(key, { t: x.t.slice(0, CAP), etag: x.etag, plain: !!x.plain, at: Date.now() });
-      pages.then(function (pt) { if (pt !== x.t) refresh(r); });
-      if (shown == null) return show(x.t, 'live', x.plain);
-      if (shown === x.t) { note.textContent = ''; return; }
-      if (!scroller || Math.abs(scroller.scrollTop - y0) < 8) return show(x.t, 'live', x.plain);   // untouched: swap in place
-      var chip = E('button', 'rd-chip', 'نسخه‌ی تازه‌تر — بارگذاری'); chip.type = 'button';
-      chip.onclick = function () { chip.remove(); show(x.t, 'live', x.plain); };
-      note.textContent = ''; note.appendChild(chip);
-    }, function () {
-      pages.then(function (pt) {
-        if (shown) { if (!note.textContent) note.textContent = 'نسخه‌ی ذخیره‌شده (اتصال به GitHub برقرار نشد)'; return; }
-        if (pt) return show(pt, 'offline');
-        sk.remove(); box.setAttribute('aria-busy', 'false');
-        note.textContent = 'README بارگیری نشد.';
-        var a = E('button', 'btn', 'تلاش دوباره'); a.type = 'button'; a.onclick = function () { open(box, r, core); };
-        var g = E('a', 'link', 'مشاهده در GitHub'); g.href = gh; g.target = '_blank'; g.rel = 'noopener noreferrer'; g.setAttribute('data-ext', 'gh');
-        var w = E('p', 'rd-acts'); w.appendChild(a); w.appendChild(g); box.appendChild(w);
-      });
+    var swept = C.sweptAt && C.sweptAt(), stamp = swept ? 'آخرین به‌روزرسانی: ' + C.rel(swept) : '';
+    var ghLink = function () { var g = E('a', 'link', 'مشاهده در GitHub'); g.href = gh; g.target = '_blank'; g.rel = 'noopener noreferrer'; g.setAttribute('data-ext', 'gh'); return g; };
+    var show = function (t, offline) { if (t === shown) return; shown = t; sk.remove(); body.textContent = ''; render(t, body, r, false, gh); note.textContent = offline ? 'نسخه‌ی ذخیره‌شده روی این دستگاه' + (stamp ? ' · ' + stamp : '') : stamp; box.setAttribute('aria-busy', 'false'); };
+    var cached = lsGet(key);
+    if (cached && cached.t) show(cached.t);
+    fetch(C.dataUrl('readme/' + key + '.md'), { cache: 'no-cache', credentials: 'omit' }).then(function (res) {   // conditional (ETag) via the HTTP cache / service worker
+      if (res.status === 404) return null;
+      if (!res.ok) throw res.status;
+      return res.text();
+    }).then(function (t) {
+      if (t == null) {
+        if (cached) tryc(function () { localStorage.removeItem('rf.rd.' + key); });
+        sk.remove(); body.textContent = ''; box.setAttribute('aria-busy', 'false');
+        note.textContent = 'README این مخزن هنوز ذخیره نشده است.';
+        var w = E('p', 'rd-acts'); w.appendChild(ghLink()); box.appendChild(w); return;
+      }
+      lsSet(key, { t: t.slice(0, CAP), at: Date.now() }); show(t);
+    }).catch(function () {
+      if (shown) { note.textContent = 'نسخه‌ی ذخیره‌شده روی این دستگاه' + (stamp ? ' · ' + stamp : ''); return; }
+      sk.remove(); box.setAttribute('aria-busy', 'false'); note.textContent = 'README بارگیری نشد.';
+      var a = E('button', 'btn', 'تلاش دوباره'); a.type = 'button'; a.onclick = function () { open(box, r, core); };
+      var w = E('p', 'rd-acts'); w.appendChild(a); w.appendChild(ghLink()); box.appendChild(w);
     });
   }
 
@@ -87,7 +57,7 @@
     if (img) return /^https:\/\//.test(out) ? out : null;
     return /^(https?:|mailto:)/.test(out) ? out : null;
   }
-  function render(text, into, r, plain, gh) {
+  function render(text, into, r, plain, gh) {   // plain: kept for .rst/.txt copies
     RAW = 'https://raw.githubusercontent.com/' + r.owner + '/' + r.name + '/HEAD/'; BLOB = gh + '/blob/HEAD/';
     var t = String(text).replace(/\r\n?/g, '\n'), cut = false;
     var fa = (t.slice(0, 20000).match(/[\u0600-\u06FF]/g) || []).length, la = (t.slice(0, 20000).match(/[A-Za-z]/g) || []).length;

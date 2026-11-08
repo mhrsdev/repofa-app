@@ -3,9 +3,6 @@
 .rd{margin-top:4px}
 .rd-note{font-size:var(--t-12);color:var(--muted);min-height:0}
 .rd-note:empty{display:none}
-.rd-note:has(.rd-chip){position:sticky;top:.5rem;z-index:3}
-.rd-chip{box-shadow:0 0 0 4px var(--bg);display:inline-flex;align-items:center;min-height:2rem;padding:.125rem .75rem;border:1px solid var(--accent);border-radius:var(--r-m);color:var(--accent);font-size:var(--t-13);background:var(--bg)}
-.rd-chip:hover{background:var(--accent-tint)}
 .rd-skel i{display:block;height:.625rem;margin:.75rem 0;border-radius:3px;background:var(--bg-3)}
 .rd-skel i:nth-child(1){width:40%;height:.875rem}.rd-skel i:nth-child(2){width:92%}.rd-skel i:nth-child(3){width:84%}.rd-skel i:nth-child(4){width:70%}.rd-skel i:nth-child(5){width:88%}
 @media (prefers-reduced-motion:no-preference){.rd-skel i{animation:pulse 1.4s ease-in-out infinite alternate}}

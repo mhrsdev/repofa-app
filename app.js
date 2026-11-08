@@ -1,7 +1,7 @@
 /* RepoFA mini app — dependency-free. Data: ./data.json (see README). All search/filtering runs on-device. */
 (function () {
   'use strict';
-  var DATA_URL = './data.json', CHUNK = 30, DEBOUNCE = 120, MAX_AGE_REFRESH = 5 * 60e3, NOTE_MAX = 140, DAY = 864e5;
+  var CHUNK = 30, DEBOUNCE = 120, MAX_AGE_REFRESH = 5 * 60e3, NOTE_MAX = 140, DAY = 864e5;
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var tryc = function (f, d) { try { return f(); } catch (e) { return d; } };
   var ls = {
@@ -95,7 +95,8 @@
   }
 
   /* ---------- state ---------- */
-  var S = { tab: 'all', q: '', cat: '', col: '', tag: '', lang: '', sort: 'new', fs: '', sel: null };
+  var S = { tab: 'all', q: '', cat: '', col: '', tag: '', lang: '', pub: '', sort: 'new', fs: '', sel: null };
+  var pubSet = null, routed = false;
   var D = null, P = [], byId = new Map(), colById = new Map();
   var rankNew = [], rankStars = [], rankViews = [], order = [], orderStars = [], orderViews = [], hasViews = false;
   var catIdx = new Map(), catCount = {}, tagCount = new Map(), langCount = new Map(), repoTotal = 0;
@@ -106,7 +107,7 @@
   var el = {};
   ['app', 'top', 'q', 'q-clear', 'list', 'sentinel', 'state', 'toolbar', 'scope-h', 'scope-x', 'count', 'sort', 'fav-seg', 'tokens', 'notice', 'notice-t', 'notice-x', 'tabs', 'fav-n', 'theme',
     'toast', 't-msg', 't-act', 'sheet', 'sheet-root', 'backdrop', 'updated', 'search-form', 'side', 'cat-list', 'col-list', 'sec-cols', 'lang-list', 'tag-list', 'n-all', 'n-fav',
-    'pane', 'fav-tools', 'brand-meta', 'k-hint', 'chat', 'tab-chat', 'nav-chat']
+    'pane', 'fav-tools', 'brand-meta', 'k-hint', 'chat', 'tab-chat', 'nav-chat', 'pubs', 'tab-pubs', 'nav-pubs']
     .forEach(function (id) { el[id] = document.getElementById(id); });
 
   /* ---------- data load ---------- */
@@ -114,9 +115,8 @@
     if (!d || !Array.isArray(d.projects)) throw new Error('bad data');
     D = d; buildIndex(); renderSide(); renderBrand(); el.app.setAttribute('data-ready', ''); el.toolbar.hidden = false;
     indexReady = true; apply();
-    var hid = /^#p=(\d+)/.exec(location.hash);
-    if (hid && byId.has(+hid[1]) && sheetId == null) openDetail(+hid[1], { fromHash: true });
-    else if (isDesk()) renderPane();
+    if (isDesk()) renderPane();
+    if (!routed) { routed = true; route(true); }
     measure();
     if (quiet) toast('فهرست به‌روز شد');
   }
@@ -170,24 +170,48 @@
 
   function fetchData(manual) {
     lastFetch = Date.now();
-    return fetch(DATA_URL, { cache: D ? 'no-cache' : 'default', credentials: 'same-origin' }).then(function (res) {   // first fetch can take the <link rel=preload>
+    var base = DB;
+    return fetch(dataUrl('data.json'), { cache: D ? 'no-cache' : 'default', credentials: base ? 'omit' : 'same-origin' }).then(function (res) {   // first fetch can take the <link rel=preload>
       if (!res.ok) throw new Error('HTTP ' + res.status);
       var et = res.headers.get('etag') || res.headers.get('last-modified');
-      if (D && et && et === etag) { notice(''); if (manual) toast('فهرست به‌روز است'); return; }
+      if (D && et && et === etag) { notice('', 'net'); if (manual) toast('فهرست به‌روز است'); return; }
       return res.text().then(function (txt) {
         var d = JSON.parse(txt);
-        if (D && d.generated_at && D.generated_at === d.generated_at) { etag = et; notice(''); if (manual) toast('فهرست به‌روز است'); return; }
-        var had = !!D; etag = et; setData(d, had); notice('');
-        ls.set('rf.cache', txt); ls.set('rf.etag', et || '');
+        if (D && d.generated_at && D.generated_at === d.generated_at) { etag = et; notice('', 'net'); if (manual) toast('فهرست به‌روز است'); return; }
+        var had = !!D; etag = et; setData(d, had); notice('', 'net');
+        ls.set('rf.cache', txt); ls.set('rf.etag', et || ''); ls.set('rf.cachebase', base);
       });
     }).catch(function (err) {
       window.__lastErr = String(err);
-      if (D) notice('اتصال برقرار نیست؛ نسخه‌ی ذخیره‌شده روی این دستگاه نمایش داده می‌شود' + (D.generated_at ? ' (به‌روزرسانی ' + rel(Date.parse(D.generated_at)) + ')' : '') + '.');
+      if (D) notice('اتصال برقرار نیست؛ نسخه‌ی ذخیره‌شده روی این دستگاه نمایش داده می‌شود' + (D.generated_at ? ' (به‌روزرسانی ' + rel(Date.parse(D.generated_at)) + ')' : '') + '.', 'net');
       else showError(err);
     });
   }
+  /* config.json (own origin only) may point the data feed elsewhere (`dataBase`) and rebrand a copy (`title`, `channelUrl`, `botUsername`).
+     Never from the URL: a crafted link must not be able to show someone else's content under this site's name. */
+  var DB = '', CFG = tryc(function () { return JSON.parse(ls.get('rf.cfg') || 'null'); }, null);
+  function dataUrl(path) { return (DB || './') + path; }
+  function validBase(u) {
+    return typeof u === 'string' && u.length < 200 && (/^https:\/\/[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+(:\d{2,5})?\/([A-Za-z0-9._~-]+\/)*$/i.test(u) ||
+      /^http:\/\/(localhost|127\.0\.0\.1):\d{2,5}\/([A-Za-z0-9._~-]+\/)*$/.test(u)) && u.replace(/\/+$/, '/') !== location.href.replace(/[?#].*$/, '').replace(/[^\/]*$/, '');
+  }
+  function applyCfg(cfg) {
+    CFG = cfg && typeof cfg === 'object' ? cfg : null;
+    var db = CFG && validBase(CFG.dataBase) ? CFG.dataBase : '', changed = db !== DB; DB = db;
+    var t = CFG && typeof CFG.title === 'string' ? CFG.title.trim().slice(0, 40) : '';
+    if (t) { document.querySelector('.brand h1').textContent = t; document.title = t; }
+    var ch = CFG && /^https:\/\/t\.me\/[A-Za-z0-9_]{4,32}\/?$/.test(CFG.channelUrl || '') ? CFG.channelUrl : '';
+    if (ch) { var a = document.querySelector('.side-foot a'); a.href = ch; a.firstChild.textContent = ch.replace(/^https:\/\//, '').replace(/\/$/, ''); }
+    return changed;
+  }
+  function loadCfg() { // early, same origin, cache-busted; the last copy is remembered so a dataBase applies before the first data fetch
+    return fetch('./config.json?t=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }, function () { return undefined; })
+      .then(function (cfg) { if (cfg === undefined) return false; ls.set('rf.cfg', JSON.stringify(cfg || null)); return applyCfg(cfg); }, function () { return false; });
+  }
+  applyCfg(CFG);
   function boot() { // skeleton paints first; the index is built in the next task
-    var c = ls.get('rf.cache');
+    var c = ls.get('rf.cachebase') === DB ? ls.get('rf.cache') : null;
+    loadCfg().then(function (changed) { if (changed) { etag = null; fetchData(); } });
     requestAnimationFrame(function () {
       setTimeout(function () {
         if (c) tryc(function () { setData(JSON.parse(c)); etag = ls.get('rf.etag') || null; });
@@ -204,6 +228,7 @@
     if (S.cat && p.category !== S.cat) return false;
     if (S.tag && p.tags.indexOf(S.tag) < 0) return false;
     if (S.lang && p._l !== S.lang) return false;
+    if (S.pub && !(pubSet && pubSet.has(p.id))) return false;
     return true;
   }
   function tokensOf(q) { return q ? norm(q.replace(/^#/, '')).split(' ').filter(Boolean) : []; }
@@ -256,7 +281,7 @@
   }
   function syncSide() {
     var cur = function (sel, on) { el.side.querySelectorAll(sel).forEach(function (b) { b.setAttribute('aria-current', on(b) ? 'true' : 'false'); }); };
-    cur('[data-scope]', function (b) { var s = b.getAttribute('data-scope'); return s === 'fav' || s === 'chat' ? S.tab === s : S.tab === 'all' && !S.cat && !S.col && !S.tag && !S.lang; });
+    cur('[data-scope]', function (b) { var s = b.getAttribute('data-scope'); return s === 'fav' || s === 'chat' || s === 'pubs' ? S.tab === s : S.tab === 'all' && !S.cat && !S.col && !S.tag && !S.lang && !S.pub; });
     cur('[data-cat]', function (b) { return S.tab !== 'fav' && b.getAttribute('data-cat') === S.cat; });
     cur('[data-col]', function (b) { return S.tab !== 'fav' && b.getAttribute('data-col') === S.col; });
     cur('[data-lang]', function (b) { return S.tab !== 'fav' && b.getAttribute('data-lang') === S.lang; });
@@ -361,9 +386,9 @@
     el['q-clear'].hidden = !el.q.value;
     el.tabs.querySelectorAll('button').forEach(function (b) { b.getAttribute('data-tab') === t ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'); });
     syncSide();
-    var chat = t === 'chat'; syncTgLine();
-    el.chat.hidden = !chat; el.toolbar.hidden = chat; el.list.hidden = chat; el.sentinel.hidden = chat;
-    if (chat) { el.state.hidden = true; el['fav-tools'].hidden = true; mountChat(); updateBack(); return; }
+    var chat = t === 'chat', pubs = t === 'pubs', other = chat || pubs; syncTgLine();
+    el.chat.hidden = !chat; el.pubs.hidden = !pubs; el.toolbar.hidden = other; el.list.hidden = other; el.sentinel.hidden = other;
+    if (other) { el.state.hidden = true; el['fav-tools'].hidden = true; if (chat) mountChat(); else mountPubs(); updateBack(); return; }
     el['fav-seg'].hidden = t !== 'fav'; el.sort.hidden = t === 'fav' || (!!S.col && !S.q);
     el['fav-tools'].hidden = !(t === 'fav' && favs.size);
     curTokens = tokensOf(S.q);
@@ -389,6 +414,7 @@
     if (S.tab !== 'fav') {
       if (S.tag) { h += '<button type="button" class="token" data-untoken="tag" aria-label="حذف فیلتر برچسب ' + esc(S.tag) + '"><bdi dir="ltr">#' + esc(S.tag) + '</bdi>' + x + '</button>'; n++; }
       if (S.lang) { h += '<button type="button" class="token" data-untoken="lang" aria-label="حذف فیلتر زبان ' + esc(S.lang) + '">' + dot(S.lang) + '<bdi dir="ltr">' + esc(S.lang) + '</bdi>' + x + '</button>'; n++; }
+      if (S.pub) { h += '<button type="button" class="token" data-untoken="pub" aria-label="حذف فیلتر ناشر ' + esc(S.pub) + '"><span>ناشر</span><bdi dir="ltr">' + esc(S.pub) + '</bdi>' + x + '</button>'; n++; }
       if (n && (S.cat || S.col)) h += '<button type="button" class="clear-all" data-clear="filters">حذف همه‌ی فیلترها</button>';
     }
     el.tokens.hidden = !h; el.tokens.innerHTML = h;
@@ -400,6 +426,7 @@
     if (S.cat && catIdx.has(S.cat)) a.push('دسته‌ی «' + catIdx.get(S.cat).title + '»');
     if (S.tag) a.push('#' + S.tag);
     if (S.lang) a.push(S.lang);
+    if (S.pub) a.push('ناشر ' + S.pub);
     return a;
   }
   function renderState() {
@@ -544,6 +571,7 @@
         (p.repos.length > 1 ? '<div class="seg rd-repos" role="group" aria-label="مخزن">' + p.repos.map(function (x, i) { return '<button type="button" data-rd-i="' + i + '" aria-pressed="' + (i === 0) + '"><bdi dir="ltr">' + esc(x.name) + '</bdi></button>'; }).join('') + '</div>' : '') +
         '<button type="button" class="btn rd-open" data-readme="1">نمایش README</button><div class="rd" hidden></div></section>' : '') +
       (others ? '<section class="d-sec"><h3 class="d-h">مخزن‌های دیگر این پست</h3>' + others + '</section>' : '') +
+      '<section class="d-sec d-cm"><button type="button" class="btn cm-open" data-comments="' + p.id + '">کامنت‌ها' + (typeof p.comments === 'number' && p.comments > 0 ? ' <span class="cm-n">(' + faN(p.comments) + ')</span>' : '') + '</button><div class="cm" hidden></div></section>' +
       '<div id="d-save"></div>' +
       '<p class="d-links">' + (p.tg_url ? '<a class="link" href="' + esc(p.tg_url) + '" data-ext="tg" target="_blank" rel="noopener noreferrer">' + IC('send') + 'پست کانال</a>' : '') +
       '<button type="button" class="link" data-share="1">' + IC('share') + 'اشتراک‌گذاری</button></p></article>';
@@ -552,17 +580,17 @@
   function faCompact(n) { return toFa(compact(n)).replace('.', '٫'); }
   function engagement(p) {
     var parts = [], num = function (v) { return typeof v === 'number' && v >= 0 ? v : null; }, rx = p.reactions, rt = null, top = [];
-    if (typeof rx === 'number') rt = rx;
+    if (typeof rx === 'number') { rt = rx; if (Array.isArray(p.top_reactions)) top = p.top_reactions.map(function (x) { return [x.emoji, x.count]; }).filter(function (x) { return typeof x[0] === 'string' && x[0].length <= 8 && num(x[1]) != null; }).slice(0, 3); }
     else if (rx && typeof rx === 'object') {
       rt = num(rx.total) != null ? rx.total : num(rx.n);
-      var t = rx.top; if (Array.isArray(t)) top = t.map(function (x) { return [x.emoji || x.e || x.r, x.count || x.n]; }); else if (t && typeof t === 'object') top = Object.keys(t).map(function (k) { return [k, t[k]]; });
+      var t = rx.top || p.top_reactions; if (Array.isArray(t)) top = t.map(function (x) { return [x.emoji || x.e || x.r, x.count || x.n]; }); else if (t && typeof t === 'object') top = Object.keys(t).map(function (k) { return [k, t[k]]; });
       top = top.filter(function (x) { return typeof x[0] === 'string' && x[0].length <= 8 && num(x[1]) != null; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 3);
     }
     if (num(p.views) != null) parts.push('بازدید ' + faCompact(p.views));
     if (num(p.forwards) != null) parts.push('فوروارد ' + faCompact(p.forwards));
     if (num(rt) != null) parts.push('واکنش ' + faCompact(rt) + (top.length ? ' <span class="rx">' + top.map(function (x) { return '<span>' + esc(x[0]) + ' ' + faCompact(x[1]) + '</span>'; }).join('') + '</span>' : ''));
     if (!parts.length) return '';
-    var at = Date.parse(p.engagement_at);
+    var at = Date.parse(p.engagement_at || (D && D.engagement_at));
     return '<p class="d-eng"' + (at ? ' title="آمار تا ' + esc(fullDate(at)) + '"' : '') + '>' + parts.join(SEP) + (at ? '<span class="d-eng-at">آمار تا ' + esc(fullDate(at)) + '</span>' : '') + '</p>';
   }
   function renderSave() {
@@ -629,7 +657,7 @@
     if (sheetId == null) return;
     sheetId = null; hideSheetUi();
     if (!viaPop && history.state && history.state.sheet) tryc(function () { history.back(); });
-    else if (/^#p=/.test(location.hash)) tryc(function () { history.replaceState(null, '', location.pathname + location.search); });
+    else if (/^#(p=|\/)/.test(location.hash)) tryc(function () { history.replaceState(null, '', location.pathname + location.search); });
     tryc(function () { if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true }); });
     tgMain(null); updateBack();
     if (dirty) { dirty = false; apply(); }
@@ -654,7 +682,9 @@
       if (dy > el.sheet.offsetHeight * 0.3 || (dy > 40 && v > 0.5)) closeSheet();
     });
   })();
+  var routedAt = 0;
   window.addEventListener('popstate', function () {
+    if (/^#\/(project|repo|publisher|p)\//.test(location.hash) && indexReady) { routedAt = Date.now(); return route(false); }   // a deep link while the app is open
     var h = /^#p=(\d+)/.exec(location.hash), st = history.state;
     if (h && indexReady && byId.has(+h[1]) && (isDesk() || (st && st.sheet))) { if (sheetId !== +h[1]) openDetail(+h[1], { fromHash: true }); }
     else if (sheetId != null) closeSheet(true);
@@ -695,7 +725,7 @@
     }
     if (e.key === 'Escape' && el.pane.contains(a) && S.sel != null && rows.get(S.sel) && rows.get(S.sel).isConnected) { e.preventDefault(); return focusRow(rows.get(S.sel)); }
     if (typing) { if (e.key === 'Escape') a.blur(); return; }
-    if (e.key === '/') { e.preventDefault(); el.q.focus(); el.q.select(); return; }
+    if (e.key === '/') { e.preventDefault(); if (S.tab === 'pubs' && window.__rfPubs && window.__rfPubs.focusSearch()) return; el.q.focus(); el.q.select(); return; }
     var row = a && a.closest && a.closest('.row');
     if (row && (e.key === 'ArrowDown' || e.key === 'j' || e.key === 'ArrowUp' || e.key === 'k' || e.key === 'Home' || e.key === 'End')) {
       e.preventDefault();
@@ -707,7 +737,7 @@
       return focusRow(rl[i + (down ? 1 : -1)]);
     }
     if (row && e.key === 'Escape') { e.preventDefault(); el.q.focus(); return; }
-    if (!row && !el.pane.contains(a) && !el.side.contains(a) && (e.key === 'ArrowDown' || e.key === 'j') && isDesk() && indexReady && S.tab !== 'chat') { e.preventDefault(); return focusRow(curRow()); }
+    if (!row && !el.pane.contains(a) && !el.side.contains(a) && (e.key === 'ArrowDown' || e.key === 'j') && isDesk() && indexReady && S.tab !== 'chat' && S.tab !== 'pubs') { e.preventDefault(); return focusRow(curRow()); }
     var id = keyTarget(); if (id == null || !byId.has(id)) return;
     var p = byId.get(id), r = p.repos[0], k = e.key.toLowerCase();
     if (k === 's') { e.preventDefault(); toggleFav(id); }
@@ -760,7 +790,11 @@
     toastT = setTimeout(function () { el.toast.removeAttribute('data-on'); toastUndo = null; }, undo ? 4500 : 1800);
   }
   el['t-act'].addEventListener('click', function () { var u = toastUndo; toastUndo = null; el.toast.removeAttribute('data-on'); if (u) { u(); haptic('select'); } });
-  function notice(m) { el.notice.hidden = !m; el['notice-t'].textContent = m || ''; }
+  var noticeKind = '';
+  function notice(m, kind) { // kind 'net' notices are cleared by the next successful fetch; others stay until dismissed
+    if (!m && kind === 'net' && noticeKind !== 'net') return;
+    noticeKind = m ? (kind || '') : ''; el.notice.hidden = !m; el['notice-t'].textContent = m || '';
+  }
   el['notice-x'].addEventListener('click', function () { notice(''); });
   function haptic(kind, v) {
     if (!TG || !TG.HapticFeedback) return;
@@ -778,7 +812,7 @@
     if (k === 'cat') S.col = ''; else if (k === 'col') S.cat = '';
     S.tab = 'all'; haptic('select'); apply(); window.scrollTo(0, 0);
   }
-  function clearFilters(all) { S.cat = ''; S.col = ''; S.tag = ''; S.lang = ''; if (all) { S.q = ''; el.q.value = ''; } apply('top'); }
+  function clearFilters(all) { S.cat = ''; S.col = ''; S.tag = ''; S.lang = ''; S.pub = ''; if (all) { S.q = ''; el.q.value = ''; } apply('top'); }
 
   /* measured sticky offsets (text-zoom safe) */
   function measure() {
@@ -814,12 +848,13 @@
   }
   function updateBack() {
     if (!TG || !TG.BackButton) return;
-    tryc(function () { (sheetId != null || S.tab !== 'all' || S.cat || S.col || S.tag || S.lang) ? TG.BackButton.show() : TG.BackButton.hide(); });
+    tryc(function () { (sheetId != null || S.tab !== 'all' || S.cat || S.col || S.tag || S.lang || S.pub || S.q) ? TG.BackButton.show() : TG.BackButton.hide(); });
   }
   function onBack() {
     if (sheetId != null) closeSheet();
     else if (S.tab !== 'all') setTab('all');
-    else if (S.tag || S.lang) { S.tag = ''; S.lang = ''; apply('top'); }
+    else if (S.tag || S.lang || S.pub) { S.tag = ''; S.lang = ''; S.pub = ''; apply('top'); }
+    else if (S.q) { S.q = ''; el.q.value = ''; apply('top'); }
     else if (S.cat || S.col) { S.cat = ''; S.col = ''; apply('top'); }
   }
   var mbFn = null;
@@ -849,7 +884,7 @@
 
   /* ---------- events ---------- */
   var qt;
-  function runSearch() { S.q = el.q.value; if (S.tab === 'cats' || S.tab === 'chat') S.tab = 'all'; apply('top'); }
+  function runSearch() { S.q = el.q.value; if (S.tab === 'cats' || S.tab === 'chat' || S.tab === 'pubs') S.tab = 'all'; apply('top'); }
   el.q.addEventListener('input', function () { el['q-clear'].hidden = !el.q.value; clearTimeout(qt); qt = setTimeout(runSearch, DEBOUNCE); });
   el['search-form'].addEventListener('submit', function (e) {
     e.preventDefault(); clearTimeout(qt); runSearch();
@@ -877,12 +912,14 @@
     if ((b = t.closest('[data-lang]'))) return setFilter('lang', b.getAttribute('data-lang'), !!b.closest('.side'));
     if ((b = t.closest('[data-cat]'))) return setFilter('cat', b.getAttribute('data-cat'), !!b.closest('.side'));
     if ((b = t.closest('[data-col]'))) return setFilter('col', b.getAttribute('data-col'), !!b.closest('.side'));
-    if ((b = t.closest('[data-scope]'))) { var scp = b.getAttribute('data-scope'); if (scp === 'fav' || scp === 'chat') return setTab(scp); S.tab = 'all'; return clearFilters(); }
+    if ((b = t.closest('[data-scope]'))) { var scp = b.getAttribute('data-scope'); if (scp === 'fav' || scp === 'chat' || scp === 'pubs') return setTab(scp); S.tab = 'all'; return clearFilters(); }
     if (t.closest('[data-chat-retry]')) { chatLoad = 0; return mountChat(); }
+    if ((b = t.closest('[data-comments]'))) { var cs = b.closest('.d-cm'), cid = +b.getAttribute('data-comments'), box2 = cs.querySelector('.cm'); b.hidden = true; box2.hidden = false; box2.textContent = 'در حال بارگیری…';
+      return loadCommunity().then(function (m) { m.comments(box2, byId.get(cid), CORE); }, function () { box2.textContent = 'بارگیری کامنت‌ها ناموفق بود.'; b.hidden = false; }); }
     if ((b = t.closest('[data-readme]'))) { var sec = b.closest('.d-rd'), on = sec.querySelector('[data-rd-i][aria-pressed="true"]'); return loadReadme(sec, on ? +on.getAttribute('data-rd-i') : 0); }
     if ((b = t.closest('[data-rd-i]'))) { var sc2 = b.closest('.d-rd'); sc2.querySelectorAll('[data-rd-i]').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); if (!sc2.querySelector('.rd').hidden) loadReadme(sc2, +b.getAttribute('data-rd-i')); return; }
     if (t.closest('#scope-x')) { S.cat = ''; S.col = ''; return apply('top'); }
-    if ((b = t.closest('[data-untoken]'))) { var k = b.getAttribute('data-untoken'); S[k] = ''; return apply('top'); }
+    if ((b = t.closest('[data-untoken]'))) { var k = b.getAttribute('data-untoken'); S[k] = ''; if (k === 'pub') pubSet = null; return apply('top'); }
     if ((b = t.closest('[data-clear]'))) return clearFilters(b.getAttribute('data-clear') === 'all');
     if (t.closest('[data-fs-reset]')) { S.fs = ''; return apply(); }
     if (t.closest('[data-retry]')) { el.state.innerHTML = '<p class="code">GET ./data.json …</p>'; return fetchData(true).then(function () { if (D) { el.toolbar.hidden = false; indexReady = true; apply(); renderPane(); } }); }
@@ -914,7 +951,7 @@
     API.busy = fetch('./config.json?t=' + Date.now(), { cache: 'no-store', credentials: 'omit' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (cfg) {
-        API.cfg = cfg && typeof cfg === 'object' ? cfg : null;
+        API.cfg = cfg && typeof cfg === 'object' ? cfg : null; if (applyCfg(API.cfg)) { etag = null; fetchData(); }
         var bases = API.cfg && Array.isArray(API.cfg.apiBases) ? API.cfg.apiBases.filter(function (b) { return /^https?:\/\/[^\s]+$/.test(b); }) : [], i = 0;
         var next = function () { if (i >= bases.length) return null; var b = String(bases[i++]).replace(/\/+$/, ''); return probe(b).then(function (ok) { return ok ? b : next(); }); };
         return next();
@@ -925,7 +962,7 @@
         API.fails = b ? 0 : API.fails + 1;
         API.next = Date.now() + (b ? 30e3 : Math.min(30e3 * Math.pow(2, API.fails - 1), 300e3));   // ≥30 s, backoff to 5 min
         syncChatTab();
-        if (b && location.hash === '#chat' && S.tab !== 'chat') setTab('chat');
+        if (b && (location.hash === '#chat' || pendingChat) && S.tab !== 'chat') { pendingChat = false; setTab('chat'); }
         return b;
       });
     return API.busy;
@@ -983,10 +1020,71 @@
     box.textContent = 'در حال بارگیری…';
     rdLoad.then(function () { window.__rfReadme.open(box, r, CORE); }, function () { rdLoad = null; box.textContent = 'نمایشگر README بارگیری نشد.'; if (btn) btn.hidden = false; });
   }
+  /* community chunk (publishers + comments): loaded on first need */
+  var cmLoad = null;
+  function loadCommunity() {
+    return cmLoad = cmLoad || new Promise(function (ok, bad) {
+      var n = 0, fail = false, done = function () { if (++n === 2) { if (fail || !window.__rfPubs) { cmLoad = null; bad(); } else ok(window.__rfPubs); } };
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'community.css'; l.onload = done; l.onerror = function () { fail = true; done(); }; document.head.appendChild(l);
+      var sc = document.createElement('script'); sc.src = 'community.js'; sc.async = true; sc.onload = done; sc.onerror = function () { fail = true; done(); }; document.head.appendChild(sc);
+    });
+  }
+  function mountPubs(login) {
+    if (!el.pubs.firstChild) el.pubs.innerHTML = '<p class="chat-boot">در حال بارگیری ناشرها…</p>';
+    loadCommunity().then(function (m) { m.list(el.pubs, CORE); if (login) m.open(login); }, function () { el.pubs.innerHTML = '<p class="chat-boot">بارگیری ناشرها ناموفق بود. <button type="button" class="link" data-scope="pubs">تلاش دوباره</button></p>'; });
+  }
+  /* a non-project panel (publisher): the pane on desktop, the sheet below 960 */
+  function openPanel(node) {
+    if (isDesk()) { var pr = S.sel != null && rows.get(S.sel); if (pr) pr.setAttribute('aria-current', 'false'); S.sel = null; el.pane.replaceChildren(node); el.pane.scrollTop = 0; return; }
+    var reuse = sheetId != null; sheetId = -1; if (!reuse) lastFocus = document.activeElement;
+    el.sheet.innerHTML = '<div class="grab" id="grab" aria-hidden="true"></div><button type="button" class="icon-btn s-close" data-close="1" aria-label="بستن">' + IC('close') + '</button>';
+    var sc = document.createElement('div'); sc.className = 's-scroll'; sc.appendChild(node); el.sheet.appendChild(sc);
+    el['sheet-root'].setAttribute('data-show', ''); el['sheet-root'].setAttribute('aria-hidden', 'false');
+    el.app.inert = true; document.body.style.overflow = 'hidden'; document.body.classList.add('sheet-open');
+    tryc(function () { el.sheet.querySelector('.s-close').focus({ preventScroll: true }); });
+    if (!(history.state && history.state.sheet)) tryc(function () { history.pushState({ sheet: -1 }, '', location.href); });
+    tgMain(null); updateBack();
+  }
+  function setPub(login, ids) { // «نمایش این ناشر در فهرست اصلی»
+    if (sheetId != null) { sheetId = null; hideSheetUi(); if (history.state && history.state.sheet) tryc(function () { history.back(); }); }
+    S.pub = login; pubSet = new Set(ids || []); S.cat = ''; S.col = ''; S.tab = 'all'; apply('top'); renderPane();
+  }
+  /* deep links: #/project/<id> #/repo/<owner>/<name> #/search/<q> ?q= #/publisher/<login> (#/p/<login>) #/publishers #/saved #/chat; legacy #p=<id>, #chat */
+  var pendingChat = false;
+  function miss() { notice('پیوند به موردی اشاره می‌کند که در این فهرست نیست؛ فهرست اصلی نمایش داده شد.'); }
+  function route(cold) {
+    var raw = (location.hash || '').replace(/^#/, '').split(/[&?]tgWebApp/)[0], m;
+    var seg = raw.split('/').map(function (x) { return tryc(function () { return decodeURIComponent(x); }, x); });
+    var q = cold ? tryc(function () { return new URLSearchParams(location.search).get('q'); }, null) : null;
+    if ((m = /^p=(\d+)$/.exec(raw))) return go('project', m[1]);
+    if (raw === 'chat') return go('chat');
+    if (raw[0] === '/') return go(seg[1], seg[2], seg[3], seg.slice(2).join('/'));
+    if (q) return go('search', null, null, q);
+    var sp = cold && tryc(function () { return TG && TG.initDataUnsafe && TG.initDataUnsafe.start_param; }, '');   // t.me/<bot>/<app>?startapp=project-25
+    if (sp && (m = /^(project|publisher|search|saved|chat|publishers)(?:-(.+))?$/.exec(sp))) go(m[1], m[2], null, m[2] ? tryc(function () { return decodeURIComponent(m[2]); }, m[2]) : '');
+  }
+  function go(kind, a, b, rest) {
+    switch (kind) {
+      case 'project': { var id = +a; if (byId.has(id) && !byId.get(id)._ext) { if (S.tab !== 'all') setTab('all'); openDetail(id, { fromHash: true }); } else miss(); return; }
+      case 'repo': { var key = (String(a || '') + '/' + String(b || '')).toLowerCase(), hit = null;
+        for (var i = 0; i < P.length && !hit; i++) if (!P[i]._ext && P[i].repos.some(function (r) { return (r.owner + '/' + r.name).toLowerCase() === key; })) hit = P[i];
+        if (hit) { if (S.tab !== 'all') setTab('all'); openDetail(hit.id, { fromHash: true }); } else miss(); return; }
+      case 'search': { S.tab = 'all'; el.q.value = String(rest || '').slice(0, 200); S.q = el.q.value; apply('top'); return; }
+      case 'publishers': setTab('pubs'); return;
+      case 'publisher': case 'p': { var lg = String(a || ''); if (!/^[A-Za-z0-9-]{1,39}$/.test(lg)) return miss(); S.tab = 'pubs'; apply(); mountPubs(lg); return; }
+      case 'saved': setTab('fav'); return;
+      case 'chat': if (API.seen) setTab('chat'); else pendingChat = true; return;
+      default: if (kind) miss();
+    }
+  }
+  window.addEventListener('hashchange', function () { if (indexReady && Date.now() - routedAt > 50) route(false); });
   var chatRowN = 0;
   function rowFor(it) { var p = ensureProject(it); if (!p) return null; var e = buildRow(p, 'c' + (++chatRowN) + '-'); syncRow(e, p.id); return e; }
   var CORE = { S: S, api: API, discover: discover, tg: function () { return TG; }, rowFor: rowFor, openDetail: openDetail, isDesk: isDesk, faN: faN, rel: rel,
-    toast: toast, haptic: haptic, openUrl: openUrl, copyText: copyText, setTab: setTab, IC: IC };
+    toast: toast, haptic: haptic, openUrl: openUrl, copyText: copyText, setTab: setTab, IC: IC, compact: compact, fullDate: fullDate, esc: esc,
+    data: function () { return D; }, project: function (id) { return byId.get(id); }, openPanel: openPanel, setPub: setPub, notice: notice,
+    dataUrl: dataUrl,
+    sweptAt: function () { return D && Date.parse(D.swept_at) || 0; } };
 
   /* service worker: versioned by the deployer's .site-hash; every step guarded (Telegram WebViews may not have SW) */
   function registerSW() {
