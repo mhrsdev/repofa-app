@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#FDFCFA">
+<title>ریپو فا | فهرست پروژه‌های متن‌باز</title>
+<meta name="description" content="فهرست جست‌وجوپذیر مخزن‌ها و ابزارهای متن‌باز معرفی‌شده در کانال ریپو فا">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231C1913'/%3E%3Cpath d='M11 5v20M11 21c0-7 10-5 10-12' fill='none' stroke='%23FDFCFA' stroke-width='2.6' stroke-linecap='round'/%3E%3Ccircle cx='21' cy='9' r='3.8' fill='%23F58851'/%3E%3Ccircle cx='11' cy='25.5' r='2.4' fill='%23FDFCFA'/%3E%3C/svg%3E">
+<link rel="preload" href="fonts/vz-fa-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/iosevka-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="app.css">
+<script>
+/* Theme before first paint: saved choice > Telegram colour scheme (from the URL hash) > OS. */
+(function(){try{
+  var t=null;try{t=localStorage.getItem('rf.theme')}catch(e){}
+  if(!t){var m=/tgWebAppThemeParams=([^&]+)/.exec(location.hash);
+    if(m){var p=JSON.parse(decodeURIComponent(m[1])),h=(p.bg_color||'').replace('#','');
+      if(h.length===6){var l=(parseInt(h.slice(0,2),16)*299+parseInt(h.slice(2,4),16)*587+parseInt(h.slice(4,6),16)*114)/1000;t=l<128?'dark':'light'}}}
+  if(t)document.documentElement.setAttribute('data-theme',t);
+}catch(e){}})();
+</script>
+<script async src="https://telegram.org/js/telegram-web-app.js" id="tg-sdk"></script>
+</head>
+<body>
+<!-- Icon set: 16-unit grid, 1.5px non-scaling stroke (1.25 at 12px). Drawn for this app; only icons in use. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="i-mark" viewBox="0 0 16 16"><path d="M4.5 1.75v12.5" stroke-width="1.75"/><path d="M4.5 11.5c0-4 7-3 7-7.25" stroke-width="1.75"/><circle cx="11.5" cy="3.75" r="2.4" fill="currentColor" stroke="none"/><circle cx="4.5" cy="14" r="1.6" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.25"/><path d="m10.25 10.25 3.5 3.5"/></symbol>
+<symbol id="i-bm" viewBox="0 0 16 16"><path d="M4.25 2.25h7.5v11.5L8 11 4.25 13.75z"/></symbol>
+<symbol id="i-bm-on" viewBox="0 0 16 16"><path d="M4.25 2.25h7.5v11.5L8 11 4.25 13.75z" fill="currentColor"/></symbol>
+<symbol id="i-star" viewBox="0 0 16 16"><path d="m8 2.25 1.7 3.55 3.85.5-2.8 2.7.7 3.85L8 11l-3.45 1.85.7-3.85-2.8-2.7 3.85-.5z"/></symbol>
+<symbol id="i-copy" viewBox="0 0 16 16"><rect x="5.25" y="5.25" width="8.5" height="8.5" rx="1"/><path d="M10.75 5.25v-2a1 1 0 0 0-1-1h-6.5a1 1 0 0 0-1 1v6.5a1 1 0 0 0 1 1h2"/></symbol>
+<symbol id="i-ext" viewBox="0 0 16 16"><path d="M9.5 2.75h3.75V6.5M13.25 2.75 7.5 8.5M11.25 9.5v3.25a.5.5 0 0 1-.5.5h-7.5a.5.5 0 0 1-.5-.5v-7.5a.5.5 0 0 1 .5-.5H6.5"/></symbol>
+<symbol id="i-share" viewBox="0 0 16 16"><path d="M8 10V2.5M5 5.25 8 2.25l3 3M3.25 8.5v4.75h9.5V8.5"/></symbol>
+<symbol id="i-close" viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></symbol>
+<symbol id="i-filter" viewBox="0 0 16 16"><path d="M2.5 4h11M4.5 8h7M6.75 12h2.5"/></symbol>
+<symbol id="i-list" viewBox="0 0 16 16"><path d="M5.5 3.75h8M5.5 8h8M5.5 12.25h8M2.5 3.75h.5M2.5 8h.5M2.5 12.25h.5"/></symbol>
+<symbol id="i-check" viewBox="0 0 16 16"><path d="m3 8.5 3.25 3.25L13 5"/></symbol>
+<symbol id="i-send" viewBox="0 0 16 16"><path d="M13.75 2.25 1.75 7l4.75 1.75L8.25 13.5zM6.5 8.75l7.25-6.5"/></symbol>
+<symbol id="i-sun" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.75"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/></symbol>
+<symbol id="i-moon" viewBox="0 0 16 16"><path d="M13.25 9.6A5.5 5.5 0 0 1 6.4 2.75a5.5 5.5 0 1 0 6.85 6.85z"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 16 16"><path d="M13.25 8a5.25 5.25 0 1 1-1.6-3.77M13.25 2.5v3.25H10"/></symbol>
+</defs></svg>
+
+<a class="skip" href="#list">رفتن به فهرست</a>
+
+<div id="app" class="app">
+  <header class="top" id="top">
+    <div class="brand">
+      <svg class="ic mark" aria-hidden="true"><use href="#i-mark"/></svg>
+      <h1>ریپو فا</h1>
+      <span class="brand-meta" id="brand-meta"></span>
+    </div>
+    <form class="search" role="search" id="search-form" autocomplete="off">
+      <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
+      <input id="q" type="search" inputmode="search" enterkeyhint="search" placeholder="نام، برچسب یا خلاصه" aria-label="جست‌وجو در نام مخزن، برچسب و خلاصه" aria-keyshortcuts="/ Control+K Meta+K" aria-controls="list" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <kbd class="k-hint" id="k-hint" aria-hidden="true">/</kbd>
+      <button type="button" id="q-clear" class="q-clear" aria-label="پاک‌کردن جست‌وجو" hidden><svg class="ic"><use href="#i-close"/></svg></button>
+    </form>
+    <button class="icon-btn" id="theme" type="button" aria-label="پوسته‌ی تیره"><svg class="ic"><use href="#i-moon"/></svg></button>
+  </header>
+
+  <div id="notice" class="notice" role="status" hidden><span id="notice-t"></span><button type="button" class="icon-btn" id="notice-x" aria-label="بستن پیام"><svg class="ic"><use href="#i-close"/></svg></button></div>
+
+  <!-- DOM/Tab order: list → detail → filters; the grid places filters at the start edge on desktop -->
+  <div class="shell">
+    <main class="main" id="main">
+      <div class="toolbar" id="toolbar">
+        <div class="tb-row">
+          <h2 class="scope" id="scope-h">همه‌ی پروژه‌ها</h2>
+          <button type="button" class="scope-x" id="scope-x" hidden><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
+          <span class="count" id="count" aria-live="polite"></span>
+          <div class="seg" id="sort" role="group" aria-label="مرتب‌سازی">
+            <button type="button" data-sort="new" aria-pressed="true">جدید</button>
+            <button type="button" data-sort="stars" aria-pressed="false">ستاره</button>
+          </div>
+          <div class="seg" id="fav-seg" role="group" aria-label="نوع ذخیره" hidden>
+            <button type="button" data-fs="" aria-pressed="true">همه</button>
+            <button type="button" data-fs="l" aria-pressed="false">بعداً</button>
+            <button type="button" data-fs="f" aria-pressed="false">علاقه‌مندی</button>
+          </div>
+        </div>
+        <div class="tokens" id="tokens" hidden></div>
+      </div>
+
+      <div id="list" class="list" role="list" aria-label="پروژه‌ها" tabindex="-1">
+        <div class="row skel" aria-hidden="true"><i style="width:44%"></i><i style="width:88%"></i><i style="width:58%"></i></div>
+        <div class="row skel" aria-hidden="true"><i style="width:36%"></i><i style="width:80%"></i><i style="width:52%"></i></div>
+        <div class="row skel" aria-hidden="true"><i style="width:50%"></i><i style="width:92%"></i><i style="width:46%"></i></div>
+        <div class="row skel" aria-hidden="true"><i style="width:40%"></i><i style="width:76%"></i><i style="width:60%"></i></div>
+        <div class="row skel" aria-hidden="true"><i style="width:47%"></i><i style="width:84%"></i><i style="width:55%"></i></div>
+        <div class="row skel" aria-hidden="true"><i style="width:33%"></i><i style="width:90%"></i><i style="width:50%"></i></div>
+        <div class="row skel" aria-hidden="true"><i style="width:42%"></i><i style="width:86%"></i><i style="width:48%"></i></div>
+      </div>
+      <div id="sentinel" aria-hidden="true"></div>
+      <div id="state" class="state" hidden></div>
+      <div class="fav-tools" id="fav-tools" hidden>
+        <button type="button" class="btn" data-export="copy"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg>کپی فهرست به‌صورت متن</button>
+        <button type="button" class="btn" data-export="share"><svg class="ic" aria-hidden="true"><use href="#i-send"/></svg>ارسال در تلگرام</button>
+      </div>
+      <noscript><p class="state">این فهرست بدون جاوااسکریپت کار نمی‌کند.</p></noscript>
+    </main>
+
+    <aside class="pane" id="pane" aria-label="جزئیات پروژه" tabindex="-1"></aside>
+
+    <nav class="side" id="side" aria-label="فیلترها">
+      <div class="side-sec" id="side-scopes">
+        <ul class="nav-list">
+          <li><button type="button" class="nav" data-scope="all"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg><span>همه‌ی پروژه‌ها</span><b class="n" id="n-all"></b></button></li>
+          <li><button type="button" class="nav" data-scope="fav"><svg class="ic" aria-hidden="true"><use href="#i-bm"/></svg><span>ذخیره‌شده</span><b class="n" id="n-fav"></b></button></li>
+        </ul>
+      </div>
+      <div class="side-sec"><h2 class="side-h" id="h-cats">دسته‌ها</h2><ul class="nav-list" id="cat-list" aria-labelledby="h-cats"></ul></div>
+      <div class="side-sec" id="sec-cols"><h2 class="side-h" id="h-cols">مجموعه‌ها</h2><ul class="nav-list" id="col-list" aria-labelledby="h-cols"></ul></div>
+      <div class="side-sec"><h2 class="side-h" id="h-langs">زبان‌ها</h2><ul class="nav-list" id="lang-list" aria-labelledby="h-langs"></ul></div>
+      <div class="side-sec"><h2 class="side-h" id="h-tags">برچسب‌های پرکاربرد</h2><ul class="nav-list tag-list" id="tag-list" aria-labelledby="h-tags"></ul></div>
+      <p class="side-foot">داده از کانال <a href="https://t.me/RepoFA" data-ext="tg"><bdi dir="ltr">t.me/RepoFA</bdi></a><br><span id="updated"></span></p>
+    </nav>
+  </div>
+
+  <nav class="tabs" id="tabs" aria-label="بخش‌ها">
+    <button type="button" data-tab="all" aria-current="page"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg><span>فهرست</span></button>
+    <button type="button" data-tab="cats"><svg class="ic" aria-hidden="true"><use href="#i-filter"/></svg><span>فیلترها</span></button>
+    <button type="button" data-tab="fav"><svg class="ic" aria-hidden="true"><use href="#i-bm"/></svg><span>ذخیره‌شده</span><b id="fav-n" hidden></b></button>
+  </nav>
+</div>
+
+<div class="sheet-root" id="sheet-root" aria-hidden="true">
+  <div class="backdrop" id="backdrop"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="d-title" tabindex="-1"></div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"><span class="t-msg" id="t-msg"></span><button type="button" class="t-act" id="t-act" hidden>بازگردانی</button></div>
+<script src="app.js" defer></script>
+</body>
+</html>
