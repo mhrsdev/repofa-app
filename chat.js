@@ -124,7 +124,16 @@
     if (retry) { var b = E('button', 'btn', 'تلاش دوباره'); b.type = 'button'; b.onclick = retry; w.appendChild(b); }
     root.appendChild(w); S.view = 'line';
   }
+  /* redirect-mode login (mirror): Telegram appends id, first_name, …, auth_date, hash to the auth URL */
+  function consumeRedirectAuth() {
+    var q = tryc(function () { return new URLSearchParams(location.search); }, null);
+    if (!q || !q.get('tgauth') || !q.get('hash') || !q.get('id')) return false;
+    var user = {}; ['id', 'first_name', 'last_name', 'username', 'photo_url', 'auth_date', 'hash'].forEach(function (k) { if (q.get(k) != null) user[k] = k === 'id' || k === 'auth_date' ? +q.get(k) : q.get(k); });
+    tryc(function () { history.replaceState(null, '', location.pathname + '#/chat'); });   // the signed fields leave the address bar at once
+    loginView(); window.__rfTgAuth(user); return true;
+  }
   function show() {
+    if (consumeRedirectAuth()) return;
     if (!C.api.base) {
       line('گفت‌وگو در حال حاضر در دسترس نیست. فهرست پروژه‌ها بدون آن کار می‌کند.', function () { line('در حال اتصال…'); C.discover(true).then(show); });
       return;
@@ -194,7 +203,9 @@
     var s = document.createElement('script');
     s.async = true; s.src = 'https://telegram.org/js/telegram-widget.js?22';
     s.setAttribute('data-telegram-login', bot); s.setAttribute('data-size', 'large'); s.setAttribute('data-radius', '6');
-    s.setAttribute('data-onauth', '__rfTgAuth(user)'); s.setAttribute('data-request-access', 'write'); s.setAttribute('data-lang', 'fa');
+    // the widget runs data-onauth through eval; under the mirror's strict CSP use its redirect mode instead (signed fields come back in the query)
+    if (C.mirror) s.setAttribute('data-auth-url', location.origin + location.pathname + '?tgauth=1#/chat'); else s.setAttribute('data-onauth', '__rfTgAuth(user)');
+    s.setAttribute('data-request-access', 'write'); s.setAttribute('data-lang', 'fa');
     s.onerror = failed; box.appendChild(s);
     setTimeout(function () { if (box.querySelector('iframe,button')) st.textContent = ''; else failed(); }, 8000);
     var obs = new MutationObserver(function () { if (box.querySelector('iframe,button')) { st.textContent = ''; obs.disconnect(); } }); obs.observe(box, { childList: true, subtree: true });
@@ -258,6 +269,7 @@
   }
   function empty() {
     var w = E('div', 'c-empty');
+    var mk = E('i', 'mk st-mark'); mk.setAttribute('aria-hidden', 'true'); w.appendChild(mk);
     w.appendChild(E('h3', null, 'از کاتالوگ ریپو فا بپرسید'));
     w.appendChild(E('p', null, 'مایکل در فهرست پروژه‌های کانال جستجو می‌کند و با پیوند مخزن پاسخ می‌دهد. هر پیام یکی از پیام‌های روزانه‌ی شما در ربات را مصرف می‌کند.'));
     var ul = E('ul', 'c-ex');

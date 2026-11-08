@@ -183,9 +183,51 @@
       });
     }).catch(function (err) {
       window.__lastErr = String(err);
+      if (!MIRROR && !/^HTTP 404/.test(String(err && err.message))) return mirrorData(manual, err);   // filtered / unreachable: try the bot's mirror
       if (D) notice('اتصال برقرار نیست؛ نسخه‌ی ذخیره‌شده روی این دستگاه نمایش داده می‌شود' + (D.generated_at ? ' (به‌روزرسانی ' + rel(Date.parse(D.generated_at)) + ')' : '') + '.', 'net');
       else showError(err);
     });
+  }
+  /* mirror: the bot serves the same site + data through its tunnel at <apiBase>/m/. Used when the primary feed fails at the network level,
+     and natively when the app itself is opened from a mirror (path /m/ on a non-github host: same-origin /api and ./ data, no config needed). */
+  var MIRROR = '', cfgReady = null;
+  var onMirror = /^\/m\//.test(location.pathname) && !/\.github\.io$/i.test(location.hostname);
+  /* an empty apiBase means "this origin": accepted only on a mirror (served from /m/, or config says mirror:true off github.io) */
+  function sameOriginOk(cfg) { return onMirror || !!(cfg && cfg.mirror === true && !/\.github\.io$/i.test(location.hostname)); }
+  function apiList(cfg) {
+    return (cfg && Array.isArray(cfg.apiBases) ? cfg.apiBases : []).map(function (b) { return b === '' && sameOriginOk(cfg) ? location.origin : b; })
+      .filter(function (b) { return typeof b === 'string' && /^https?:\/\/[^\s?#]+$/.test(b); }).map(function (b) { return b.replace(/\/+$/, ''); });
+  }
+  function mirrorBases() {
+    var list = apiList(CFG).concat(apiList(API.cfg));
+    return list.filter(function (b, i) { return list.indexOf(b) === i; }).map(function (b) { return b + '/m/'; });
+  }
+  function timedFetch(url, ms, opt) { var c = window.AbortController ? new AbortController() : null, t = setTimeout(function () { if (c) c.abort(); }, ms); opt = opt || {}; if (c) opt.signal = c.signal; return fetch(url, opt).then(function (r) { clearTimeout(t); return r; }, function (e) { clearTimeout(t); throw e; }); }
+  function mirrorData(manual, err) {
+    return (cfgReady || Promise.resolve()).then(function () {
+      var bases = mirrorBases(), i = 0;
+      var next = function () {
+        if (i >= bases.length) return Promise.reject(err);
+        var b = bases[i++];
+        return timedFetch(b + 'data.json', 8000, { credentials: 'omit', cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+          .then(function (txt) { var d = JSON.parse(txt); MIRROR = b; setData(d, !!D); notice('فهرست از آینه‌ی ربات بارگیری شد.', 'mirror'); ls.set('rf.cache', txt); ls.set('rf.cachebase', DB); }, next);
+      };
+      return next();
+    }).catch(function (e) {
+      if (D) notice('اتصال برقرار نیست؛ نسخه‌ی ذخیره‌شده روی این دستگاه نمایش داده می‌شود' + (D.generated_at ? ' (به‌روزرسانی ' + rel(Date.parse(D.generated_at)) + ')' : '') + '.', 'net');
+      else showError(e || err);
+    });
+  }
+  /* readme/comments: primary origin first; on a network failure (not a 404) the mirror the data came from, else each mirror */
+  function feed(path, opt) {
+    var o = function () { var x = {}; for (var k in (opt || {})) x[k] = opt[k]; x.credentials = 'omit'; return x; };
+    var viaMirror = function (err) {
+      var bases = MIRROR ? [MIRROR] : mirrorBases(), i = 0;
+      var next = function () { if (i >= bases.length) return Promise.reject(err); var b = bases[i++]; return timedFetch(b + path, 8000, o()).then(function (r) { if (r.ok || r.status === 404) return r; throw new Error('HTTP ' + r.status); }, next).catch(next); };
+      return next();
+    };
+    if (MIRROR && !DB && !onMirror) return viaMirror(new Error('mirror'));
+    return fetch(dataUrl(path), DB ? o() : opt).then(function (r) { if (r.ok || r.status === 404) return r; throw new Error('HTTP ' + r.status); }).catch(viaMirror);
   }
   /* config.json (own origin only) may point the data feed elsewhere (`dataBase`) and rebrand a copy (`title`, `channelUrl`, `botUsername`).
      Never from the URL: a crafted link must not be able to show someone else's content under this site's name. */
@@ -202,6 +244,9 @@
     if (t) { document.querySelector('.brand h1').textContent = t; document.title = t; }
     var ch = CFG && /^https:\/\/t\.me\/[A-Za-z0-9_]{4,32}\/?$/.test(CFG.channelUrl || '') ? CFG.channelUrl : '';
     if (ch) { var a = document.querySelector('.side-foot a'); a.href = ch; a.firstChild.textContent = ch.replace(/^https:\/\//, '').replace(/\/$/, ''); }
+    // a copy's own logo (same origin path or https; used as a CSS mask, so it must be a single-colour shape)
+    var lg = CFG && typeof CFG.logoUrl === 'string' && CFG.logoUrl.indexOf('..') < 0 && /^(https:\/\/[A-Za-z0-9.-]+(:\d+)?\/[A-Za-z0-9._~\/%-]*|[A-Za-z0-9._\/-]+)\.(svg|png|webp)$/.test(CFG.logoUrl) ? CFG.logoUrl : '';
+    document.documentElement.style[lg ? 'setProperty' : 'removeProperty']('--logo', lg ? 'url("' + lg + '")' : '');
     return changed;
   }
   function loadCfg() { // early, same origin, cache-busted; the last copy is remembered so a dataBase applies before the first data fetch
@@ -211,10 +256,11 @@
   applyCfg(CFG);
   function boot() { // skeleton paints first; the index is built in the next task
     var c = ls.get('rf.cachebase') === DB ? ls.get('rf.cache') : null;
-    loadCfg().then(function (changed) { if (changed) { etag = null; fetchData(); } });
+    cfgReady = loadCfg().then(function (changed) { if (changed) { etag = null; fetchData(); } });
     requestAnimationFrame(function () {
       setTimeout(function () {
         if (c) tryc(function () { setData(JSON.parse(c)); etag = ls.get('rf.etag') || null; });
+        firstIntro(!!c);
         fetchData().then(function () { window.__loaded = true; });
       }, 0);
     });
@@ -434,8 +480,8 @@
     if (view.length) { s.hidden = true; return; }
     s.hidden = false;
     var filt = activeFilterNames();
-    if (!P.length) s.innerHTML = '<h3>فهرست خالی است</h3><p>فایل data.json بارگیری شد اما هنوز پروژه‌ای در آن نیست. ربات فهرست را روزانه به‌روز می‌کند.</p><div class="acts"><button type="button" class="btn primary" data-retry="1">' + IC('refresh') + 'بررسی دوباره</button></div>';
-    else if (S.tab === 'fav' && !favs.size) s.innerHTML = '<h3>هنوز چیزی ذخیره نشده</h3><p>با نشانک کنار هر ردیف، پروژه را برای بعد نگه دارید و یادداشتی کوتاه برایش بنویسید. داخل تلگرام، ذخیره‌ها با حساب شما همگام می‌شوند.</p><div class="acts"><button type="button" class="btn" data-go="all">رفتن به فهرست</button></div>';
+    if (!P.length) s.innerHTML = '<i class="mk st-mark" aria-hidden="true"></i><h3>فهرست خالی است</h3><p>فایل data.json بارگیری شد اما هنوز پروژه‌ای در آن نیست. ربات فهرست را روزانه به‌روز می‌کند.</p><div class="acts"><button type="button" class="btn primary" data-retry="1">' + IC('refresh') + 'بررسی دوباره</button></div>';
+    else if (S.tab === 'fav' && !favs.size) s.innerHTML = '<i class="mk st-mark" aria-hidden="true"></i><h3>هنوز چیزی ذخیره نشده</h3><p>با نشانک کنار هر ردیف، پروژه را برای بعد نگه دارید و یادداشتی کوتاه برایش بنویسید. داخل تلگرام، ذخیره‌ها با حساب شما همگام می‌شوند.</p><div class="acts"><button type="button" class="btn" data-go="all">رفتن به فهرست</button></div>';
     else if (S.tab === 'fav') s.innerHTML = '<h3>در این گروه ذخیره‌ای نیست</h3><p>' + faN(favs.size) + ' پروژه‌ی ذخیره‌شده در گروه‌های دیگر هست.</p><div class="acts"><button type="button" class="btn" data-fs-reset="1">نمایش همه‌ی ذخیره‌ها</button></div>';
     else if (S.q) {
       var wide = filt.length ? compute(true).length : 0;
@@ -449,7 +495,7 @@
   function showError(err) {
     indexReady = false; el.list.replaceChildren(); el.toolbar.hidden = true;
     el.state.hidden = false;
-    el.state.innerHTML = '<h3>فهرست بارگیری نشد</h3><p>فایل فهرست در دسترس نیست و نسخه‌ی ذخیره‌شده‌ای هم روی این دستگاه وجود ندارد. اتصال اینترنت یا فیلترشکن را بررسی کنید.</p>' +
+    el.state.innerHTML = '<i class="mk st-mark" aria-hidden="true"></i><h3>فهرست بارگیری نشد</h3><p>فایل فهرست در دسترس نیست و نسخه‌ی ذخیره‌شده‌ای هم روی این دستگاه وجود ندارد. اتصال اینترنت یا فیلترشکن را بررسی کنید.</p>' +
       '<div class="acts"><button type="button" class="btn primary" data-retry="1">' + IC('refresh') + 'تلاش دوباره</button><a class="link" href="https://t.me/RepoFA" data-ext="tg">کانال ریپو فا</a></div>' +
       '<p class="code">GET ./data.json → ' + esc(String(err && err.message || err)) + '</p>';
     el.pane.innerHTML = '';
@@ -952,7 +998,7 @@
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (cfg) {
         API.cfg = cfg && typeof cfg === 'object' ? cfg : null; if (applyCfg(API.cfg)) { etag = null; fetchData(); }
-        var bases = API.cfg && Array.isArray(API.cfg.apiBases) ? API.cfg.apiBases.filter(function (b) { return /^https?:\/\/[^\s]+$/.test(b); }) : [], i = 0;
+        var bases = (onMirror ? [location.origin] : []).concat(apiList(API.cfg)).filter(function (b, k, a) { return a.indexOf(b) === k; }), i = 0;
         var next = function () { if (i >= bases.length) return null; var b = String(bases[i++]).replace(/\/+$/, ''); return probe(b).then(function (ok) { return ok ? b : next(); }); };
         return next();
       })
@@ -1083,7 +1129,7 @@
   var CORE = { S: S, api: API, discover: discover, tg: function () { return TG; }, rowFor: rowFor, openDetail: openDetail, isDesk: isDesk, faN: faN, rel: rel,
     toast: toast, haptic: haptic, openUrl: openUrl, copyText: copyText, setTab: setTab, IC: IC, compact: compact, fullDate: fullDate, esc: esc,
     data: function () { return D; }, project: function (id) { return byId.get(id); }, openPanel: openPanel, setPub: setPub, notice: notice,
-    dataUrl: dataUrl,
+    dataUrl: dataUrl, feed: feed, mirror: onMirror,
     sweptAt: function () { return D && Date.parse(D.swept_at) || 0; } };
 
   /* service worker: versioned by the deployer's .site-hash; every step guarded (Telegram WebViews may not have SW) */
@@ -1095,12 +1141,40 @@
     fetch('./.site-hash', { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : 'dev'; }, function () { return null; }).then(function (h) {
       if (h == null) return;   // offline: keep whatever worker is installed
       var v = (String(h).trim().match(/^[0-9a-f]{8,64}$/) || ['dev'])[0].slice(0, 16), had = !!navigator.serviceWorker.controller;
-      navigator.serviceWorker.register('sw.js?v=' + v).catch(function () { });
+      navigator.serviceWorker.register('sw.js?v=' + v, { scope: './' }).catch(function () { });   // ./ = /m/ on the bot's mirror
       navigator.serviceWorker.addEventListener('controllerchange', function () { if (had) tryc(function () { localStorage.setItem('rf.swnew', '1'); }); });   // shown on next open; no reload
     });
     navigator.serviceWorker.addEventListener('message', function (e) { if (e.data && e.data.type === 'data-updated') fetchData(); });
   }
   document.getElementById('tgl-x').addEventListener('click', function () { tryc(function () { localStorage.setItem('rf.tgline', '0'); }); syncTgLine(); });
+
+  var introBlob = null;
+  function introUrl() { // a fresh blob URL per play restarts the (play-once) animated WebP
+    return (introBlob ? Promise.resolve(introBlob) : fetch('brand/intro.webp').then(function (r) { if (!r.ok) throw r.status; return r.blob(); }).then(function (b) { introBlob = b; return b; }))
+      .then(function (b) { return URL.createObjectURL(b); });
+  }
+  function playIntro(deadline) {
+    if (document.querySelector('.intro')) return;
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches, t0 = Date.now();
+    var ov = document.createElement('div'); ov.className = 'intro'; ov.setAttribute('role', 'img'); ov.setAttribute('aria-label', 'لوگوی ریپو فا');
+    var closed = false, close = function () { if (closed) return; closed = true; ov.classList.add('out'); setTimeout(function () { ov.remove(); }, 200); document.removeEventListener('keydown', key); };
+    var key = function (e) { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); close(); } };
+    ov.addEventListener('click', close); document.addEventListener('keydown', key);
+    if (reduce) { var m = document.createElement('span'); m.className = 'mark-static'; ov.appendChild(m); document.body.appendChild(ov); setTimeout(close, 900); return; }
+    introUrl().then(function (u) {
+      var img = new Image(); img.alt = ''; img.decoding = 'async';
+      img.onload = function () { if (deadline && Date.now() - t0 > deadline) { URL.revokeObjectURL(u); return; } ov.appendChild(img); document.body.appendChild(ov); setTimeout(function () { close(); URL.revokeObjectURL(u); }, 1650); };
+      img.onerror = function () { img.onerror = null; URL.revokeObjectURL(u); img.src = 'brand/intro.webp?play=' + Date.now(); };   // blob: blocked by CSP
+      img.src = u;
+    }, function () { });
+  }
+  function firstIntro(hadCache) { // never on a cached catalog, Save-Data, ≤3G or reduced motion; at most once per device
+    var c = navigator.connection || {};
+    if (hadCache || ls.get('rf.intro') || c.saveData || /(^|-)(2|3)g$/.test(c.effectiveType || '') || document.hidden ||
+        (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+    ls.set('rf.intro', '1'); playIntro(1400);
+  }
+  document.getElementById('mark-btn').addEventListener('click', function () { haptic('impact', 'light'); playIntro(0); });
 
   loadFavs(); applyTheme(); initTelegram(); measure(); boot();
   setTimeout(function () { discover(true); syncTgLine(); }, 1200);

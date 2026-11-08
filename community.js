@@ -153,7 +153,7 @@
   function comments(box, p, core) {
     C = core; box.textContent = ''; box.setAttribute('aria-busy', 'true');
     var more = function () { var a = E('a', 'link', 'بیشتر در گروه'); var u = /^https:\/\/t\.me\/[A-Za-z0-9_]{4,32}\/\d+$/.test(p.tg_url || '') ? p.tg_url + '?comment=1' : p.tg_url; if (!u) return null; a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.setAttribute('data-ext', 'tg'); return a; };
-    fetch(C.dataUrl('comments/' + encodeURIComponent(p.id) + '.json'), { cache: 'no-cache', credentials: 'omit' }).then(function (r) { if (r.status === 404) return null; if (!r.ok) throw r.status; return r.json(); }).then(function (j) {
+    C.feed('comments/' + encodeURIComponent(p.id) + '.json', { cache: 'no-cache' }).then(function (r) { if (r.status === 404) return null; if (!r.ok) throw r.status; return r.json(); }).then(function (j) {
       box.setAttribute('aria-busy', 'false');
       var items = j && Array.isArray(j.items) ? j.items.filter(function (x) { return x && x.t != null; }).slice(-50) : [];
       if (!items.length) { box.appendChild(E('p', 'cm-none', 'کامنتی ثبت نشده است.')); var m0 = more(); if (m0) box.appendChild(m0); return; }

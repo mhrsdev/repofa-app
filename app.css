@@ -178,6 +178,17 @@ body.tg-mb .sheet .d{padding-bottom:calc(1.5rem + var(--tg-sa-b) + 12px)}
 .tgline .icon-btn{min-width:2rem;min-height:2rem}
 @media (min-width:960px){.tgline{padding-inline:16px 12px}}
 
+/* the community logo as a small inline mark (mask: takes the surrounding colour) */
+.mk{display:inline-block;width:1em;height:1em;vertical-align:-.15em;margin-inline-end:6px;background:currentColor;flex:none;
+  -webkit-mask:var(--logo,url(brand/mark.svg)) center/contain no-repeat;mask:var(--logo,url(brand/mark.svg)) center/contain no-repeat}
+.st-mark{display:block;width:1.75rem;height:1.75rem;margin-bottom:.75rem;color:var(--line-2)}
+.st-mark.mk{width:1.75rem;height:1.75rem}
+/* intro: the logo animation, once per device or on a tap of the header mark */
+.intro{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:#141310;opacity:1;transition:opacity .18s var(--ease)}
+.intro.out{opacity:0}
+.intro img{width:min(46vw,200px);height:auto}
+.intro .mark-static{width:min(40vw,170px);height:min(40vw,170px);background:#FDFCFA;-webkit-mask:var(--logo,url(brand/mark.svg)) center/contain no-repeat;mask:var(--logo,url(brand/mark.svg)) center/contain no-repeat}
+
 /* ---------- toast (with undo) ---------- */
 .toast{position:fixed;z-index:60;inset-inline:16px;bottom:calc(3.5rem + var(--tg-sa-b) + 12px);margin-inline:auto;width:max-content;max-width:calc(100% - 32px);
   display:flex;align-items:center;gap:12px;padding:6px 6px 6px 14px;padding-inline-start:14px;border-radius:var(--r-m);background:var(--primary);color:var(--on-primary);font-size:var(--t-13);line-height:1.5;

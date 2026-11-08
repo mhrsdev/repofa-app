@@ -26,7 +26,7 @@
     var show = function (t, offline) { if (t === shown) return; shown = t; sk.remove(); body.textContent = ''; render(t, body, r, false, gh); note.textContent = offline ? 'نسخه‌ی ذخیره‌شده روی این دستگاه' + (stamp ? ' · ' + stamp : '') : stamp; box.setAttribute('aria-busy', 'false'); };
     var cached = lsGet(key);
     if (cached && cached.t) show(cached.t);
-    fetch(C.dataUrl('readme/' + key + '.md'), { cache: 'no-cache', credentials: 'omit' }).then(function (res) {   // conditional (ETag) via the HTTP cache / service worker
+    C.feed('readme/' + key + '.md', { cache: 'no-cache' }).then(function (res) {   // conditional (ETag) via the HTTP cache / service worker
       if (res.status === 404) return null;
       if (!res.ok) throw res.status;
       return res.text();

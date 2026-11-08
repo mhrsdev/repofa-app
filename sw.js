@@ -3,7 +3,7 @@
 'use strict';
 var V = new URL(self.location.href).searchParams.get('v') || 'dev';
 var SHELL = 'rf-shell-' + V, DATA = 'rf-data';
-var FILES = ['./', 'index.html', 'app.css', 'app.js', 'chat.css', 'chat.js', 'readme.css', 'readme.js', 'community.css', 'community.js', 'manifest.webmanifest', 'icon.svg',
+var FILES = ['./', 'index.html', 'app.css', 'app.js', 'chat.css', 'chat.js', 'readme.css', 'readme.js', 'community.css', 'community.js', 'manifest.webmanifest', 'favicon.svg', 'brand/mark.svg',
   'fonts/vz-fa-400.woff2', 'fonts/vz-fa-700.woff2', 'fonts/vz-la-400.woff2', 'fonts/vz-la-700.woff2', 'fonts/iosevka-400.woff2', 'fonts/iosevka-600.woff2'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(SHELL).then(function (c) { return c.addAll(FILES.map(function (f) { return new Request(f, { cache: 'reload' }); })); }).then(function () { return self.skipWaiting(); }));
