@@ -1,0 +1,625 @@
+# Allp
+
+<p align="center">
+  <strong>One transparent CLI for every package manager already on your machine.</strong>
+</p>
+
+<p align="center">
+  <a href="README.md">English</a> ·
+  <a href="README.fa.md">فارسی</a> ·
+  <a href="wiki/Home.md">Wiki</a> ·
+  <a href="wiki/Home.fa.md">ویکی فارسی</a>
+</p>
+
+<p align="center">
+  <img alt="Version 0.6.4" src="https://img.shields.io/badge/version-0.6.4-7c3aed">
+  <img alt="Public alpha" src="https://img.shields.io/badge/status-public%20alpha-f59e0b">
+  <img alt="Rust 1.74+" src="https://img.shields.io/badge/rust-1.74%2B-dea584">
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-22c55e"></a>
+</p>
+
+> Allp unifies discovery, search, installation, removal, maintenance, diagnostics,
+> and reproducible package profiles while keeping native commands visible and
+> native package managers authoritative.
+
+Allp is a transparent package-manager orchestrator with a cross-platform runtime core and Linux-first package backends. It discovers native tools such as APT, Pacman, DNF, rpm-ostree on Bazzite/Atomic hosts, Flatpak, Snap, Homebrew/Linuxbrew, Python and Node installers, and Rust/Cargo, then shows the exact native command or local API request before anything mutates the system.
+
+Current build version: **0.6.4.1** (Cargo base version **0.6.4**)
+Maturity: **public alpha**
+
+## Start Here
+
+| I want to… | Go to |
+|---|---|
+| Follow a complete everyday workflow | [Practical usage guide](wiki/Usage-Guide.md) |
+| Install Allp and run the first commands | [Quick start](#installation) |
+| Learn every CLI command with examples | [Command reference](wiki/Command-Reference.md) |
+| Understand supported package managers | [Backend guide](wiki/Backends.md) |
+| Automate Allp safely with JSON | [Automation and JSON](wiki/Automation-and-JSON.md) |
+| Understand architecture and safety boundaries | [Architecture](wiki/Architecture.md) · [Security](wiki/Security.md) |
+| Develop or contribute | [Development](wiki/Development.md) · [Contributing](CONTRIBUTING.md) |
+| Diagnose a problem | [Troubleshooting](wiki/Troubleshooting.md) |
+
+The [English wiki](wiki/Home.md) and [Persian wiki](wiki/Home.fa.md) are the
+long-form documentation hubs. Files under `docs/` remain the canonical
+engineering contracts for contributors.
+
+## Why Allp Exists
+
+Linux software often lives across system repositories, universal app stores, Homebrew, Python, Node, and Rust/Cargo. Allp gives those sources one consistent command surface without hiding the native package managers or pretending they are interchangeable.
+
+Core principles:
+
+- Native package managers remain visible and authoritative.
+- Every mutating plan shows the exact native command.
+- Commands are executed directly, not through hidden shell pipelines.
+- Source selection is explicit when names collide.
+- Backends advertise capabilities instead of generic code guessing behavior.
+- Privilege handling is centralized and child-process only.
+
+## Supported Systems
+
+The platform layer detects Linux distributions and package-manager families, including Bazzite as a Fedora-family image-based host, plus macOS, Windows, WSL, containers, architecture, libc, users, executable ownership, and platform data directories. Package orchestration is maturest on Linux. Homebrew/macOS remains experimental; Windows currently supports compilation, diagnostics, release-target selection, and deferred self-replacement, but does not advertise Linux-only Snap or Flatpak backends.
+
+## Backends
+
+| Source | Status | Search | Install | Remove | Update | Upgrade | List | Info |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| APT | Stable alpha | yes | yes | yes | yes | yes | yes | yes |
+| Pacman | Stable alpha | yes | yes | yes | yes | yes | yes | yes |
+| DNF / DNF5 | Stable alpha | yes | yes | yes | yes | yes | yes | yes |
+| rpm-ostree / Bazzite / Fedora Atomic | Experimental | yes | yes | yes | yes | yes | yes | yes |
+| Flatpak | Stable alpha | yes | yes | yes | yes | yes | yes | yes |
+| Snap | Stable alpha | yes | yes | yes | yes | yes | yes | yes |
+| Zypper, APK, XBPS, Portage, eopkg, swupd | Experimental | yes | mixed | mixed | mixed | mixed | mixed | mixed |
+| Homebrew / Linuxbrew | Experimental | yes | yes | yes | yes | yes | yes | yes |
+| Python: PyPI with pip, pipx, uv | Experimental | yes | yes | yes | yes | yes | yes | yes |
+| Node: npm registry with npm, pnpm, Yarn | Experimental | yes | yes | yes | yes | yes | yes | yes |
+| Rust: crates.io with Cargo | Experimental | yes | yes | yes | no | optional¹ | yes | yes |
+
+¹ Cargo binary upgrades use the optional community `cargo-update` subcommand; Allp never rewrites project dependencies or `Cargo.lock` during host maintenance.
+
+JSON is available for read-only commands and dry-run maintenance/install planning where supported. See [docs/CAPABILITY_MATRIX.md](docs/CAPABILITY_MATRIX.md) for the detailed matrix.
+
+## Installation
+
+**⚠️ Install Rust and Cargo before running make.** Git, Make and a C compiler/linker are also required. Follow the [official Rust installation guide](https://www.rust-lang.org/tools/install), reopen your terminal, then check:
+
+```bash
+rustc --version
+cargo --version
+```
+
+### Install from source
+
+```bash
+git clone https://github.com/allp-manager/allp-manager.git
+cd allp-manager
+make install
+```
+
+`make install` builds ALLP Manager and uses `sudo` to copy it to `/usr/local/bin/allp`.
+
+### User installation without sudo
+
+Choose this instead of `make install` to install only for your user, from the same repository directory:
+
+```bash
+make install-user
+export PATH="$HOME/.local/bin:$PATH"
+allp --version
+```
+
+The destination is `~/.local/bin/allp`. The PATH command above applies to the current terminal; add that line to your shell configuration for future sessions.
+
+### Termux on Android
+
+Termux is not currently a supported ALLP Manager environment. `make install` uses `sudo` and installs to `/usr/local/bin`; this does not fit a standard Termux installation. `make install-user` avoids sudo during installation, but does not make package operations compatible with Termux: ALLP Manager’s APT mutations still require root. Native Termux support needs separate runtime, path and privilege handling. Until that support is implemented and tested, manage Termux packages with its native `pkg` command.
+
+### Verify installation
+
+```bash
+command -v allp
+allp --version --verbose
+make install-check
+```
+
+If a different standalone copy resolves on PATH, rebuild that intended copy explicitly. Refresh the shell command cache with `hash -r` in bash or `rehash` in zsh. Native-package-owned copies must be updated through their package source; `allp self-update` does not overwrite them.
+
+## Quick Start
+
+```bash
+allp detect
+allp search git
+allp install git
+allp install git --dry-run
+allp install pycharm
+allp install ripgrep --from cargo --dry-run
+allp install htop --from bazzite --dry-run
+allp update
+allp upgrade
+allp upgrade --allow-stale-metadata # explicit recovery only
+allp update --scope dev
+allp search git --json
+```
+
+`update` refreshes backend metadata; it does not upgrade Snap, Flatpak, or Homebrew packages. `upgrade` upgrades installed software. When APT needs a metadata refresh first, that refresh is a required dependency: a failure defers the APT upgrade. `--allow-stale-metadata` is an explicit override, never the default.
+
+Homebrew discovery uses one validated locator across detect, doctor, and package operations. It checks configured/custom locations, PATH, revalidated state, deterministic original-user paths, and the official Linux/macOS prefixes, so `sudo` omitting Linuxbrew from root's PATH does not make an existing installation disappear. Homebrew metadata refresh prefers `brew update-if-needed`. Upgrade discovery and execution set `HOMEBREW_NO_AUTO_UPDATE=1`, use structured `brew outdated --json=v2` evidence, skip empty upgrades, and verify outdated state afterward. Homebrew probes and operations run in its validated owner's user context even when Allp was launched through sudo.
+
+Before changing Homebrew on a host where Allp is invoked through `sudo`, verify
+the shared locator and the original-user boundary first:
+
+```bash
+allp doctor homebrew --verbose --no-color
+sudo allp doctor homebrew --verbose --no-color
+sudo allp update --from homebrew --dry-run --skip-self-update --no-interactive --no-color -v
+```
+
+The dry run must identify the selected owner and Homebrew executable; its
+preview is descriptive, while the real child retains the validated privilege
+boundary and sanitized owner environment. After review, a real metadata refresh
+can be requested explicitly:
+
+```bash
+sudo allp update --from homebrew --yes --skip-self-update
+```
+
+See [the Homebrew backend guide](docs/HOMEBREW_BACKEND.md) for validation
+details and macOS/Linuxbrew limits.
+
+Rust/Cargo is a user-scoped development backend for crates.io binary tools.
+Search, install, remove, list, and info use Cargo's native commands. Host
+maintenance never runs `cargo add` or `cargo update`, so it does not modify a
+project manifest or lockfile. `allp upgrade --from cargo --target global`
+upgrades installed binaries only when the optional `cargo-update` subcommand is
+present. Cargo operations run as the original user under `sudo` and show the
+local-compilation/build-script warning before execution. See
+[the Rust/Cargo backend guide](docs/RUST_BACKEND.md).
+
+On Bazzite, Allp disables DNF host mutations and selects rpm-ostree for package
+layering and transactional image upgrades. `update` runs `rpm-ostree
+refresh-md`; `upgrade` stages `rpm-ostree upgrade`; install/remove stage layered
+package changes that normally require a reboot. Because Bazzite recommends
+layering only as a last resort, every layering plan points users toward
+Homebrew, Flatpak, or containers first. See
+[the Bazzite backend guide](docs/BAZZITE_BACKEND.md).
+
+## Package Profiles (Experimental)
+
+Package profiles capture package identifiers and their owning backends in a
+portable TOML document. They are useful for reviewing a machine's package set,
+moving an explicit package list between compatible systems, and replaying that
+list through Allp's normal search, planning, and confirmation flow.
+
+```bash
+allp profile save dev
+allp profile list
+allp profile show dev
+allp profile export dev dev.toml
+allp profile import dev.toml
+allp profile import dev.toml --name laptop-dev
+allp profile install dev --dry-run
+allp profile install dev
+```
+
+Example profile:
+
+```toml
+version = 1
+name = "rust-dev"
+
+[[packages]]
+backend = "apt"
+package = "git"
+
+[[packages]]
+backend = "rust"
+package = "ripgrep"
+
+[[packages]]
+backend = "flatpak"
+package = "org.mozilla.firefox"
+```
+
+Profiles deliberately preserve the backend instead of guessing an equivalent
+package on another ecosystem. All required backends are checked before the
+first installation, then packages are installed sequentially with the same
+safety checks and confirmations as `allp install`. Review a profile with
+`show`, or export and edit it, before applying it on another machine.
+
+In profile format version 1, the stored package version is observed inventory
+metadata, not a version pin; installation resolves the version currently
+available from the named backend. `profile save` records every package exposed
+by each backend's installed-package listing, which can include system
+dependencies on APT, DNF, or Pacman. Profiles therefore work best between
+systems with compatible backends and should not yet be treated as a universal
+cross-distribution lockfile. Import uses the name declared inside the TOML file
+unless `--name` overrides it.
+
+## Live Maintenance Progress
+
+![Allp live maintenance dashboard](docs/assets/tui-maintenance.svg)
+
+On a real interactive `update` or `upgrade`, Allp presents an inline live
+APT-style progress line during execution. Native logs remain unchanged in the
+normal terminal scrollback; only the current bottom line is redrawn with the
+percentage, active backend, action, elapsed time, and queue completion. The
+line is fitted to the actual terminal width so it cannot wrap into prompts.
+When selected maintenance plans need administrator access, Allp validates it
+with `sudo -v` before progress starts, then runs those children with `sudo -n --`
+so a password prompt never appears in the live line.
+
+Use the classic output whenever you prefer it or are recording a familiar log:
+
+```bash
+allp update --no-tui
+allp upgrade --no-tui
+```
+
+Live progress is intentionally absent from JSON, dry runs, redirected/non-TTY
+output, `TERM=dumb`, and `--no-interactive` runs. `--no-color` keeps the line
+but removes color. The renderer only observes the process runner: it never
+rewrites the planned native argv or plan-level privilege requirement; the
+privilege boundary is fixed before rendering begins. Full behavior and fallback
+rules are in
+[docs/TERMINAL_UI.md](docs/TERMINAL_UI.md).
+
+Use `--from` for a precise backend:
+
+```bash
+allp install git --from apt --dry-run
+allp install pycharm --from snap --dry-run
+allp install black --from pipx --dry-run
+allp install typescript --from pnpm --dry-run
+allp install ripgrep --from cargo --dry-run
+allp install htop --from bazzite --dry-run
+```
+
+## Search And Selection
+
+Without `--from` or `--scope`, interactive `search` and `install` ask for one of three scopes:
+
+- `apps`: system packages, universal applications, and Homebrew
+- `dev`: Python, Node, and Rust/Cargo ecosystems
+- `all`: every eligible source
+
+JSON, redirected, and `--no-interactive` searches cannot ask that question, so
+they default to `apps` unless `--from` or `--scope` is explicit. Eligible
+backends search concurrently in bounded groups of four. A parser that receives
+unknown native output reports `unrecognized_output` instead of claiming no
+matches; valid rows from a partially failed backend are retained with
+`complete=false`.
+
+Default human output is one line per candidate. `-v` adds identity,
+relationship, artifact, installer, and native metadata. Verified canonical
+relationships are grouped, probable relationships appear in an explicit
+uncertainty section, and unverified same-name results remain separate. Allp can
+recognize relationships, but it does not choose between meaningful sources for
+you.
+
+Results are ranked as `Exact`, `Related`, or `Fuzzy`. All exact matches are shown, related matches are capped per backend, and weak fuzzy matches require `--all`.
+
+Large interactive result sets keep stable global numbers. Space moves forward, `b` moves back, `/` filters, a number selects directly, Enter selects the highlighted or first visible result, and `q` or Escape cancels.
+
+## Privilege Behavior
+
+Preferred:
+
+```bash
+allp update
+```
+
+Allp itself should normally run as your user. For a confirmed maintenance run,
+Allp validates administrator access once with `sudo -v` before live progress
+starts, then runs root-required children with `sudo -n --`. This keeps password
+prompts out of the progress line. If a later cached credential
+expires, Allp clears the footer, revalidates with `sudo -v` outside the
+renderer, and resumes only after success; an unsuccessful revalidation is a
+blocked operation rather than a package-manager failure. Dry runs never invoke
+sudo.
+
+If you intentionally run:
+
+```bash
+sudo allp update
+```
+
+Allp does not add nested sudo. Root-required system plans run directly, and user-scoped plans such as Homebrew, Python, Node, Rust/Cargo, and Flatpak-user run as the original sudo user when that identity is available.
+
+`--yes` bypasses only Allp's final confirmation after choices are resolved. It
+does not indiscriminately add native confirmation flags: APT upgrades receive
+their documented `-y` flag, while APT metadata refreshes remain `apt-get update`
+without `-y`.
+
+## Snap Discovery And Resolution
+
+Snap uses the local snapd REST API through `/run/snapd.socket` when it is reachable. Wide discovery and exact resolution are separate:
+
+```text
+GET /v2/find?q=<encoded-query>&scope=wide
+GET /v2/find?name=<encoded-canonical-name>
+```
+
+A discovery row is never an installation plan. After selection, exact resolution verifies:
+
+- canonical package name and display title;
+- publisher and verification state;
+- confinement;
+- architecture availability;
+- tracks and channels;
+- stable-channel availability;
+- installed state.
+
+An authoritative snapd `404` with `kind: snap-not-found` means unavailable. It is not a transport error and never falls through to `snap info`. Allp stops before sudo or installation, and `Try another installer` performs a fresh search with Snap excluded and cached Snap results discarded.
+
+CLI fallback is allowed only when the socket is absent or denied, connection fails, an endpoint is unsupported, or the response is not recognizable as snapd. The concrete fallback reason is kept in diagnostics. CLI exact resolution uses an argv vector equivalent to `snap info <name>`; successful exit status remains success even if stderr contains a warning.
+
+REST installation sends `POST /v2/snaps/<name>`, includes `"classic": true` only for classic confinement, and polls `/v2/changes/<id>` until a terminal state. A change ID alone is not success. CLI fallback adds `--classic` only when metadata requires it:
+
+```bash
+allp install pycharm --from snap --dry-run
+# when CLI fallback is active, the native plan includes:
+snap install pycharm --classic
+```
+
+Strict snaps do not receive `--classic`. If no stable channel exists, or multiple stable tracks exist without a safe default, Allp stops instead of silently choosing candidate, beta, edge, or an arbitrary track.
+
+## Flatpak And Prerequisites
+
+Flatpak distinguishes four states: not installed, installed without remotes, installed with remotes, and backend error. Remote detection uses:
+
+```bash
+flatpak remotes --columns=name,title,url,filter,options
+```
+
+No remotes means no searchable catalog; it is not reported as "no package match." Allp can offer a separate, user-scoped Flathub plan using the exact remote name and URL. It never adds Flathub automatically. `--yes` alone cannot bootstrap an executable, enable a service, or add a remote; unattended approval requires both `--yes --allow-bootstrap`, after the full plan is printed.
+
+Missing Flatpak or Snap executables can be planned through structured APT, DNF, Pacman, Zypper, or APK bootstrap providers where a mapping is known. After an approved install, Allp refreshes capability and backend detection and continues only if the requirement is verified. Flatpak results preserve application ID, branch, remote, version, name, and description, and installation uses the remote plus application ID.
+
+## Python And Node
+
+Python support treats PyPI as the source and pip, pipx, and uv as installer choices. Node support treats the npm registry as the source and npm, pnpm, and Yarn as installer choices. Rust support treats crates.io as the source and Cargo as the installer. Registry matches are not treated as official merely because a name looks familiar, and fuzzy Python/Node/Rust matches are never installed automatically.
+
+Examples:
+
+```bash
+allp search openai --from python
+allp install black --from pipx --dry-run
+allp search typescript --from node
+allp install typescript --from pnpm --dry-run
+allp update --scope dev --target all --dry-run
+```
+
+## Dry Run And JSON
+
+Dry run performs discovery, search, selection, metadata validation, and execution-plan construction. It skips only mutating native command execution.
+
+```bash
+allp install git --dry-run
+allp install pycharm --from snap --dry-run
+allp update --dry-run
+```
+
+JSON examples:
+
+```bash
+allp detect --json
+allp search git --json
+allp list --json
+allp info git --json
+allp update --dry-run --json
+```
+
+Human logs are not mixed into JSON stdout.
+
+## Update, Self-Update, And Doctor
+
+`allp update` checks the trusted repository `allp-manager/allp-manager` before ordinary backend metadata updates unless disabled. Its phases cover self-update, platform/capability refresh, backend planning, confirmation, execution, and summary.
+
+```bash
+allp doctor
+allp self-update --check-only
+allp self-update --offline
+allp update --check-only
+allp update --skip-self-update
+allp update --self-only
+allp update --offline
+allp update --update-channel prerelease
+```
+
+Fresh installs use the stable tagged-release channel. Migrated alpha installs may retain the verified continuous main-branch channel; stable, continuous, and prerelease selections are explicit and persisted. Stable release metadata must contain `allp-release-manifest.json`, while continuous builds use their dedicated manifest and trusted workflow identity. Allp compares base SemVer before build revision, selects an asset by OS, architecture, libc, executable format, and target, and reports unsupported targets without staging an update.
+
+If the installed build is newer than the selected channel, Allp reports the
+distinct `LocalAhead` state and does not downgrade it; this is not described as
+up to date.
+
+A binary installed with `make reinstall` is marked as a local development build. When continuous is selected, it still follows a newer verified continuous build from `main` (including the local revision-1 collision); the normal replacement confirmation remains in place.
+
+Downloads are HTTPS-only, bounded by redirects, time, and size, restricted to the exact official repository/tag/asset, and verified with SHA-256 before safe extraction. The staged binary must report the expected version. Linux and macOS replacement uses same-directory staging, a rollback backup, post-install verification, and minimal elevation for non-writable installations. Windows uses a verified deferred helper. A guarded relaunch continues `allp update` once without entering an update loop. Offline mode contacts neither GitHub nor backend remote sources.
+
+`allp doctor` reports platform, users, install path ownership/writability, executable paths, backend states, Snap socket reachability, Flatpak remotes, trusted update source, release target, and cache/state/config paths without printing tokens or unrelated environment data.
+
+## Makefile Workflow
+
+The root Makefile keeps development, installation, and local release work in
+plain commands:
+
+```bash
+make help
+make fmt
+make fmt-check
+make check
+make clippy
+make test
+make architecture
+make build
+make release
+make quality
+make run ARGS="search git"
+make doctor
+make version
+make git-status
+make docs-check
+make install
+make reinstall
+make uninstall
+make install-user
+make install-check
+```
+
+`make install`, `make reinstall`, and `make uninstall` use sudo only to manage
+`/usr/local/bin/allp`. They do not install native packages, run Allp package
+operations, commit, push, tag, publish, or hide failures.
+
+`make reinstall` now warns if your shell resolves `allp` from another location
+(for example `~/.local/bin/allp`). Run `make install-check` after installing;
+use `make install-user` deliberately when the user-local copy is the one you
+want to refresh.
+
+## Local Release Workflow
+
+The release workflow is explicit. Local preparation never pushes, publishes a
+GitHub Release, or uploads assets. A GitHub Release is created only after a
+semantic-version tag such as `v0.5.0` is pushed.
+
+Run once per clone:
+
+```bash
+make hooks-install
+```
+
+Prepare the next version explicitly:
+
+```bash
+make release-prepare BUMP=patch
+# or:
+make release-prepare VERSION=0.5.0
+```
+
+`release-prepare` updates the package version, Cargo.lock through Cargo,
+CHANGELOG, README version references, a tracked release title such as
+`release/RELEASE_TITLE_v0.5.0.txt`, and a tracked draft such as
+`release/RELEASE_NOTES_v0.5.0.md`, then runs `make quality`. It writes an
+ignored readiness marker only after that quality gate passes.
+
+Commit the prepared files normally, for example from VS Code Source Control:
+
+```text
+release: Allp v0.5.0
+```
+
+Only a commit whose subject begins with `release:` and matches the prepared
+marker is finalized. The post-commit hook creates:
+
+- annotated local tag `v0.5.0`
+- `dist/allp-v0.5.0-source.tar.gz`
+- `dist/allp-v0.5.0-source.tar.gz.sha256`
+- `dist/RELEASE_NOTES_v0.5.0.md`
+
+The source archive is generated from the exact committed tag with `git archive`.
+Ordinary commits such as `fix: improve Snap parsing` do not change versions,
+create tags, or generate `dist/` output. Use `make release-status` to inspect
+state and `make release-workflow-test` to run the temp-repository automation
+tests. VS Code task examples live in `contrib/vscode/tasks.json` because
+`.vscode/` is editor-local and ignored.
+
+When the local release tag is ready, run `make release-push` explicitly. It
+verifies the release commit, annotated tag, and tag target, then pushes the
+current branch and matching tag. The tag-only GitHub Actions workflow creates
+the GitHub Release from the prepared title and notes. It builds and tests
+Linux x86_64/aarch64, macOS x86_64/aarch64, and Windows x86_64 binaries;
+uploads their archives and checksums; creates the exact-tag source archive; and
+generates and verifies `allp-release-manifest.json`. It refuses an existing
+conflicting release.
+
+## Troubleshooting
+
+| Symptom | What to do |
+|---|---|
+| APT lock error | Wait for the owning package process. Do not delete dpkg lock files. |
+| DNF/RPM database error | Check rpmdb permissions or repair the RPM database before retrying. |
+| Bazzite host package change | Prefer Homebrew, Flatpak, or a container; if layering is necessary, review the rpm-ostree plan and reboot after it completes. |
+| Missing pip, pipx, or uv | Run `allp detect --verbose` and install/configure the missing Python tool intentionally. |
+| npm global permission issue | Fix npm prefix ownership or use a user-owned Node manager; Allp will not sudo npm globals. |
+| Cargo upgrade unavailable | Install the optional `cargo-update` crate intentionally, or keep managing installed Cargo binaries manually. |
+| Flatpak has no remotes | Run `allp doctor`; review and explicitly approve the offered Flathub user-remote plan if desired. |
+| Snap exact result unavailable | Run `allp doctor` and Snap diagnostics. A valid REST `snap-not-found` is authoritative. |
+| Snap CLI fallback | Diagnostics show why REST was unavailable and the exact CLI argv/output. |
+| Self-update unavailable | Use `allp self-update --check-only -v`; unsupported targets leave the installed binary unchanged. |
+
+## Security Model
+
+Allp stores commands as program plus argument vector and never executes package-manager work through `sh -c`. Native package output is data, not trusted code. Dry runs do not execute installers. Bootstrap actions are separate plans. Self-update rejects foreign repositories, unsafe asset names, malformed manifests, checksum mismatches, archive traversal, and staged-version mismatches. State files contain no credentials. Allp does not store sudo passwords or collect telemetry; any operation-specific native confirmation flag is explicit in its reviewed plan.
+
+Read [SECURITY.md](SECURITY.md) for reporting and alpha limitations.
+
+## Architecture
+
+```text
+CLI -> platform/capabilities -> requirements -> discovery -> operation -> backend -> execution
+                                      |             |             |
+                                  bootstrap     alternatives   diagnostics
+CLI -> self_update -> release manifest -> verified replacement -> guarded re-execution
+```
+
+Backends own native syntax, REST/CLI transport details, and parsers. Generic operations coordinate capabilities, selection, alternatives, confirmation, and immutable plans. Bootstrap providers are independent of the backend that needs them. The runner owns direct process execution, output streaming, sudo handling, and original-user de-escalation.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md), [docs/BACKEND_CONTRACT.md](docs/BACKEND_CONTRACT.md), and [docs/PRIVILEGE_MODEL.md](docs/PRIVILEGE_MODEL.md).
+
+## Development
+
+```bash
+cargo fmt --all
+cargo fmt --all -- --check
+cargo check --all-targets
+cargo test --all-targets
+bash scripts/check-architecture.sh
+cargo build --release
+make quality
+```
+
+Use fake executable fixtures for package-manager behavior. Do not run destructive package-manager operations in tests.
+
+cargo clippy --all-targets --all-features -- -D warnings
+## Contributing
+
+Keep backend-specific parsing and flags inside backend modules. Add fixtures for parser changes. Preserve command syntax, JSON contracts, privilege behavior, dry-run semantics, and terminal UI expectations. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Roadmap
+
+Near-term work is broader real-distro validation, richer parser fixtures, an
+interactive Snap channel chooser, deeper signal/trusted-path testing, and
+real-host Homebrew, Cargo, and Bazzite validation. Version 0.6.4 includes Rust/Cargo
+binary-tool management and transactional rpm-ostree support for Bazzite; a
+broader full-screen TUI and GUI remain later work, alongside future ecosystems
+such as Composer, Go, RubyGems, and Maven/Gradle.
+
+See [ROADMAP.md](ROADMAP.md) and [TODO.md](TODO.md).
+
+## Changelog
+
+Version `0.6.4` is the current published release. It includes Rust/Cargo
+binary-tool management and Bazzite/rpm-ostree support while retaining the
+Homebrew, Node, and Python user-scope boundaries.
+See [CHANGELOG.md](CHANGELOG.md).
+
+## Known Limitations
+
+- Allp is public alpha software and not security-audited.
+- Snap multiple-track selection is conservative and may require native `snap` commands for explicit channel choice.
+- Existing GitHub releases without a valid manifest and matching binary asset cannot self-update automatically.
+- Experimental backends need broader validation on real distributions and host setups.
+- Python and Node project-scope policies remain intentionally cautious; Cargo host maintenance intentionally excludes project dependencies.
+- rpm-ostree and Cargo support still require wider real-host validation.
+- Signal forwarding and deeper trusted-path validation remain future hardening work.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
+
+## Community
+
+- [Telegram](https://t.me/im_wrench)
+- [Support the maintainer](https://daramet.com/wrench)

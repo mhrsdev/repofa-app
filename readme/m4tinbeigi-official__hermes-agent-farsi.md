@@ -1,0 +1,132 @@
+<!-- DevSponsors Badges -->
+<p align="center">
+  <a href="https://devsponsors.github.io"><img src="https://img.shields.io/badge/DevSponsors-Verified_OSS-6366f1?style=for-the-badge&logo=github" alt="DevSponsors Verified"></a>
+  <a href="https://devsponsors.github.io"><img src="https://img.shields.io/badge/Sponsor-DevSponsors_Hub-emerald?style=for-the-badge&logo=github-sponsors" alt="DevSponsors Sponsor"></a>
+  <a href="https://devsponsors.github.io/mediakit.html"><img src="https://img.shields.io/badge/Infrastructure-DevSponsors_Cloud-ec4899?style=for-the-badge&logo=server" alt="DevSponsors Cloud"></a>
+</p>
+
+# هرمس ایجنت فارسی (Hermes Agent Farsi)
+
+بومی‌سازی کامل [Hermes Agent](https://github.com/NousResearch/hermes-agent) — ایجنت متن‌باز هوش مصنوعی از Nous Research — به زبان فارسی. این پروژه یک **پچ نصب یک‌کلیکی** است، نه یک فورک کامل؛ روی نصب موجود شما اجرا می‌شود و آن را فارسی می‌کند.
+
+## این پچ چه چیزی را فارسی می‌کند؟
+
+- **داشبورد وب**: تمام صفحات (نشست‌ها، فایل‌ها، مدل‌ها، زمان‌بندی، وب‌هوک‌ها، MCP، کانال‌ها، افزونه‌ها، سیستم، پروفایل‌ها، مهارت‌ها) به‌طور کامل ترجمه شده‌اند.
+- **اصلاح حروف فارسی و راست‌چین در چت و ترمینال (Shaping & BiDi)**: اتصال خودکار و صحیح حروف فارسی (پ، چ، ژ، گ، ک، ی، ترکیب‌های لا و نیم‌فاصله) و جلوگیری از برعکس یا جداجدا نوشته‌شدن کلمات فارسی در ترمینال TUI و محیط چت وب.
+- **صفحه پیکربندی (Config)**: تمام حدود ۵۰۰ کلید تنظیمات فایل `config.yaml` — از فیلدهای پرکاربرد گرفته تا تنظیمات فنی عمیق (Bitwarden، Vertex AI، Discord voice FX و ...) — به‌صورت خودکار و الگوریتمی ترجمه می‌شوند (`web/src/lib/faConfigLabels.ts`).
+- **راست‌چین‌سازی خودکار (RTL)**: با انتخاب زبان فارسی، کل رابط کاربری به‌صورت خودکار راست‌چین می‌شود.
+- **فونت وزیرمتن (Vazirmatn)**: استفاده شده از فونت وزیرمتن به یاد صابر راستی‌کردار — به‌صورت محلی (بدون نیاز به اینترنت در زمان اجرا) بارگذاری می‌شود.
+- **پیام‌های CLI و گیت‌وی**: پیام‌های تأیید دستورات خطرناک، پاسخ‌های اسلش‌کامندهای تلگرام/دیسکورد/اسلک و غیره (`locales/fa.yaml`، حدود ۳۱۶ پیام).
+
+خروجی‌های تولیدشده توسط خودِ مدل هوش مصنوعی (پاسخ‌های چت) ترجمه نمی‌شوند — طبق طراحی هرمس، این‌ها به زبانی که شما با ایجنت صحبت می‌کنید پاسخ داده می‌شوند، نه بر اساس این تنظیم.
+
+## پیش‌نیاز
+
+Hermes Agent باید از قبل نصب شده باشد:
+
+```bash
+curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+```
+
+## روش ۱ (پیشنهادی): نصب از طریق هرمس (دستور رسمی پلاگین‌ها یا داشبورد) — بدون rebuild
+
+این پلاگین کاملاً منطبق با سیستم رسمی افزونه‌های Hermes Agent است و بدون نیاز به rebuild یا تغییر سورس کد کار می‌کند.
+
+### الف) نصب مستقیم با دستور Hermes CLI:
+```bash
+hermes plugins install m4tinbeigi-official/hermes-agent-farsi
+```
+
+### ب) نصب از طریق داشبورد وب هرمس:
+1. وارد داشبورد هرمس شوید (مثلاً `http://localhost:9119`).
+2. به بخش **Plugins (افزونه‌ها)** بروید.
+3. در قسمت **Install from GitHub / Git URL** مقدار زیر را وارد کنید و روی **Install** کلیک کنید:
+   ```text
+   m4tinbeigi-official/hermes-agent-farsi
+   ```
+4. وضعیت افزونه را روی **Enable** قرار دهید.
+
+### ج) نصب با اسکریپت تک‌خطی:
+```bash
+curl -fsSL https://raw.githubusercontent.com/m4tinbeigi-official/hermes-agent-farsi/main/install-plugin.sh | bash
+```
+
+یا به‌صورت محلی:
+```bash
+git clone https://github.com/m4tinbeigi-official/hermes-agent-farsi.git
+cd hermes-agent-farsi
+./install-plugin.sh
+```
+
+### مشخصات افزونه در لیست هرمس:
+- **نام افزونه (Name):** `hermes-farsi`
+- **نویسنده (Author):** `Rick Sanchez` (ریک سانچز)
+- **نسخه (Version):** `1.0.0`
+- **توضیحات:** فارسی‌ساز داشبورد هرمس — ترجمه در لحظه، راست‌چین، با فونت وزیرمتن به یاد صابر راستی‌کردار (بدون rebuild).
+
+**چطور کار می‌کند:** پلاگین یک اسکریپت جاوااسکریپت است که با `MutationObserver`
+متن‌های شناخته‌شده رابط کاربری را (دیکشنری تولیدشده از حدود ۷۰۰ رشته ترجمه‌شده
+واقعی هرمس) در لحظه به فارسی جایگزین می‌کند، `dir="rtl"` را روی صفحه اعمال
+می‌کند، و فونت وزیرمتن را بارگذاری می‌کند — همه‌چیز سمت مرورگر، بدون نیاز به
+rebuild داشبورد یا هماهنگی با نسخه Hermes نصب‌شده.
+
+**محدودیت شناخته‌شده:** فقط متن‌هایی که دقیقاً در دیکشنری موجودند ترجمه
+می‌شوند؛ متن‌های ترکیبی با مقدار پویا (مثل «۵ پیام ago») که در دیکشنری نیستند
+به انگلیسی می‌مانند. برای ترجمه ۱۰۰٪ کامل و دقیق، از روش ۲ (پچ سورس) استفاده
+کنید.
+
+غیرفعال‌سازی: `hermes plugins disable hermes-farsi`
+
+## روش ۲: پچ سورس یک‌کلیکی (ترجمه کامل و دقیق‌تر)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/m4tinbeigi-official/hermes-agent-farsi/main/install.sh | bash
+```
+
+یا به‌صورت محلی (بعد از کلون کردن این ریپو):
+
+```bash
+git clone https://github.com/m4tinbeigi-official/hermes-agent-farsi.git
+cd hermes-agent-farsi
+./install.sh
+```
+
+اگر Hermes Agent را در مسیری غیر از پیش‌فرض (`~/.hermes/hermes-agent`) نصب کرده‌اید:
+
+```bash
+./install.sh /path/to/hermes-agent
+```
+
+اسکریپت به‌صورت خودکار:
+1. فایل‌های ترجمه و فونت را کپی می‌کند
+2. پچ را روی فایل‌های سورس Hermes اعمال می‌کند
+3. `display.language: fa` را در `config.yaml` شما تنظیم می‌کند
+4. داشبورد وب را بازسازی می‌کند
+5. در صورت اجرا بودن گیت‌وی، آن را ری‌استارت می‌کند
+
+بعد از اتمام، داشبورد را در [http://localhost:9119](http://localhost:9119) باز کنید. اگر زبان به‌طور خودکار فارسی نبود، از دکمه زبان (پایین سایدبار) گزینه «فارسی» را انتخاب کنید.
+
+## چطور کار می‌کند؟ (برای کنجکاوها)
+
+به‌جای فورک کردن کل ریپوی Hermes Agent (که نگهداری‌اش را سخت و از آپدیت‌های بالادستی جدا می‌کند)، این پروژه یک **پچ `git diff`** به همراه چند فایل جدید نگه می‌دارد:
+
+- `patch/persian-localization.diff` — تغییرات روی فایل‌های موجود Hermes (کامپوننت‌های React، فایل CSS، `agent/i18n.py`)
+- `patch/new-files/` — فایل‌های کاملاً جدید (`fa.yaml`، `fa.ts`، `faConfigLabels.ts`، فونت‌های Vazirmatn)
+
+مترجم صفحه Config (`faConfigLabels.ts`) به‌جای فهرست‌کردن دستی ۵۰۰ کلید، یک **فرهنگ لغت ~۵۰۰ کلمه‌ی فنی رایج** (Enabled، Timeout، Provider، Model، Base URL و ...) دارد و برچسب هر کلید را از روی مسیر آن (مثلاً `discord.voice_fx.duck_gain`) به‌صورت ترکیبی می‌سازد. این یعنی کلیدهای تنظیماتی که در آینده به Hermes اضافه می‌شوند هم بدون نیاز به ویرایش این پروژه، فارسی نمایش داده می‌شوند.
+
+## به‌روزرسانی
+
+اگر Hermes Agent را با `hermes update` به‌روزرسانی کردید و پچ دیگر اعمال نشد (تغییری در فایل‌های بالادستی رخ داده)، دوباره `install.sh` را اجرا کنید. اگر پچ با خطا مواجه شد، لطفاً یک [Issue](../../issues) باز کنید و نسخه Hermes خود (`hermes version`) را ذکر کنید.
+
+## مشارکت
+
+برای گزارش رشته‌های ترجمه‌نشده یا بهبود ترجمه‌ها، Pull Request بفرستید یا Issue باز کنید.
+
+## یادبود و قدردانی
+
+این پروژه با افتخار از **فونت وزیرمتن (Vazirmatn)** استفاده می‌کند؛ اثر ماندگار و جاودان **زنده‌یاد صابر راستی‌کردار** که نقشی بی‌بدیل در تایپوگرافی فارسی و وب فارسی ایفا کرد. استفاده شده از فونت وزیرمتن به یاد صابر راستی‌کردار — روحش شاد و یادش گرامی باد.
+
+## لایسنس
+
+همانند خودِ Hermes Agent، این پروژه تحت MIT منتشر می‌شود. فونت Vazirmatn تحت [SIL Open Font License 1.1](https://github.com/rastikerdar/vazirmatn/blob/master/OFL.txt) اثر صابر راستی‌کردار است.
