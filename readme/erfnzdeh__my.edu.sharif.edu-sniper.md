@@ -1,0 +1,378 @@
+![The Sharif course registration portal, showing the offered course list with capacity, group and unit columns](docs/header.png)
+
+# my.edu.sharif.edu-sniper
+
+Registers courses on the Sharif University student portal the moment your
+registration window opens. It syncs to the server's clock, sleeps until the
+window, then works through your course list until everything lands.
+
+Almost every design choice here is a reaction to a measured behaviour of the
+registration API rather than a matter of taste. This document covers the tool:
+how to run it, and why it is built the way it is. The behaviours it is reacting
+to are written up separately in [docs/reference](docs/reference/), starting
+with [the server contract](docs/reference/server-contract.md).
+
+---
+
+## Quick start
+
+You do not need Go, or anything else, installed. Every release ships a single
+self contained binary per platform on the
+[releases page](https://github.com/erfnzdeh/my.edu.sharif.edu-sniper/releases/latest).
+Download the one for your machine, then run it from a terminal.
+
+**macOS** (`sniper_darwin_arm64` for Apple silicon, `sniper_darwin_amd64` for
+an Intel Mac). The binary is unsigned, so Gatekeeper needs to be told once:
+
+```
+chmod +x sniper_darwin_arm64
+xattr -c sniper_darwin_arm64
+./sniper_darwin_arm64
+```
+
+**Linux** (`sniper_linux_amd64`, or `sniper_linux_arm64`):
+
+```
+chmod +x sniper_linux_amd64
+./sniper_linux_amd64
+```
+
+**Windows** (`sniper_windows_amd64.exe`). Open PowerShell in the download
+folder and run it. SmartScreen may warn about an unknown publisher the first
+time, under "More info" and then "Run anyway":
+
+```
+.\sniper_windows_amd64.exe
+```
+
+It will then ask for your token and your courses. To skip the prompts:
+
+```
+./sniper -token "$MYEDU_TOKEN" -courses 40404-1,22034-2,30004-1 -at 16:00 -y
+```
+
+Log in at [my.edu.sharif.edu](https://my.edu.sharif.edu) shortly before your
+window, open the browser network tab, and copy the `Authorization` request
+header from any API call. Sessions last roughly an hour.
+
+Then leave the portal alone until the run is over. The edge limiter counts
+every request from your IP, so a click in the browser during the window costs
+the sniper a `429`, and one run on 2026-09-08 took a rejection that its own
+traffic cannot explain.
+
+Every run prints its version in the banner and the transcript, and
+`sniper -version` reports it on its own. Quote it in any bug report.
+
+The binary carries no data files. It reads the course catalogue from
+`docs/api/courses.json` next to it if you cloned the repository, and otherwise
+fetches the published copy over HTTPS, so a lone binary is fully functional.
+
+### Building it yourself
+
+If you do have Go, the build is the ordinary one and needs no dependencies:
+
+```
+go build -o sniper ./cmd/sniper
+./sniper
+```
+
+Or straight from the module, no clone needed:
+
+```
+go install github.com/erfnzdeh/my.edu.sharif.edu-sniper/cmd/sniper@latest
+```
+
+---
+
+## Architecture
+
+Two pieces, deliberately separated so the time critical one stays trivial.
+
+```mermaid
+flowchart LR
+    subgraph SEM["Once per semester, by hand"]
+        WS["portal WebSocket<br/>1752 courses"] --> DUMP["tools/catalogue/dump.mjs"]
+        DUMP --> JSON["docs/api/courses.json<br/>committed to the repo"]
+    end
+    JSON --> SNIPE
+    subgraph DAY["Registration day"]
+        SNIPE["cmd/sniper<br/>single file, standard library only"]
+        SNIPE -->|"POST /api/reg<br/>one request per 1.3s"| API["my.edu.sharif.edu"]
+    end
+```
+
+The portal only publishes its course list over a WebSocket, and the sniper
+needs each course's unit count. Rather than put a WebSocket client in the path
+that runs under time pressure, the catalogue is dumped by hand once a semester
+and read back as plain JSON.
+
+---
+
+## Lifecycle
+
+```mermaid
+sequenceDiagram
+    participant U as You
+    participant C as Sniper
+    participant S as my.edu.sharif.edu
+
+    Note over U,S: shortly before the window
+    U->>S: log in through the browser
+    S-->>U: Authorization header
+    U->>C: token, then courses in priority order
+    C->>C: resolve units from the catalogue
+
+    Note over C,S: clock sync, which also proves the token
+    C->>S: POST /api/reg with the lowest priority course
+    S-->>C: NO_REGISTRATION_TIME, plus time and registrationTime
+    C->>C: derive the fire time and print the working
+
+    Note over C: heartbeat, then a per second countdown
+    C->>S: GET / at two seconds out, to warm the connection
+    Note over C: the warm up is sent and not waited for, it spends a token too
+
+    Note over C,S: the burst, one request per 1.3s
+    loop until every course lands or you stop it
+        C->>S: POST add, the course with the fewest verdicts so far
+        S-->>C: OK, CAPACITY_EXCEEDED, and every other job
+    end
+```
+
+---
+
+## Decision 1: pace at about one request per second
+
+This is the whole game. The edge rejects requests that follow too closely on
+the previous one from the same IP with a real `429` rather than queueing them,
+so a parallel burst throws most of its requests away. How close is too close
+is not known exactly. Every measurement so far fits a limit of about one
+request per second counted when the request arrives, but none of them proves
+it, and one rejection on 2026-09-08 came five seconds after anything the
+sniper had sent. Full measurements, and what they do not settle, are in
+[docs/reference/rate-limits.md](docs/reference/rate-limits.md).
+
+So the scheduler holds a single global token, released every 1.3 seconds, and
+spends it on the course that most deserves the next request:
+
+```mermaid
+flowchart TD
+    A["token available"] --> B{"any course off<br/>its 5s cooldown?"}
+    B -->|no| C["sleep until the earliest one is ready"] --> A
+    B -->|yes| D["pick the course with the fewest<br/>verdicts, then by priority"]
+    D --> E["send, then hold the next token for 1.3s"]
+    E --> F{"result"}
+    F -->|"OK or COURSE_DUPLICATE"| G["done, drop from the list"]
+    F -->|"429"| H["never counted: retry at the<br/>boundary, the course keeps its place"] --> A
+    F -->|"cannot succeed on a retry"| J["park it for 45s,<br/>behind everything else"] --> A
+    F -->|"anything else"| I["cooldown 5.2s, retry"] --> A
+```
+
+Two independent constraints are in play. The per course rule is five seconds
+between attempts at the same course, and the global rule is one request per
+second overall. With five or more courses the global rule already satisfies
+the per course one, and below that the per course cooldown binds.
+
+The gap is 1.3 seconds rather than 1.1 because at 1.1s about one request in
+seven came back `429` on 2026-09-07, and at 1.3s none did. That is a small
+sample and a working default rather than a measured threshold, which is why
+`-gap` exists. The gap runs from the last request the edge **accepted**, not
+from the last one sent. A request it rejects is never counted and leaves that
+clock untouched, so a `429` costs a poll at the boundary rather than a fixed
+backoff, and the rejected request gives up its own claim on the clock and
+nobody else's. Acceptance is timed from the moment the request is written to
+the connection, not from when the scheduler decided to send it, because a
+request that has to open a connection first reaches the edge several hundred
+milliseconds later than one on a warm connection.
+
+## Decision 2: sending does not wait for the answer
+
+Inside the window the portal is slow. Answers measured between 2 and 5 seconds
+on 2026-09-08, and one that never came held the queue for the full 10 second
+timeout. A scheduler that waits for each answer before sending the next request
+is paced by the portal's latency rather than by the edge limit, which is the
+one thing it was built to respect.
+
+So the token spacing alone governs when a request leaves, and answers land
+whenever they land. There is no cap on outstanding answers by default, because
+the scheduler is already bounded twice over: a course with a request in flight
+is never picked again, so there is at most one per course, and no request
+outlives the 10 second timeout. The ceiling is the smaller of your list length
+and `timeout / gap`, about eight at the defaults.
+
+A cap below that ceiling throttles *sending* rather than answering. With answers
+taking `T` seconds and a cap of `C`, a request can only leave every `T / C`
+seconds, so a cap of 3 against the 5 second answers measured inside the window
+paces you at 1.7s, slower than the edge actually allows. Modelled on the
+2026-09-08 shape, ten courses with three second answers and two requests that
+hang to the timeout, the last course on the list gets its first attempt at:
+
+| | last course's first attempt |
+| --- | --- |
+| `-inflight 3` | 15.2s |
+| uncapped, the default | 11.7s |
+
+11.7s is exactly ten tokens at 1.3s, which is the floor. `-inflight` remains as
+an escape hatch for `TOO_MANY_REQUESTS`, the portal's own concurrency guard,
+which has never been seen live. `-inflight 1` restores the old serial
+behaviour.
+
+## Decision 3: every course before any second attempt
+
+List order is priority order, but a course the backend has already judged
+yields to one it has never seen. The first pass therefore covers the whole
+list, and only then does anything get a second try.
+
+This matters more than it sounds. Under strict priority order, on 2026-09-08,
+one run spent four attempts and thirty seconds on its first course while the
+last two courses on the list never received a single request. A verdict on a
+course you have not asked about is worth more than a repeat verdict on one you
+have.
+
+Because requests are paced, the Nth course on your list makes its first attempt
+roughly 1.3N seconds after the window opens. With ten courses, the last one
+waits about twelve seconds. Put the courses that fill in seconds at the top.
+
+A result that cannot change on a retry, a class clash or a wrong unit count,
+parks the course for 45 seconds and puts it behind everything else. It is still
+retried, because you may drop whatever it clashes with, but it no longer takes
+turns from a course that can still land.
+
+## Decision 4: sleep precisely, and land slightly late on purpose
+
+The client computes one sleep from the server's own clock rather than polling
+toward the window. Given a probe sent at `t0`, answered at `t1`, with the
+server reporting `S` and the window at `R`:
+
+```
+fire = t1 + (R - S) + 100ms
+```
+
+That is later than it looks. The server stamps `S` as it answers, so by `t1`
+its clock is already half a round trip past `S`, and the request spends the
+other half on the way in: it reaches the server a full network round trip
+after the window opens, plus the 100ms. The margin is biased late
+deliberately, because arriving early is rejected and puts that course on its
+five second cooldown, while arriving late costs only the delay. The formula
+used to add the probe's round trip too, and since the probe runs on a cold
+connection that included a TLS handshake: one run on 2026-09-08 fired 1.2s
+after the window for nothing. The client prints the derivation with your
+actual numbers before it commits to a fire time.
+
+## Decision 5: units come from the catalogue
+
+The portal range checks units between `0` and the course's own value, and
+courses flagged `isVariable` accept anything in that range. A mismatch fails
+with `INCORRECT_UNIT_NUMBER`, so hardcoding a value is not safe. On one real
+ten course list, five courses were not three units and one was zero, so a
+hardcoded `3` would have failed half the list.
+
+The catalogue is a snapshot, though, and departments add groups during the
+term, sometimes during a window. So it informs rather than gates:
+
+- A group the catalogue lacks, such as `37127-5` when the dump only has groups
+  1 to 3, takes the units and title of the code's other groups, with a warning.
+  Groups of one code have always agreed on both.
+- A code with no groups in the catalogue at all needs its units spelled out,
+  `99999-1:3`, and is then sent exactly as typed.
+- A course the catalogue does have is still range checked, so a wrong unit
+  count is caught while you are typing it rather than at the window.
+
+A code and group that do not exist at all come back from the portal as
+`INVALID_COURSE` at the window, so check anything the sniper warns about.
+
+---
+
+## The catalogue
+
+`docs/api/courses.json` maps `CODE-GROUP` to the fields the sniper needs:
+
+```json
+{ "40404-1": { "u": 1, "v": 0, "t": "آز مهندسی نرم‌افزار", "c": 30 } }
+```
+
+`u` is units, `v` marks a variable unit course, `t` is the title, and `c` is
+capacity at dump time, which goes stale quickly.
+
+Regenerate it once per semester, after the offered list is final:
+
+```
+MYEDU_TOKEN='<Authorization header>' node tools/catalogue/dump.mjs
+```
+
+It needs Node 22 or newer for the global `WebSocket` and has no dependencies.
+It reads only the catalogue frame, copies four whitelisted fields per course,
+and refuses to write anything if your token or a student identifier shows up
+in the output.
+
+The sniper looks for the catalogue in this order:
+
+1. whatever `-catalogue` points at, a path or a URL
+2. `docs/api/courses.json` next to the source or the binary
+3. the published URL in `catalogueURL`
+
+The local copy means it works with no network at all. The published copy is
+live at
+[erfnzdeh.github.io/my.edu.sharif.edu-sniper](https://erfnzdeh.github.io/my.edu.sharif.edu-sniper/),
+served from `main` under `/docs`, so a clone is not required to read it:
+
+```
+curl https://erfnzdeh.github.io/my.edu.sharif.edu-sniper/api/courses.json
+```
+
+---
+
+## Flags
+
+| Flag | Meaning |
+| --- | --- |
+| `-token` | Authorization header value. Also read from `MYEDU_TOKEN`. |
+| `-courses` | Comma separated, in priority order, for example `40404-1,22034-2:1`. Groups newer than the catalogue are accepted. |
+| `-at` | Window time as `HH:MM`. Required with `-y` when `registrationTime` is stale. |
+| `-y` | Skip the confirmation prompt. Needs `-token` and `-courses`. |
+| `-catalogue` | Path or URL of `courses.json`. |
+| `-transcript` | Transcript path. Defaults to `snipe-<timestamp>.log`. |
+| `-gap` | Minimum spacing between two requests. Defaults to `1.3s`. |
+| `-inflight` | Cap on requests waiting for an answer. Defaults to `0`, no cap. |
+| `-version` | Print the version, platform and Go version, then exit. |
+
+Exit codes: `0` when everything landed, `1` when something is still
+outstanding, `2` for a setup or authentication failure.
+
+Transcripts record every request and response verbatim, **including your
+token**, so they are gitignored. Delete them when you are done.
+
+---
+
+## Reference
+
+The portal's API is undocumented by the university, so it was reverse
+engineered from the live endpoint and the frontend bundle. Those notes live in
+[docs/reference](docs/reference/) rather than here:
+
+| Document | Covers |
+| --- | --- |
+| [server-contract.md](docs/reference/server-contract.md) | every measured behaviour and what it forces the client to do |
+| [http-api.md](docs/reference/http-api.md) | the five endpoints and their request and response shapes |
+| [websocket.md](docs/reference/websocket.md) | the only source of course data, and the `userState` and course schemas |
+| [rate-limits.md](docs/reference/rate-limits.md) | all three limiters, measured |
+| [auth.md](docs/reference/auth.md) | token shape, lifetime, and why the WebSocket ignores it |
+| [error-codes.md](docs/reference/error-codes.md) | triage, plus every code with its Persian text and meaning |
+
+---
+
+## Contributing
+
+Bug reports, catalogue corrections and pull requests are all welcome.
+[CONTRIBUTING.md](CONTRIBUTING.md) covers the build, and the handful of rules
+that matter here: no dependencies in `cmd/sniper`, timing constants change
+only with measurements behind them, and no token ever reaches a commit or an
+issue. Security problems go through [SECURITY.md](SECURITY.md) rather than the
+issue tracker. Everyone taking part is expected to follow the
+[Code of Conduct](CODE_OF_CONDUCT.md).
+
+## License
+
+[MIT](LICENSE). The reverse engineering notes in
+[docs/reference](docs/reference/) are covered by the same license. This project
+is not affiliated with, endorsed by, or supported by Sharif University of
+Technology.

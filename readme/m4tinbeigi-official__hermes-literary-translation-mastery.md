@@ -1,0 +1,62 @@
+<!-- DevSponsors Badges -->
+<p align="center">
+  <a href="https://devsponsors.github.io"><img src="https://img.shields.io/badge/DevSponsors-Verified_OSS-6366f1?style=for-the-badge&logo=github" alt="DevSponsors Verified"></a>
+  <a href="https://devsponsors.github.io"><img src="https://img.shields.io/badge/Sponsor-DevSponsors_Hub-emerald?style=for-the-badge&logo=github-sponsors" alt="DevSponsors Sponsor"></a>
+  <a href="https://devsponsors.github.io/mediakit.html"><img src="https://img.shields.io/badge/Infrastructure-DevSponsors_Cloud-ec4899?style=for-the-badge&logo=server" alt="DevSponsors Cloud"></a>
+</p>
+
+# 🪄 Hermes Book Translator Suite & Desktop App
+> **نرم‌افزار جامع و چندسکویی ترجمه هوشمند کتاب، رمان و مقالات به زبان فارسی فاخر (با پشتیبانی از API رایگان نارا روتر)**
+
+[![Hermes Agent](https://img.shields.io/badge/Agent-Hermes%20v0.4.0-blue.svg)](https://hermes-agent.nousresearch.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Platforms: macOS | Windows](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows-brightgreen.svg)](#)
+[![Persian Orthography](https://img.shields.io/badge/Style-Zero%20Em--Dash%20%7C%20ZWNJ-green.svg)](#)
+
+---
+
+## 📖 معرفی نرم‌افزار
+این نرم‌افزار برای کاربران طراحی شده تا بتوانند بدون نیاز به دانش برنامه‌نویسی یا دستورات پیچیده، هر کتاب انگلیسی (رمان، کتاب تخصصی، داستان یا مقاله) را به زبان فارسی روان، شیوا و ادبی ترجمه کنند.
+
+### ✨ قابلیت‌ها:
+1. **رابط کاربری گرافیکی و زیبا:** با فونت وزیرمتن و نوار پیشرفت لحظه‌ای.
+2. **اجرای آسان با یک دابل‌کلیک روی مک و ویندوز.**
+3. **پشتیبانی از API رایگان:** استفاده از روتر نارا (`nara.sh`) و دسترسی به مدل‌های روز مثل Gemini 3.7 و Gemini 2.5 Flash.
+4. **رعایت اصول سجاوندی فارسی:** حذف خودکار خط‌های تیره (Em-Dash)، نیم‌فاصله‌های استاندارد و گیومه‌های فارسی «...».
+5. **خروجی چندگانه:** دانلود مستقیم کتاب در قالب مارک‌داون (MD) یا کتابخوان شکیل وب (HTML).
+
+---
+
+## 🎁 دریافت کلید API رایگان نارا روتر
+1. وارد لینک [ثبت‌نام نارا روتر](https://router.bynara.id/register?ref=NMAP6F9D) شوید و ثبت‌نام کنید.
+2. در بخش کلیدهای API، یک کلید جدید بسازید (شروع با `sk-nry-...`).
+3. کلید را داخل نرم‌افزار وارد کنید. (کلید در حافظه مرورگر شما ذخیره می‌ماند).
+
+---
+
+## 💻 نحوه اجرای نرم‌افزار
+
+### 🍏 در مک (macOS):
+1. پروژه را دانلود یا کلون کنید.
+2. روی فایل **`run_mac.command`** دابل‌کلیک کنید.
+*(نرم‌افزار به صورت خودکار در مرورگر باز می‌شود)*
+
+### 🪟 در ویندوز (Windows):
+1. پروژه را دانلود کنید.
+2. روی فایل **`run_windows.bat`** دابل‌کلیک کنید.
+*(برنامه در مرورگر پیش‌فرض شما اجرا خواهد شد)*
+
+---
+
+## 🛠️ استفاده از طریق خط فرمان (CLI)
+اگر ترجیح می‌دهید از طریق ترمینال ترجمه کنید:
+
+```bash
+# اجرای مستقیم
+python3 translate_book.py my_book.txt --api-key sk-nry-YOUR_KEY
+```
+
+---
+
+## 📜 مجوز (License)
+این پروژه تحت مجوز **MIT** منتشر شده است.
