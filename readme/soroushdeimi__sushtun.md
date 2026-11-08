@@ -1,0 +1,266 @@
+<h1 align="center">sushTun</h1>
+
+<p align="center">A fast, portable Xray TUN client with a clean desktop UI.</p>
+
+<p align="center">
+  <a href="https://github.com/soroushdeimi/sushTun/actions/workflows/ci.yml">
+    <img alt="CI" src="https://github.com/soroushdeimi/sushTun/actions/workflows/ci.yml/badge.svg">
+  </a>
+  <a href="https://github.com/soroushdeimi/sushTun/releases/latest">
+    <img alt="Release" src="https://img.shields.io/github/v/release/soroushdeimi/sushTun">
+  </a>
+  <a href="LICENSE">
+    <img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg">
+  </a>
+</p>
+
+---
+
+sushTun routes all of your system traffic through an Xray tunnel and puts you in
+full control of it from a single window: import a server, choose what bypasses
+the tunnel, and connect. It ships as one self-contained binary — no install, no
+dependencies.
+
+## Screenshots
+
+<p align="center">
+  <img alt="The Servers page, connected, with exit-country flags" src="docs/screenshots/servers.png" width="100%">
+</p>
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><img alt="Proxy chains with a verified exit" src="docs/screenshots/chains.png" width="100%"></td>
+    <td width="33%" valign="top"><img alt="Routing" src="docs/screenshots/routing.png" width="100%"></td>
+    <td width="33%" valign="top"><img alt="Anti-filter" src="docs/screenshots/anti-filter.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Proxy chains with a verified exit</sub></td>
+    <td align="center"><sub>Routing</sub></td>
+    <td align="center"><sub>Anti-filter</sub></td>
+  </tr>
+</table>
+
+## Features
+
+- **Servers** — VLESS, VMess, Trojan, Shadowsocks, Hysteria2, WireGuard, HTTP, and SOCKS,
+  with certificate pinning and ECH. Import from links, base64 subscriptions, a
+  WireGuard `.conf`, raw JSON, or a QR code; test real delay or TCP ping (one
+  server or a whole selection), switch to the fastest, and copy a share
+  link/QR straight from the table.
+- **Proxy chains** — put several servers in a row: traffic enters through the first and
+  leaves from the last. The Chains page draws the path, and Test measures the whole
+  chain, shows the country you really exit from, and names the exact link that failed.
+- **Exit-country flags** — after a test or a connect, each server shows the flag of the
+  country it really exits from, not where its address is.
+- **Subscriptions** — tracks your plan's data quota and expiry with a live usage
+  bar; each one refreshes on its own schedule, with an optional name filter and
+  custom User-Agent, or refresh them all at once.
+- **Smart alerts** — a tray notification and in-app banner when data runs low or
+  a plan is about to expire, throttled to once per day per threshold.
+- **Split routing** — Simple toggles for Iran, Russia, China, ad/tracker
+  blocking, and your own domains and IPs, or build named custom rule sets with
+  v2rayN-compatible import/export and their own geo-data updater.
+- **Custom DNS** — pick your resolvers (DoH, DoT, plain, or a one-click preset),
+  a separate domestic resolver for domains your routing sends direct, resolving
+  the rest through the tunnel, and advanced overrides when you need them.
+- **Core tuning** — anti-filter TLS fragmentation, UDP noise before a Hysteria2
+  handshake, multiplexing, traffic sniffing, TCP Fast Open / Multipath TCP / congestion
+  control, post-quantum server verification for REALITY, and a local proxy you can
+  share with other devices on your network.
+- **Low-usage mode** — a single toggle sends OS telemetry and update traffic
+  direct so it never eats your quota, while everything else stays tunneled.
+- **Share via hotspot** *(Windows, Linux)* — put the tunnel behind a Wi-Fi hotspot
+  so phones and other devices are covered the moment they connect, with nothing to
+  configure on the device itself. On Linux sushTun starts the hotspot through
+  NetworkManager alongside the Wi-Fi you are connected to when the card supports it,
+  and Settings → Hotspot holds its name, password, WPA2/WPA3, band, a hidden network,
+  and whether joined devices can see each other. On Windows the same page sets the
+  name, password, security and band of the Mobile hotspot Windows itself runs; a
+  field left blank keeps what Windows has.
+- **Multi-exit port** — one local SOCKS port where the **username picks the exit
+  server**: `socks5://de:PASSWORD@127.0.0.1:10809` leaves through the server you named
+  "de" while everything else keeps using the main tunnel. A chosen exit wins over the
+  routing rules; UDP is refused on this port, because the username does not travel with
+  UDP packets and the traffic would leave through the wrong server.
+- **Port forwarding** — map a local port to one fixed address, through the tunnel or
+  directly: reach a machine only your server can see, or force one destination through
+  the tunnel whatever the routing says. Each forward can be switched off, or shared with
+  other devices on your network.
+- **Startup and backup** — start sushTun at login (Windows, macOS, and the
+  `.deb` on Linux) with optional auto-connect, back up and restore your servers and
+  settings as a zip, and get a banner when a new release is out.
+- **First-run tour and help** — a short tour shows where everything is, and every button
+  and option explains itself on hover.
+- **Persian interface** — a full right-to-left فارسی translation, switchable in
+  Settings.
+- **Live metrics** — real-time throughput and total data used this session,
+  plus ping, TCP-delay, and diagnostics tools alongside a colorized live log.
+
+## How it works
+
+Xray runs as one child process with a config sushTun writes at connect time, and the
+operating system is pointed at it. Everything below is what actually happens on Linux
+and Windows; macOS differs only in the first hop (see *Platform support*).
+
+```text
+              your apps, the whole system
+                        |
+      +-----------------+------------------+
+      |                 |                  |
+   routes            resolver         apps that dial
+ 0.0.0.0/1 +        172.19.0.1        a proxy themselves
+ 128.0.0.0/1            |                  |
+   -> xray0             |                  |
+      |                 |                  |
+ +----v-----------------v------------------v--------------------------+
+ |  Xray, one process, config.runtime.json                            |
+ |                                                                    |
+ |   tun-in          dns-in          socks-in    exits-in    fwd-PORT  |
+ |   xray0        127.0.0.1:53      :10808      :10809     (optional) |
+ |   172.19.0.2/30                            username =              |
+ |      |               |               |     which exit     |        |
+ |      +-------+-------+-------+-------+---------+----------+        |
+ |                      |                                             |
+ |               routing rules, in this order:                        |
+ |                 1. stats API                                       |
+ |                 2. DNS                                             |
+ |                 3. multi-exit + port forwards   <- a deliberate    |
+ |                 4. ads / Iran / private / yours    choice wins     |
+ |                      |                                             |
+ |      +---------------+---------+------------+-----------+          |
+ |      |               |         |            |           |          |
+ |   proxy          exit-SERVER  direct     dns-out      block        |
+ |   (your server)  (optional)   |          (DoH)          X          |
+ +------|---------------|--------|------------|-----------------------+
+        |               |        |            |
+        +---------------+--------+------------+
+                        |
+        all of them bound to the physical interface,
+        so they never re-enter the tunnel they carry
+                        |
+        proxy, exit-SERVER  ->  your server  ->  the internet
+        direct, dns-out     ->  the internet directly
+```
+
+**The order of the routing rules matters**, and sushTun builds it deliberately:
+
+1. the stats API,
+2. DNS (`dns-in`, and port 53 out of the tunnel),
+3. multi-exit and port-forward rules, so a deliberate choice always wins,
+4. your own rules: blocked ads, Iran/Russia/China direct, private addresses, custom sets.
+
+**Two details make the whole thing work.** The tunnel takes over with two `/1` routes
+instead of replacing the default route: they are more specific, so they win, while your
+real default route stays untouched and other VPNs with more specific routes keep
+working. And every outbound that must *not* go through the tunnel — `proxy`, `direct`
+and `dns-out` — is bound to the physical interface, so the connection to your server
+never loops back into the tunnel it is carrying.
+
+**DNS** never leaves the tunnel: the system resolver points at `172.19.0.1` on `xray0`,
+queries arrive at `dns-in`, and Xray answers them over DoH. Domains your routing sends
+direct can use a separate domestic resolver.
+
+**Coming back down is the careful part.** Before anything is changed, the previous DNS
+and routes are saved; teardown restores them in reverse order (hotspot, then tunnel),
+and a boot task puts them back if the app is killed or the machine loses power.
+
+**The hotspot** *(Linux)* is a second virtual Wi-Fi interface (`sushap0`) on the same
+radio, shared by NetworkManager, with forwarding enabled on `xray0` so replies coming
+back out of the tunnel reach the phones.
+
+## Download
+
+Grab the latest build for your platform from the
+**[Releases page](https://github.com/soroushdeimi/sushTun/releases/latest)**:
+`sushTun-windows.exe`, `sushTun-linux`, or `sushTun-macos`. Each is a single
+ready-to-run binary — no Python or dependencies required. The portable build
+keeps its settings and profiles next to the file itself.
+
+On Windows you can install it instead: the `sushTun-Setup-<version>.exe` asset
+adds sushTun to the Start menu, installs into `Program Files`, and keeps
+settings and profiles in `%ProgramData%\sushTun`. Uninstall it from
+Settings → Apps, which also removes that data.
+
+On Debian/Ubuntu the `sushtun_<version>_amd64.deb` asset does the same job:
+it adds sushTun to the app menu with its icon, and keeps settings and profiles
+in `/var/lib/sushtun`.
+
+```bash
+sudo apt install ./sushtun_*_amd64.deb   # then launch "sushTun" from the app menu
+sudo apt remove sushtun                  # uninstall (purge also deletes your data)
+```
+
+On Fedora/RHEL the `sushtun-<version>-1.x86_64.rpm` asset does the same, built
+on Fedora itself:
+
+```bash
+sudo dnf install ./sushtun-*.rpm   # then launch "sushTun" from the app menu
+sudo dnf remove sushtun
+```
+
+On macOS open `sushTun-macos.dmg` and drag sushTun into Applications; it keeps
+settings and profiles in `/Library/Application Support/sushTun`. The build is
+for Apple Silicon, and it is signed only ad-hoc — there is no Apple Developer
+ID behind it — so macOS refuses the first launch. Allow it once in **System
+Settings → Privacy & Security → Open Anyway**; the old right-click → Open
+trick no longer works there. The raw `sushTun-macos` file next to the .dmg is
+the portable build: it is a Unix executable, so a download strips its execute
+bit and Finder shows it as a document until you `chmod +x` it.
+
+None of the installers replace the portable build — they are separate downloads,
+and you can keep using whichever suits you.
+
+### Updating
+
+sushTun checks for a new release once a day (Settings → General turns this
+off, and has a **Check now** button). When there is one, a banner offers
+**Update now**: that opens a window with the release notes and a single
+button, which downloads the new version, checks it against the `SHA256SUMS`
+published with the release, and restarts sushTun on it. Nothing is written
+until the download has arrived whole and matched.
+
+The Windows installer build updates itself by running the new installer; the
+portable builds replace their own executable. A copy installed from the `.deb`
+is left to `apt`, since overwriting files dpkg owns would leave the package
+inconsistent — there the same window points you at the release page.
+
+> The checksum is published in the same release as the download, so it catches
+> a truncated or tampered-with *download*, not a compromised GitHub account.
+> The releases are not code-signed, so Windows SmartScreen may warn the first
+> time you run a new build.
+
+sushTun requests elevated privileges on launch, since changing routes, DNS, and
+the network device requires admin (Windows), root via `pkexec`/`sudo` (Linux),
+or an `osascript` prompt (macOS).
+
+On macOS, keep sushTun out of Desktop, Documents and Downloads (Applications is
+the usual place): macOS privacy protection keeps the administrator copy out of
+those folders even after the password, and sushTun then opens unelevated and
+tells you so. Quit it with Cmd+Q or from its menu-bar icon; the Dock's Quit
+does not reach an app running as administrator.
+
+## Platform support
+
+| Platform | Status |
+|----------|--------|
+| Windows | Fully supported |
+| Linux   | Uses Xray's native TUN inbound, the same model as Windows. Connect path is experimental and being hardened. |
+| macOS   | Tested on Apple Silicon (macOS 26). Uses Xray's own TUN inbound on a `utun` device, with a [tun2socks](https://github.com/xjasonlyu/tun2socks) bridge as the fallback, and takes over with four `/2` routes so it can run alongside another VPN. Ships as an Apple Silicon `.dmg`. No Wi-Fi hotspot: macOS cannot share Wi-Fi over Wi-Fi, so share the local proxy instead. |
+
+## Building from source
+
+```bash
+python -m pip install -r requirements-dev.txt
+python scripts/fetch_deps.py   # fetches xray-core, geo data, and platform TUN helpers
+python -m xrayui
+```
+
+To produce a standalone binary:
+
+```bash
+pyinstaller tools/build.spec
+```
+
+## License
+
+Released under the [MIT License](LICENSE).
