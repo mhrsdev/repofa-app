@@ -1,5 +1,5 @@
 /* RepoFA service worker. Version = the deployer's .site-hash (passed as ?v=), so a new deploy installs a new worker.
-   Shell + fonts: cache-first. data.json / config.json / readme/*.md, comments/*.json: stale-while-revalidate. Never: /api/, other origins (API tunnel, GitHub, Telegram). */
+   Shell + fonts: cache-first. data.json / config.json / readme/*.md, comments/*.json: stale-while-revalidate. Never: /api/, /games/ (separate Mini App page), other origins (API tunnel, GitHub, Telegram). */
 'use strict';
 var V = new URL(self.location.href).searchParams.get('v') || 'dev';
 var SHELL = 'rf-shell-' + V, DATA = 'rf-data';
@@ -31,7 +31,7 @@ function swr(req, notify) {
 }
 self.addEventListener('fetch', function (e) {
   var req = e.request, u = new URL(req.url);
-  if (req.method !== 'GET' || u.pathname.indexOf('/api/') >= 0) return;
+  if (req.method !== 'GET' || u.pathname.indexOf('/api/') >= 0 || u.pathname.indexOf('/games/') >= 0) return;   // the games Mini App is a separate page
   var name = u.pathname.split('/').pop(), feed = name === 'data.json' || /\/(readme|comments)\//.test(u.pathname);
   if (u.origin !== self.location.origin) { if (feed && u.protocol === 'https:') e.respondWith(swr(req, name === 'data.json')); return; }   // a copy reading our feed (config.dataBase): cached per origin
   if (feed || name === 'config.json') { e.respondWith(swr(req, name === 'data.json')); return; }

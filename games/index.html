@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>بازی‌های مایکل</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:var(--tg-theme-bg-color,#fff);--tx:var(--tg-theme-text-color,#17212b);--hint:var(--tg-theme-hint-color,#707579);--link:var(--tg-theme-link-color,#2481cc);
+--btn:var(--tg-theme-button-color,#2481cc);--btx:var(--tg-theme-button-text-color,#fff);--bg2:var(--tg-theme-secondary-bg-color,#f1f3f5);--ok:#2e9e5b;--bad:#d64545;color-scheme:light dark}
+@media(prefers-color-scheme:dark){:root{--bg:var(--tg-theme-bg-color,#17212b);--tx:var(--tg-theme-text-color,#f5f5f5);--hint:var(--tg-theme-hint-color,#8b9aa7);--bg2:var(--tg-theme-secondary-bg-color,#232e3c)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.7 Vazirmatn,system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;user-select:none;-webkit-user-select:none}
+main{max-width:440px;margin:0 auto;padding:12px 16px 24px}
+h1{font-size:18px;margin:0 0 8px;display:flex;align-items:center;gap:8px}
+button{font:inherit;color:inherit;border:0;border-radius:12px;background:var(--bg2);min-height:44px;padding:0 14px;cursor:pointer}
+button:active{transform:scale(.97)}
+.pri{background:var(--btn);color:var(--btx);font-weight:700;width:100%;min-height:48px}
+.hd{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}
+.chip{background:var(--bg2);border-radius:99px;padding:0 12px;font-weight:700;line-height:2;white-space:nowrap;font-variant-numeric:tabular-nums}
+.st{min-height:28px;text-align:center;font-weight:700;margin:4px 0 8px}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.menu button{min-height:84px;font-size:16px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.menu b{font-size:28px;line-height:1.2}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:6px;border-radius:14px;background:var(--bg2);direction:ltr;touch-action:none}
+.g4 div{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;background:rgba(127,127,127,.12)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;direction:ltr}
+.pad button{min-height:48px;font-size:20px}
+.pad .u{grid-column:2}.pad .l{grid-column:1;grid-row:2}.pad .d{grid-column:2;grid-row:2}.pad .r{grid-column:3;grid-row:2}
+canvas{display:block;width:100%;aspect-ratio:1;border-radius:12px;background:var(--bg2);touch-action:none}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;direction:ltr}
+.cards button{aspect-ratio:1;padding:0;font-size:28px;min-height:0}
+.cards .f{background:rgba(36,129,204,.18)}.cards .m{background:rgba(46,158,91,.22)}
+.mf{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;direction:ltr}
+.mf button{aspect-ratio:1;padding:0;min-height:0;border-radius:6px;font-weight:700;font-size:15px}
+.mf .o{background:transparent;box-shadow:inset 0 0 0 1px rgba(127,127,127,.3)}
+.mode{display:flex;gap:8px;margin-bottom:8px}.mode button{flex:1}.mode .on{box-shadow:inset 0 0 0 2px var(--btn)}
+.rx{height:190px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;font-weight:700;background:var(--bg2);touch-action:none;cursor:pointer;text-align:center}
+.rx.w{background:rgba(214,69,69,.18)}.rx.g{background:rgba(46,158,91,.35)}
+.res{margin:12px 0;padding:10px 12px;border-radius:12px;background:var(--bg2);text-align:center;font-weight:700}
+.lb{margin-top:16px}
+.tabs{display:flex;gap:6px;margin:8px 0}.tabs button{flex:1;min-height:36px;font-size:13px}.tabs .on{background:var(--btn);color:var(--btx)}
+ol{list-style:none;margin:0;padding:0}
+li{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:10px}
+li:nth-child(odd){background:var(--bg2)}
+li .r{width:2.2em;text-align:center;font-weight:700}
+li .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;unicode-bidi:plaintext;text-align:right}
+li .s{font-weight:700;font-variant-numeric:tabular-nums}
+li.me{box-shadow:inset 0 0 0 2px var(--btn)}
+.hint{color:var(--hint);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<main>
+<h1><span id="ti">🎮 بازی‌ها</span></h1>
+<div id="view"></div>
+<div id="res" class="res" hidden></div>
+<section id="lb" class="lb" hidden>
+  <div class="tabs" id="scope"><button data-v="chat">این گروه</button><button data-v="global">همه</button></div>
+  <div class="tabs" id="period"><button data-v="week">این هفته</button><button data-v="all">همیشه</button></div>
+  <ol id="rows"></ol>
+  <div id="mine" class="hint"></div>
+</section>
+</main>
+<script>
+'use strict';
+var tg = window.Telegram && Telegram.WebApp;
+var FA = function (n) { return String(n).replace(/\d/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; }); };
+var $ = function (i) { return document.getElementById(i); };
+function E(t, c, x, p) { var e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; if (p) p.appendChild(e); return e; }
+function hap(k) { try { tg.HapticFeedback.impactOccurred(k || 'light'); } catch (e) { } }
+function note(k) { try { tg.HapticFeedback.notificationOccurred(k); } catch (e) { } }
+
+var GAMES = {
+  '2048': { t: '۲۰۴۸', e: '🔢', u: 'امتیاز', lo: 0 },
+  snake: { t: 'مار', e: '🐍', u: 'امتیاز', lo: 0 },
+  memory: { t: 'حافظه', e: '🃏', u: 'حرکت', lo: 1 },
+  mines: { t: 'مین‌یاب', e: '💣', u: 'ثانیه', lo: 1 },
+  react: { t: 'تست واکنش', e: '⚡', u: 'میلی‌ثانیه', lo: 1 }
+};
+var SP = (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) || '';
+var PAYLOAD = '', GAME = '';
+(function () {
+  var k = SP.split('_')[0];
+  if (GAMES[k] && /^[A-Za-z0-9_]{1,64}$/.test(SP)) { GAME = k; PAYLOAD = SP; }
+  var h = location.hash.replace('#', '');
+  if (!GAME && GAMES[h]) GAME = h;
+})();
+var HAS_CHAT = PAYLOAD.indexOf('_') > 0;
+
+// ---- API (bases come from the bot's published config.json next to the mini app) ----
+var basesP = fetch('../config.json', { cache: 'no-store' }).then(function (r) { return r.json(); })
+  .then(function (c) { return (c && c.apiBases) || []; }).catch(function () { return []; });
+function api(path, body) {
+  return basesP.then(function (bases) {
+    if (!bases.length || !tg || !tg.initData) return Promise.reject(new Error('off'));
+    var o = { method: body ? 'POST' : 'GET', headers: { Authorization: 'tma ' + tg.initData } };
+    if (body) { o.headers['Content-Type'] = 'application/json'; o.body = JSON.stringify(body); }
+    var i = 0;
+    function go() {
+      return fetch(bases[i].replace(/\/$/, '') + path, o).then(function (r) {
+        return r.json().then(function (j) { if (!r.ok) { var e = new Error((j && j.error && j.error.message) || 'خطا'); e.status = r.status; throw e; } return j; });
+      }, function (e) { if (++i < bases.length) return go(); throw e; });
+    }
+    return go();
+  });
+}
+
+// ---- a round: token on the first move, score at the end ----
+var round = null;
+function begin() { if (round) return; round = api('/api/games/start', { game: GAME, payload: PAYLOAD }).catch(function () { return null; }); }
+function finish(score, text) {
+  var r = round; round = null;
+  var box = $('res'); box.hidden = false; box.textContent = text + ' — در حال ثبت…';
+  (r || Promise.resolve(null)).then(function (s) {
+    if (!s || !s.token) { box.textContent = text + ' (ثبت امتیاز فعلاً ممکن نیست)'; return; }
+    return api('/api/games/score', { token: s.token, score: score }).then(function (j) {
+      var m = text + (j.new_best ? ' — رکورد جدیدت ثبت شد 🎉' : ' — ثبت شد');
+      if (j.rank) m += ' · رتبه‌ی هفته: ' + FA(j.rank);
+      if (j.chat_leader) m += ' · نفر اول این گروه! 🏆';
+      box.textContent = m; note('success'); board();
+    }, function (e) { box.textContent = text + ' — ' + e.message; });
+  });
+}
+
+// ---- leaderboard ----
+var scope = HAS_CHAT ? 'chat' : 'global', period = 'week';
+function tabs() {
+  [].forEach.call($('scope').children, function (b) { b.className = b.dataset.v === scope ? 'on' : ''; b.hidden = b.dataset.v === 'chat' && !HAS_CHAT; });
+  [].forEach.call($('period').children, function (b) { b.className = b.dataset.v === period ? 'on' : ''; });
+}
+$('scope').onclick = function (e) { if (e.target.dataset.v) { scope = e.target.dataset.v; board(); } };
+$('period').onclick = function (e) { if (e.target.dataset.v) { period = e.target.dataset.v; board(); } };
+function board() {
+  $('lb').hidden = false; tabs();
+  var q = '/api/games/board?game=' + encodeURIComponent(GAME) + '&scope=' + scope + '&period=' + period + '&payload=' + encodeURIComponent(PAYLOAD);
+  api(q).then(function (j) {
+    var ol = $('rows'); ol.textContent = '';
+    (j.rows || []).forEach(function (r) {
+      var li = E('li', r.me ? 'me' : '', null, ol);
+      E('span', 'r', ['🥇', '🥈', '🥉'][r.rank - 1] || FA(r.rank), li); E('span', 'n', r.name, li); E('span', 's', FA(r.score) + ' ' + GAMES[GAME].u, li);
+    });
+    if (!(j.rows || []).length) E('li', '', 'هنوز کسی امتیاز نگرفته؛ اولین نفر باش!', ol);
+    $('mine').textContent = j.me ? 'رتبه‌ی تو: ' + FA(j.me.rank) + ' · ' + FA(j.me.score) + ' ' + GAMES[GAME].u : '';
+  }, function () { $('rows').textContent = ''; $('mine').textContent = 'جدول امتیازها فعلاً در دسترس نیست.'; });
+}
+
+// ---- menu ----
+function menu() {
+  $('ti').textContent = '🎮 بازی‌های رقابتی';
+  var v = $('view'); v.textContent = ''; var m = E('div', 'menu', null, v);
+  Object.keys(GAMES).forEach(function (k) {
+    var b = E('button', '', null, m); E('b', '', GAMES[k].e, b); E('span', '', GAMES[k].t, b);
+    b.onclick = function () { location.hash = k; GAME = k; PAYLOAD = ''; HAS_CHAT = false; scope = 'global'; start(); };
+  });
+  E('p', 'hint', 'امتیازها در جدول هفتگی و همیشگی ثبت می‌شوند.', v);
+}
+
+function start() {
+  $('res').hidden = true; round = null;
+  $('ti').textContent = GAMES[GAME].e + ' ' + GAMES[GAME].t;
+  var v = $('view'); v.textContent = '';
+  RUN[GAME](v); board();
+  if (tg && tg.BackButton) { tg.BackButton.show(); }
+}
+
+// swipe on el -> f(dir) with dir 0 up,1 down,2 left,3 right
+function swipe(el, f) {
+  var x0, y0;
+  el.addEventListener('pointerdown', function (e) { x0 = e.clientX; y0 = e.clientY; });
+  el.addEventListener('pointerup', function (e) {
+    if (x0 == null) return; var dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+    f(Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 2 : 3) : (dy < 0 ? 0 : 1));
+  });
+}
+function pad(v, f) {
+  var p = E('div', 'pad', null, v);
+  [['u', '↑', 0], ['l', '←', 2], ['d', '↓', 1], ['r', '→', 3]].forEach(function (d) { var b = E('button', d[0], d[1], p); b.onclick = function () { f(d[2]); }; });
+}
+
+var RUN = {};
+// ---- 2048 (4x4) ----
+RUN['2048'] = function (v) {
+  var hd = E('div', 'hd', null, v), sc = E('span', 'chip', '', hd), st = E('div', 'st', 'بکش یا دکمه‌ها را بزن', v);
+  var g = E('div', 'g4', null, v), cs = [], b = [], score = 0, over = 0;
+  for (var i = 0; i < 16; i++) { cs.push(E('div', '', '', g)); b.push(0); }
+  function add() { var e = []; b.forEach(function (x, i) { if (!x) e.push(i); }); if (e.length) b[e[Math.floor(Math.random() * e.length)]] = Math.random() < .9 ? 2 : 4; }
+  function draw() { b.forEach(function (x, i) { cs[i].textContent = x ? FA(x) : ''; var l = x ? Math.log2(x) : 0; cs[i].style.background = x ? 'rgba(36,129,204,' + Math.min(.12 + l * .07, .9) + ')' : ''; cs[i].style.fontSize = x > 999 ? '16px' : ''; }); sc.textContent = 'امتیاز ' + FA(score); }
+  function line(d, r) { var o = []; for (var k = 0; k < 4; k++) o.push(d == 2 ? r * 4 + k : d == 3 ? r * 4 + 3 - k : d == 0 ? k * 4 + r : (3 - k) * 4 + r); return o; }
+  function can() { for (var d = 0; d < 4; d++) for (var r = 0; r < 4; r++) { var l = line(d, r); for (var k = 0; k < 4; k++) { if (!b[l[k]]) return 1; if (k && b[l[k]] == b[l[k - 1]]) return 1; } } return 0; }
+  function mv(d) {
+    if (over) return; var ch = 0;
+    for (var r = 0; r < 4; r++) {
+      var l = line(d, r), a = l.map(function (x) { return b[x]; }).filter(Boolean), o = [];
+      for (var k = 0; k < a.length; k++) { if (a[k] == a[k + 1]) { o.push(a[k] * 2); score += a[k] * 2; k++; } else o.push(a[k]); }
+      while (o.length < 4) o.push(0);
+      l.forEach(function (x, k) { if (b[x] != o[k]) ch = 1; b[x] = o[k]; });
+    }
+    if (!ch) return; begin(); hap(); add(); draw();
+    if (!can()) { over = 1; st.textContent = 'حرکتی نمانده'; finish(score, 'امتیاز ' + FA(score)); }
+  }
+  swipe(g, mv); pad(v, mv); add(); add(); draw();
+  var end = E('button', '', 'پایان و ثبت امتیاز', v); end.style.marginTop = '10px'; end.style.width = '100%';
+  end.onclick = function () { if (!over && score > 0) { over = 1; st.textContent = 'تمام شد'; finish(score, 'امتیاز ' + FA(score)); } };
+};
+// ---- snake (12x12, walls, 160 ms) ----
+RUN.snake = function (v) {
+  var hd = E('div', 'hd', null, v), sc = E('span', 'chip', '', hd), st = E('div', 'st', 'برای شروع یک جهت را بزن', v);
+  var cv = E('canvas', '', null, v), x = cv.getContext('2d'), n = 12, Z = 288, R = Math.min(window.devicePixelRatio || 1, 3), c = Z / n;
+  cv.width = cv.height = Z * R;
+  var sn = [[6, 6], [5, 6], [4, 6]], dr = [1, 0], q = [], fd, score = 0, iv = 0, dead = 0;
+  function food() { do { fd = [Math.floor(Math.random() * n), Math.floor(Math.random() * n)]; } while (sn.some(function (s) { return s[0] == fd[0] && s[1] == fd[1]; })); }
+  function col(k) { return getComputedStyle(document.body).getPropertyValue(k) || '#2481cc'; }
+  function draw() {
+    x.setTransform(R, 0, 0, R, 0, 0); x.clearRect(0, 0, Z, Z);
+    x.fillStyle = '#d64545'; x.beginPath(); x.arc((fd[0] + .5) * c, (fd[1] + .5) * c, c * .36, 0, 7); x.fill();
+    x.fillStyle = getComputedStyle(cv).color || '#2481cc';
+    sn.forEach(function (s, i) { x.globalAlpha = i ? .75 : 1; x.fillRect(s[0] * c + 1, s[1] * c + 1, c - 2, c - 2); }); x.globalAlpha = 1;
+    sc.textContent = 'امتیاز ' + FA(score);
+  }
+  cv.style.color = col('--btn');
+  function step() {
+    if (q.length) dr = q.shift();
+    var h = [sn[0][0] + dr[0], sn[0][1] + dr[1]], eat = h[0] == fd[0] && h[1] == fd[1];
+    if (h[0] < 0 || h[1] < 0 || h[0] >= n || h[1] >= n || sn.some(function (s, i) { return s[0] == h[0] && s[1] == h[1] && (eat || i < sn.length - 1); })) {
+      clearInterval(iv); dead = 1; note('error'); st.textContent = 'باختی'; if (score > 0) finish(score, 'امتیاز ' + FA(score)); else st.textContent = 'باختی؛ دوباره امتحان کن'; return;
+    }
+    sn.unshift(h); if (eat) { score++; hap('medium'); food(); } else sn.pop(); draw();
+  }
+  function turn(d) {
+    if (dead) return;
+    var a = [[0, -1], [0, 1], [-1, 0], [1, 0]][d], l = q.length ? q[q.length - 1] : dr;
+    if (l[0] == -a[0] && l[1] == -a[1] || l[0] == a[0] && l[1] == a[1]) { if (!iv) go(); return; }
+    if (q.length < 2) q.push(a); if (!iv) go();
+  }
+  function go() { begin(); st.textContent = ''; iv = setInterval(step, 160); }
+  swipe(cv, turn); pad(v, turn); food(); draw();
+};
+// ---- memory (8 pairs) ----
+RUN.memory = function (v) {
+  var hd = E('div', 'hd', null, v), mvc = E('span', 'chip', '', hd), pr = E('span', 'chip', '', hd), st = E('div', 'st', 'یک کارت را بزن', v);
+  var em = ['🍎', '🚀', '🐱', '⭐', '🎈', '🍕', '🌈', '🎲'], a = em.concat(em), bs = [], fl = [], lock = 0, moves = 0, pairs = 0;
+  for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; }
+  var g = E('div', 'cards', null, v);
+  function r() { mvc.textContent = 'حرکت ' + FA(moves); pr.textContent = 'جفت ' + FA(pairs) + '/' + FA(8); }
+  a.forEach(function (e, i) {
+    var b = E('button', '', '❔', g); bs.push(b);
+    b.onclick = function () {
+      if (lock || fl.indexOf(i) >= 0 || b.className == 'm') return; begin(); hap();
+      fl.push(i); b.textContent = a[i]; b.className = 'f'; if (fl.length < 2) return;
+      moves++; var x = fl[0], y = fl[1];
+      if (a[x] == a[y]) { bs[x].className = bs[y].className = 'm'; fl = []; pairs++; if (pairs == 8) { st.textContent = '🎉 همه پیدا شد'; finish(moves, FA(moves) + ' حرکت'); } }
+      else { lock = 1; setTimeout(function () { bs[x].textContent = bs[y].textContent = '❔'; bs[x].className = bs[y].className = ''; fl = []; lock = 0; }, 700); }
+      r();
+    };
+  });
+  r();
+};
+// ---- minesweeper (8x8, 10 mines, first tap safe) ----
+RUN.mines = function (v) {
+  var n = 8, M = 10, hd = E('div', 'hd', null, v), mc = E('span', 'chip', '💣 ' + FA(M), hd), tc = E('span', 'chip', '⏱ ۰', hd);
+  var md = E('div', 'mode', null, v), dig = E('button', 'on', '⛏ باز کردن', md), fg = E('button', '', '🚩 پرچم', md), flag = 0;
+  dig.onclick = function () { flag = 0; dig.className = 'on'; fg.className = ''; }; fg.onclick = function () { flag = 1; fg.className = 'on'; dig.className = ''; };
+  var st = E('div', 'st', 'اولین لمس امن است', v), g = E('div', 'mf', null, v), G = [], V = [], F = [], bs = [], first = 1, over = 0, t0 = 0, tm = 0;
+  for (var i = 0; i < n * n; i++) { G.push(0); V.push(0); F.push(0); (function (i) { var b = E('button', '', '', g); b.onclick = function () { tap(i); }; bs.push(b); })(i); }
+  function nb(i) { var r = Math.floor(i / n), c = i % n, o = []; for (var a = -1; a < 2; a++) for (var b = -1; b < 2; b++) { var y = r + a, z = c + b; if ((a || b) && y >= 0 && z >= 0 && y < n && z < n) o.push(y * n + z); } return o; }
+  function place(s) { var c = []; for (var i = 0; i < n * n; i++) if (i != s && nb(s).indexOf(i) < 0) c.push(i); for (var k = 0; k < M; k++) G[c.splice(Math.floor(Math.random() * c.length), 1)[0]] = -1; for (i = 0; i < n * n; i++) if (G[i] >= 0) G[i] = nb(i).filter(function (j) { return G[j] < 0; }).length; }
+  function open(i) { var s = [i]; while (s.length) { var j = s.pop(); if (V[j] || F[j]) continue; V[j] = 1; if (!G[j]) nb(j).forEach(function (k) { s.push(k); }); } }
+  function draw() { var f = 0; bs.forEach(function (b, i) { if (V[i]) { b.className = 'o'; b.textContent = G[i] < 0 ? '💣' : G[i] ? FA(G[i]) : ''; } else b.textContent = F[i] ? '🚩' : ''; if (F[i]) f++; }); mc.textContent = '💣 ' + FA(M - f); }
+  function secs() { return Math.max(2, Math.ceil((Date.now() - t0) / 1000)); }
+  function tap(i) {
+    if (over) return; hap();
+    if (flag) { if (!V[i]) F[i] = !F[i]; return draw(); }
+    if (F[i] || V[i]) return;
+    if (first) { first = 0; place(i); t0 = Date.now(); begin(); tm = setInterval(function () { tc.textContent = '⏱ ' + FA(Math.floor((Date.now() - t0) / 1000)); }, 1000); }
+    if (G[i] < 0) { over = 1; clearInterval(tm); V.forEach(function (x, k) { if (G[k] < 0) V[k] = 1; }); draw(); note('error'); st.textContent = '💥 روی مین رفتی'; round = null; return; }
+    open(i); draw();
+    if (!V.some(function (x, k) { return !x && G[k] >= 0; })) { over = 1; clearInterval(tm); var s = secs(); st.textContent = '🎉 بردی'; finish(s, FA(s) + ' ثانیه'); }
+  }
+  draw();
+};
+// ---- reaction (5 rounds, average ms) ----
+RUN.react = function (v) {
+  var hd = E('div', 'hd', null, v), rc = E('span', 'chip', '', hd), box = E('div', 'rx', 'برای شروع لمس کن', v), res = [], ph = 0, t0 = 0, tm = 0;
+  function r() { rc.textContent = 'دور ' + FA(Math.min(res.length + 1, 5)) + '/' + FA(5); }
+  function wait() { ph = 1; box.className = 'rx w'; box.textContent = 'صبر کن تا سبز شود…'; clearTimeout(tm); tm = setTimeout(function () { ph = 2; t0 = performance.now(); box.className = 'rx g'; box.textContent = 'الان بزن!'; }, 1300 + Math.random() * 2200); }
+  box.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); hap();
+    if (ph == 0) { begin(); return wait(); }
+    if (ph == 1) { clearTimeout(tm); ph = 3; box.className = 'rx'; box.textContent = 'زود بود! برای تکرار لمس کن'; note('error'); return; }
+    if (ph == 3 || ph == 4) return wait();
+    if (ph == 2) {
+      var t = Math.round(performance.now() - t0); res.push(t); r();
+      if (res.length >= 5) { ph = 5; var a = Math.round(res.reduce(function (x, y) { return x + y; }, 0) / res.length); box.className = 'rx'; box.textContent = 'میانگین ' + FA(a) + ' میلی‌ثانیه'; finish(a, 'میانگین ' + FA(a) + ' میلی‌ثانیه'); return; }
+      ph = 4; box.className = 'rx'; box.textContent = FA(t) + ' میلی‌ثانیه — برای دور بعد لمس کن';
+    }
+  });
+  r();
+};
+
+if (tg) {
+  tg.ready(); try { tg.expand(); } catch (e) { }
+  if (tg.BackButton) tg.BackButton.onClick(function () { location.hash = ''; GAME = ''; $('lb').hidden = true; $('res').hidden = true; tg.BackButton.hide(); menu(); });
+}
+window.addEventListener('hashchange', function () { var h = location.hash.replace('#', ''); if (!h && GAME) { GAME = ''; $('lb').hidden = true; $('res').hidden = true; menu(); } });
+GAME ? start() : menu();
+</script>
+</body>
+</html>
