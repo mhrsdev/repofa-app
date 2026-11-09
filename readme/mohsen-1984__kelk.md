@@ -11,7 +11,7 @@ Kurdish** mixed with English — and works just as well for **every left-to-righ
 Free and open source (MIT).
 
 **▶ [Open Kelk online](https://mohsen-1984.github.io/kelk/)** ·
-**⬇ [Download kelk_2.3.zip](https://github.com/mohsen-1984/kelk/releases/latest/download/kelk_2.3.zip)** ·
+**⬇ [Download kelk_2.5.zip](https://github.com/mohsen-1984/kelk/releases/latest/download/kelk_2.5.zip)** ·
 [فارسی ↓](#fa) · [العربية ↓](#ar) · Contact: [mhn.com@gmail.com](mailto:mhn.com@gmail.com)
 
 ![Kelk — Markdown to DOCX and PDF converter, English interface](docs/screenshots/kelk-en.png)
@@ -28,7 +28,8 @@ Free and open source (MIT).
   columns, agenda). Diagrams are PowerPoint shapes (process, cycle, pyramid, hierarchy, matrix, Venn),
   charts are made from tables (Edit Data works), speaker notes come from comments, and Lucide icons and
   callouts are supported. Right-to-left decks are mirrored. Everything stays editable, and a full-screen
-  Present mode is included. The convention, and a prompt that teaches it to AI models: [`lib/SLIDES.md`](lib/SLIDES.md).
+  Present mode is included. In Slides the only export is PPTX; a text plainly not in slide format stays a
+  document, with a note on why. The convention, and a prompt that teaches it to AI models: [`lib/SLIDES.md`](lib/SLIDES.md).
 - **DOCX / PDF / HTML / pasted rich text → Markdown** — clean input for AI models (fewer tokens, clear structure);
   several files or a .zip at once become one document, in the order you set: a window lists them with the icon of
   their kind, and marks those that cannot be converted.
@@ -51,8 +52,8 @@ Free and open source (MIT).
   colored header, zebra stripes, both), three colors and a total row — the same in every output;
   code blocks and quotes have their own colors.
 - Maximize the editor or the preview; *Clear & paste* turns the clipboard into the document; light and dark theme.
-- Header and footer (structured, simple or custom HTML), automatic title and edition, fonts chosen
-  apart for PDF and Word, A3–A5/Letter/Legal pages, a monospace code font made for Persian and Arabic.
+- Header and footer (structured, simple or custom HTML), automatic title and edition, one font choice for
+  every output (or other fonts for DOCX and PPTX), fonts embedded in DOCX and PPTX, A3–A5/Letter/Legal pages, a monospace code font made for Persian and Arabic.
 
 | Output | Best for | Fonts |
 |---|---|---|
@@ -75,7 +76,7 @@ Free and open source (MIT).
 ## Use it
 
 - **Online:** [mohsen-1984.github.io/kelk](https://mohsen-1984.github.io/kelk/).
-- **On your computer:** [download kelk_2.3.zip](https://github.com/mohsen-1984/kelk/releases/latest/download/kelk_2.3.zip),
+- **On your computer:** [download kelk_2.5.zip](https://github.com/mohsen-1984/kelk/releases/latest/download/kelk_2.5.zip),
   unpack it and open `index.html` — offline, for personal use or inside a company network.
 - **On your own host:** upload the folder to any static web host.
 
@@ -117,7 +118,7 @@ tools/         bidi-lab.html (every direction rule) · build_pdf_fonts.py · bui
 package.json   the dev tools CI installs (npm ci) — the app itself has no build step and no dependencies to install
 ```
 
-Release downloads: `kelk_2.3.zip` is the app (what most people want); `kelk-with-pdf-lab_2.3.zip` adds
+Release downloads: `kelk_2.5.zip` is the app (what most people want); `kelk-with-pdf-lab_2.5.zip` adds
 `tests/pdf-lab/` (196 PDFs, about 25 MB) for working on the PDF importer.
 
 ## Contact, credits, license
@@ -128,6 +129,8 @@ Code: **MIT** ([`LICENSE`](LICENSE)); libraries and fonts keep their own license
 ([`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md)).
 Vazirmatn, Vazir Code and Sahel are the work of the late
 [Saber Rastikerdar](https://github.com/rastikerdar) — in his memory.
+B Nazanin, B Mitra and B Titr: (c) Borna Rayaneh, no published license, see borna-rayaneh/NOTICE.txt
+([`lib/pdf-base64-ttf-fonts/borna-rayaneh/NOTICE.txt`](lib/pdf-base64-ttf-fonts/borna-rayaneh/NOTICE.txt)).
 
 ---
 
@@ -147,7 +150,7 @@ Vazirmatn, Vazir Code and Sahel are the work of the late
 English و العربية است. رایگان و متن‌باز (MIT).
 
 **▶ [کِلک برخط](https://mohsen-1984.github.io/kelk/)** ·
-**⬇ [دریافت kelk_2.3.zip](https://github.com/mohsen-1984/kelk/releases/latest/download/kelk_2.3.zip)** ·
+**⬇ [دریافت kelk_2.5.zip](https://github.com/mohsen-1984/kelk/releases/latest/download/kelk_2.5.zip)** ·
 تماس: [mhn.com@gmail.com](mailto:mhn.com@gmail.com)
 
 ![کِلک — رابط فارسی](docs/screenshots/kelk-fa.png)
@@ -158,7 +161,7 @@ English و العربية است. رایگان و متن‌باز (MIT).
 - **مارک‌داون به PDF** با موتور چیدمان خود کِلک: شکل‌دهی حروف، حرکت‌گذاری، قلم‌های درون فایل، شمارهٔ صفحه و **فهرست مطالب با شمارهٔ صفحه و پیوند**.
 - **مارک‌داون به DOC (MHTML)** برای Microsoft Word، با سربرگ و پانویس کاملاً آزاد.
 - **مارک‌داون به HTML**: یک فایل مستقل با قلم‌ها، سبک‌ها و تصویرهای درون فایل.
-- **مارک‌داون به PowerPoint (PPTX)**: هر `##` یک اسلاید است و پیش‌نمایش میان «سند» و «اسلاید» جابه‌جا می‌شود. چیدمان اسلاید از روی محتوا انتخاب می‌شود: کارت، گام‌ها، آمار، گاه‌شمار افقی یا عمودی، چندستونی و فهرست مطالب. نمودار وِن، چرخه، هرم، فرایند، ماتریس و درخت (سلسله‌مراتب) با شکل‌های خود PowerPoint ساخته می‌شوند، و نمودار داده از روی جدول (با Edit Data). یادداشت سخنران از کامنت‌ها می‌آید و نماد Lucide و کادر نکته هم پشتیبانی می‌شود. ارائهٔ راست‌به‌چپ قرینه چیده می‌شود. همه‌چیز قابل ویرایش است و نمایش تمام‌صفحه هم دارد. قاعدهٔ اسلاید و پرامپت آموزش آن به مدل‌ها: [`lib/SLIDES.md`](lib/SLIDES.md).
+- **مارک‌داون به PowerPoint (PPTX)**: هر `##` یک اسلاید است و پیش‌نمایش میان «سند» و «اسلاید» جابه‌جا می‌شود. چیدمان اسلاید از روی محتوا انتخاب می‌شود: کارت، گام‌ها، آمار، گاه‌شمار افقی یا عمودی، چندستونی و فهرست مطالب. نمودار وِن، چرخه، هرم، فرایند، ماتریس و درخت (سلسله‌مراتب) با شکل‌های خود PowerPoint ساخته می‌شوند، و نمودار داده از روی جدول (با Edit Data). یادداشت سخنران از کامنت‌ها می‌آید و نماد Lucide و کادر نکته هم پشتیبانی می‌شود. ارائهٔ راست‌به‌چپ قرینه چیده می‌شود. همه‌چیز قابل ویرایش است و نمایش تمام‌صفحه هم دارد. در نمای اسلاید تنها خروجی PPTX است؛ متنی که پیداست قالب اسلاید ندارد در نمای سند می‌ماند و یادداشتی دلیلش را می‌گوید. قاعدهٔ اسلاید و پرامپت آموزش آن به مدل‌ها: [`lib/SLIDES.md`](lib/SLIDES.md).
 - **DOCX، PDF، HTML و متن کپی‌شده به مارک‌داون**: ورودی تمیز برای مدل‌های هوش مصنوعی؛ توکن کمتر و ساختار روشن‌تر؛ چند فایل یا یک zip با هم یک سند می‌شوند، به ترتیبی که خودتان تعیین می‌کنید: پنجره‌ای فایل‌ها را با نماد نوعشان فهرست می‌کند و فایل‌های غیرقابل تبدیل را جدا نشان می‌دهد. فایل PDF ساخته‌شده با مرورگر، Word، LibreOffice، Excel و برنامه‌های دیگر با عنوان‌ها، فهرست‌ها، جدول‌ها (با خط یا بی‌خط، حتی در چند صفحه، با خانه‌های ادغام‌شده)، کد، نقل‌قول و پیوندهایش برمی‌گردد؛ در فارسی و عربی با نیم‌فاصله‌ها، حروف و رقم‌های اصلاح‌شده؛ فرمول‌های PDFهای خود کِلک با همان LaTeX. PDF برای چاپ ساخته شده: نتیجه را بازبینی کنید؛ فایل اسکن‌شده لایهٔ OCR می‌خواهد ([چگونگی کار و محدودیت‌ها](lib/PDFIMPORT.md)).
 - **یکدست‌سازی و پاک‌سازی سند Word:** فایل docx به‌هم‌ریخته را وارد کنید و دوباره DOCX بگیرید: جهت و تراز هر پاراگراف، سلول و آیتم فهرست درست، یک مجموعه سبک واقعی Word، جدول‌های هم‌شکل و بدون قالب‌بندی‌های پراکنده.
 - **پشتیبانی کامل از GFM** ([مشخصات](https://github.github.com/gfm/)): جدول با ترازبندی، فهرست کارها، فهرست تودرتو، خط‌خوردگی، بلوک کد با رنگ‌آمیزی، نقل‌قول، پیوند و تصویر.
@@ -167,7 +170,7 @@ English و العربية است. رایگان و متن‌باز (MIT).
 - **فرمول‌های LaTeX** (`$…$`، `$$…$$`، `\(…\)` و `\[…\]`) در پیش‌نمایش و هر چهار خروجی: **معادلهٔ قابل ویرایش Word** در DOCX و DOC، برداری (vector) در PDF، و SVG یا MathML در HTML؛ معادله‌های Word هنگام ورود به LaTeX برمی‌گردند. MathJax محلی، بدون اینترنت.
 - **سبک جدول (Table style):** خطوط (بدون خط، زیر عنوان، افقی، عمودی، قاب، شبکه‌ای) × پس‌زمینه (بدون رنگ، عنوان رنگی، راه‌راه یا هر دو)، سه رنگ و سطر جمع؛ در همهٔ خروجی‌ها یکسان. بلوک کد و نقل‌قول هم رنگ‌های خودشان را دارند.
 - بزرگ‌کردن ویرایشگر یا پیش‌نمایش؛ «پاک کردن و چسباندن» (Clear & paste) محتوای کلیپ‌بورد را سند می‌کند؛ پوستهٔ روشن و تیره.
-- سربرگ و پانویس (ساختاریافته، ساده یا HTML دلخواه)، عنوان و نسخهٔ خودکار، قلم جدا برای PDF و Word، صفحه‌های A3 تا A5، Letter و Legal، و قلم کد هم‌عرض (monospace) که برای فارسی و عربی ساخته شده.
+- سربرگ و پانویس (ساختاریافته، ساده یا HTML دلخواه)، عنوان و نسخهٔ خودکار، یک انتخاب فونت برای همهٔ خروجی‌ها (یا فونت دیگری برای DOCX و PPTX)، فونت‌های جاسازی‌شده در DOCX و PPTX، صفحه‌های A3 تا A5، Letter و Legal، و قلم کد هم‌عرض (monospace) که برای فارسی و عربی ساخته شده.
 
 | خروجی | مناسب برای | قلم‌ها |
 |---|---|---|
@@ -186,7 +189,7 @@ English و العربية است. رایگان و متن‌باز (MIT).
 ### استفاده
 
 - **برخط:** [mohsen-1984.github.io/kelk](https://mohsen-1984.github.io/kelk/)
-- **روی رایانه:** [kelk_2.3.zip](https://github.com/mohsen-1984/kelk/releases/latest/download/kelk_2.3.zip) را دریافت کنید، باز کنید و `index.html` را باز کنید؛ بدون اینترنت، برای استفادهٔ شخصی یا در شبکهٔ داخلی شرکت.
+- **روی رایانه:** [kelk_2.5.zip](https://github.com/mohsen-1984/kelk/releases/latest/download/kelk_2.5.zip) را دریافت کنید، باز کنید و `index.html` را باز کنید؛ بدون اینترنت، برای استفادهٔ شخصی یا در شبکهٔ داخلی شرکت.
 - **روی میزبان خودتان:** پوشه را روی هر میزبان وب ایستا بارگذاری کنید.
 
 سند معرفی و راهنما در نخستین بازدید به زبان رابط کاربری باز می‌شود:
@@ -199,6 +202,8 @@ English و العربية است. رایگان و متن‌باز (MIT).
 پرسش و پیشنهاد: **[mhn.com@gmail.com](mailto:mhn.com@gmail.com)** (بهترین راه ارتباط ایمیل است).
 کد با **مجوز MIT** منتشر شده؛ کتابخانه‌ها و قلم‌ها مجوز خودشان را دارند (`THIRD-PARTY-NOTICES.md`).
 Vazirmatn، Vazir Code و Sahel کار زنده‌یاد [صابر راستی‌کردار](https://github.com/rastikerdar) است؛ یادش گرامی.
+بی‌نازنین، بی‌میترا و بی‌تیتر: (c) Borna Rayaneh, no published license, see borna-rayaneh/NOTICE.txt
+([`lib/pdf-base64-ttf-fonts/borna-rayaneh/NOTICE.txt`](lib/pdf-base64-ttf-fonts/borna-rayaneh/NOTICE.txt)).
 
 </div>
 
@@ -219,7 +224,7 @@ Vazirmatn، Vazir Code و Sahel کار زنده‌یاد [صابر راستی‌
 الواجهة بالعربية والفارسية والإنجليزية. مجاني ومفتوح المصدر (MIT).
 
 **▶ [كِلك على الإنترنت](https://mohsen-1984.github.io/kelk/)** ·
-**⬇ [تنزيل kelk_2.3.zip](https://github.com/mohsen-1984/kelk/releases/latest/download/kelk_2.3.zip)** ·
+**⬇ [تنزيل kelk_2.5.zip](https://github.com/mohsen-1984/kelk/releases/latest/download/kelk_2.5.zip)** ·
 للتواصل: [mhn.com@gmail.com](mailto:mhn.com@gmail.com)
 
 ![كِلك — الواجهة العربية](docs/screenshots/kelk-ar.png)
@@ -230,7 +235,7 @@ Vazirmatn، Vazir Code و Sahel کار زنده‌یاد [صابر راستی‌
 - **ماركداون إلى PDF** بمحرّك تخطيط خاص: تشكيل الحروف العربية، والحركات، والخطوط المضمَّنة، وأرقام الصفحات، و**جدول محتويات بأرقام الصفحات والروابط**.
 - **ماركداون إلى DOC (MHTML)** لبرنامج Microsoft Word، برأس وتذييل حرّين تمامًا.
 - **ماركداون إلى HTML**: ملف واحد مستقل بخطوطه وأنماطه وصوره.
-- **ماركداون إلى PowerPoint (PPTX)**: كل `##` شريحة، وتنتقل المعاينة بين «مستند» و«شرائح». يُختار تخطيط الشريحة بحسب محتواها: بطاقات، وخطوات، وإحصاءات، وخط زمني أفقي أو عمودي، وأعمدة، وجدول محتويات. تُرسم المخططات بأشكال PowerPoint نفسها: عملية، ودورة، وهرم، وتسلسل هرمي، ومصفوفة، وفِن. وتُصنع مخططات البيانات من الجداول (مع Edit Data)، وتأتي ملاحظات المتحدث من التعليقات، وتُدعم أيقونات Lucide ومربعات الملاحظة. تُعكس شرائح العروض من اليمين إلى اليسار. كل شيء قابل للتحرير، ويتوفر عرض بملء الشاشة. القاعدة وموجّه يعلّمها لنماذج الذكاء الاصطناعي: [`lib/SLIDES.md`](lib/SLIDES.md).
+- **ماركداون إلى PowerPoint (PPTX)**: كل `##` شريحة، وتنتقل المعاينة بين «مستند» و«شرائح». يُختار تخطيط الشريحة بحسب محتواها: بطاقات، وخطوات، وإحصاءات، وخط زمني أفقي أو عمودي، وأعمدة، وجدول محتويات. تُرسم المخططات بأشكال PowerPoint نفسها: عملية، ودورة، وهرم، وتسلسل هرمي، ومصفوفة، وفِن. وتُصنع مخططات البيانات من الجداول (مع Edit Data)، وتأتي ملاحظات المتحدث من التعليقات، وتُدعم أيقونات Lucide ومربعات الملاحظة. تُعكس شرائح العروض من اليمين إلى اليسار. كل شيء قابل للتحرير، ويتوفر عرض بملء الشاشة. في عرض الشرائح التصدير الوحيد هو PPTX؛ والنص الذي ليس بتنسيق الشرائح بوضوح يبقى مستندًا، مع ملاحظة تبيّن السبب. القاعدة وموجّه يعلّمها لنماذج الذكاء الاصطناعي: [`lib/SLIDES.md`](lib/SLIDES.md).
 - **DOCX وPDF وHTML والنص الملصوق إلى ماركداون**: مدخلات نظيفة لنماذج الذكاء الاصطناعي؛ رموز أقل وبنية أوضح؛ وتصبح عدة ملفات أو ملف zip مستندًا واحدًا بالترتيب الذي تحدده: تعرض نافذة الملفات برمز نوعها، وتميّز الملفات التي لا يمكن تحويلها. يعود ملف PDF المصنوع بالمتصفح أو Word أو LibreOffice أو Excel وغيرها بعناوينه وقوائمه وجداوله (بخطوط أو دونها، وعبر الصفحات، مع الخلايا المدمجة) وشيفرته واقتباساته وروابطه؛ وبالعربية والفارسية مع إصلاح فواصل ZWNJ والحروف والأرقام؛ وتعود صيغ ملفات PDF التي صنعها كِلك بنص LaTeX نفسه. صُنع PDF للطباعة: راجع النتيجة، والملف الممسوح ضوئيًا يحتاج إلى طبقة OCR ([كيف يعمل وحدوده](lib/PDFIMPORT.md)).
 - **توحيد مستند Word وتنظيفه:** استورد ملف docx مبعثرًا وصدّره DOCX من جديد: اتجاه كل فقرة وخلية وعنصر قائمة ومحاذاته صحيحان، ومجموعة واحدة من أنماط Word الحقيقية، وجداول متشابهة، بلا تنسيقات متفرقة.
 - **دعم كامل لـ GFM** ([المواصفات](https://github.github.com/gfm/)): جداول بمحاذاة، وقوائم مهام، وقوائم متداخلة، وشطب، وكتل شيفرة ملوّنة، واقتباسات، وروابط، وصور.
@@ -239,7 +244,7 @@ Vazirmatn، Vazir Code و Sahel کار زنده‌یاد [صابر راستی‌
 - **صيغ LaTeX** (`$…$` و`$$…$$` و`\(…\)` و`\[…\]`) في المعاينة والمخرجات الأربعة: **معادلات Word قابلة للتحرير** في DOCX وDOC، ومتجهات (vector) في PDF، وSVG أو MathML في HTML؛ وتعود معادلات Word إلى LaTeX عند الاستيراد. MathJax محلي، بلا إنترنت.
 - **نمط الجدول (Table style):** الخطوط (بلا خطوط، تحت الرأس، أفقية، عمودية، إطار، شبكي) × التعبئة (بلا تعبئة، رأس ملوَّن، تخطيط أو كلاهما)، وثلاثة ألوان، وصف مجموع؛ واحد في كل المخرجات. ولكتل الشيفرة والاقتباسات ألوانها أيضًا.
 - تكبير المحرّر أو المعاينة؛ و«مسح ولصق» يجعل محتوى الحافظة هو المستند؛ ومظهر فاتح وداكن.
-- رأس وتذييل (منظَّم، أو بسيط، أو HTML حرّ)، وعنوان وإصدار تلقائيان، وخط مستقل لكل من PDF وWord، وصفحات من A3 إلى A5 وLetter وLegal، وخط شيفرة ثابت العرض (monospace) مصمَّم للعربية والفارسية.
+- رأس وتذييل (منظَّم، أو بسيط، أو HTML حرّ)، وعنوان وإصدار تلقائيان، واختيار خط واحد لكل المخرجات (أو خطوط أخرى لـ DOCX وPPTX)، وخطوط مضمَّنة في DOCX وPPTX، وصفحات من A3 إلى A5 وLetter وLegal، وخط شيفرة ثابت العرض (monospace) مصمَّم للعربية والفارسية.
 - **الخطوط:** Vazirmatn، الخط الافتراضي، يدعم العربية؛ ويمكن تجهيز خطوط عربية مثل Cairo وAmiri وNoto Naskh Arabic لملفات PDF.
 
 | الصيغة | الأنسب لـ | الخطوط |
@@ -259,7 +264,7 @@ Vazirmatn، Vazir Code و Sahel کار زنده‌یاد [صابر راستی‌
 ### الاستخدام
 
 - **على الإنترنت:** [mohsen-1984.github.io/kelk](https://mohsen-1984.github.io/kelk/)
-- **على حاسوبك:** نزّل [kelk_2.3.zip](https://github.com/mohsen-1984/kelk/releases/latest/download/kelk_2.3.zip) وافتحه ثم افتح `index.html`؛ يعمل دون إنترنت، للاستخدام الشخصي أو داخل شبكة المؤسسة.
+- **على حاسوبك:** نزّل [kelk_2.5.zip](https://github.com/mohsen-1984/kelk/releases/latest/download/kelk_2.5.zip) وافتحه ثم افتح `index.html`؛ يعمل دون إنترنت، للاستخدام الشخصي أو داخل شبكة المؤسسة.
 - **على استضافتك:** ارفع المجلد إلى أي استضافة ويب ثابتة.
 
 يُفتح مستند التعريف والدليل في الزيارة الأولى بلغة الواجهة:
@@ -272,5 +277,7 @@ Vazirmatn، Vazir Code و Sahel کار زنده‌یاد [صابر راستی‌
 للأسئلة والاقتراحات: **[mhn.com@gmail.com](mailto:mhn.com@gmail.com)** (البريد الإلكتروني أفضل وسيلة للتواصل).
 الشيفرة بترخيص **MIT**؛ وللمكتبات والخطوط تراخيصها الخاصة (`THIRD-PARTY-NOTICES.md`).
 Vazirmatn وVazir Code وSahel من عمل الراحل [صابر راستي كردار](https://github.com/rastikerdar)، رحمه الله.
+B Nazanin وB Mitra وB Titr: (c) Borna Rayaneh, no published license, see borna-rayaneh/NOTICE.txt
+([`lib/pdf-base64-ttf-fonts/borna-rayaneh/NOTICE.txt`](lib/pdf-base64-ttf-fonts/borna-rayaneh/NOTICE.txt)).
 
 </div>
