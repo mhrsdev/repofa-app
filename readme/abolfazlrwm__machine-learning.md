@@ -1,5 +1,7 @@
 # Machine Learning
 
+[![Tests](https://img.shields.io/github/actions/workflow/status/Abolfazlrwm/Machine-Learning/tests.yml?branch=main&label=Tests&labelColor=1a1b26)](https://github.com/Abolfazlrwm/Machine-Learning/actions) [![Live demo](https://img.shields.io/badge/Live_demo-HuggingFace_Spaces-FFD21E?style=flat&labelColor=1a1b26)](https://huggingface.co/spaces/Abol0pati/farsi-rag-assistant) [![License: MIT](https://img.shields.io/badge/License-MIT-3fb950?style=flat&labelColor=1a1b26)](LICENSE)
+
 [![Tests](https://github.com/Abolfazlrwm/Machine-Learning/actions/workflows/tests.yml/badge.svg)](https://github.com/Abolfazlrwm/Machine-Learning/actions/workflows/tests.yml)
 
 A collection of end-to-end machine learning projects — from classical
@@ -102,14 +104,22 @@ docker compose --profile ui up       # + Streamlit chat on :8501
 
 ## 🤗 Live demo (Hugging Face Spaces)
 
-[`hf-space/`](hf-space/) is a ready-to-deploy Gradio demo of the Persian RAG
-assistant (E5 retrieval + cited extractive answers + lexical fallback).
-Deploy it once and link it from your CV:
+[![Open in Spaces](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-xl.svg)](https://huggingface.co/spaces/Abol0pati/farsi-rag-assistant)
 
-```bash
-# create a gradio Space, then:
-cp -r hf-space/* <your-space>/ && git push   # full guide inside hf-space/README.md
-```
+![Live Persian RAG demo — hybrid E5 + BM25 retrieval with RRF fusion, cited
+answers, running entirely in the browser](assets/live-demo.png)
+
+**The demo is live** — a *browser-only* Persian RAG (`hf-space-static/`):
+passage vectors are precomputed with `multilingual-e5-small` into an 84 KB
+`embeddings.json`, the visitor's browser encodes the query on the fly via
+**Transformers.js** (ONNX q8) and fuses dense cosine scores with a
+from-scratch **BM25** scorer through **RRF** — the same hybrid architecture
+as the full pipeline, with **zero server-side inference** (questions never
+leave the visitor's browser, and the Space never sleeps).
+
+[`hf-space/`](hf-space/) additionally holds a ready-to-deploy **Gradio**
+version of the same demo (E5 retrieval + cited extractive answers + lexical
+fallback) — useful if you ever move to a paid/ZeroGPU Space.
 
 ## 📦 Datasets
 
