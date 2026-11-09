@@ -107,11 +107,19 @@ function api(path, body) {
   });
 }
 
-// ---- a round: token on the first move, score at the end ----
-var round = null;
-function begin() { if (round) return; round = api('/api/games/start', { game: GAME, payload: PAYLOAD }).catch(function () { return null; }); }
-function finish(score, text) {
-  var r = round; round = null;
+// ---- one game instance: its own round token and timers; navigation stops it ----
+var CUR = null;
+function instance(game) {
+  var I = { game: game, round: null, live: true, timers: [] };
+  I.begin = function () { if (!I.live || I.round) return; I.round = api('/api/games/start', { game: game, payload: PAYLOAD }).catch(function () { return null; }); };
+  I.every = function (f, ms) { var t = setInterval(function () { if (I.live) f(); }, ms); I.timers.push(t); return t; };
+  I.after = function (f, ms) { var t = setTimeout(function () { if (I.live) f(); }, ms); I.timers.push(t); return t; };
+  I.stop = function () { I.live = false; I.timers.forEach(function (t) { clearInterval(t); clearTimeout(t); }); I.timers = []; };
+  I.finish = function (score, text) { if (!I.live) return; var r = I.round; I.round = null; submit(r, score, text); };
+  return I;
+}
+function stopGame() { if (CUR) CUR.stop(); CUR = null; }
+function submit(r, score, text) {
   var box = $('res'); box.hidden = false; box.textContent = text + ' — در حال ثبت…';
   (r || Promise.resolve(null)).then(function (s) {
     if (!s || !s.token) { box.textContent = text + ' (ثبت امتیاز فعلاً ممکن نیست)'; return; }
@@ -148,20 +156,21 @@ function board() {
 
 // ---- menu ----
 function menu() {
+  stopGame();
   $('ti').textContent = '🎮 بازی‌های رقابتی';
   var v = $('view'); v.textContent = ''; var m = E('div', 'menu', null, v);
   Object.keys(GAMES).forEach(function (k) {
     var b = E('button', '', null, m); E('b', '', GAMES[k].e, b); E('span', '', GAMES[k].t, b);
-    b.onclick = function () { location.hash = k; GAME = k; PAYLOAD = ''; HAS_CHAT = false; scope = 'global'; start(); };
+    b.onclick = function () { location.hash = k; GAME = k; start(); };   // the group binding (PAYLOAD) stays for the whole session
   });
   E('p', 'hint', 'امتیازها در جدول هفتگی و همیشگی ثبت می‌شوند.', v);
 }
 
 function start() {
-  $('res').hidden = true; round = null;
+  stopGame(); $('res').hidden = true;
   $('ti').textContent = GAMES[GAME].e + ' ' + GAMES[GAME].t;
   var v = $('view'); v.textContent = '';
-  RUN[GAME](v); board();
+  CUR = instance(GAME); RUN[GAME](v, CUR); board();
   if (tg && tg.BackButton) { tg.BackButton.show(); }
 }
 
@@ -182,7 +191,7 @@ function pad(v, f) {
 
 var RUN = {};
 // ---- 2048 (4x4) ----
-RUN['2048'] = function (v) {
+RUN['2048'] = function (v, I) {
   var hd = E('div', 'hd', null, v), sc = E('span', 'chip', '', hd), st = E('div', 'st', 'بکش یا دکمه‌ها را بزن', v);
   var g = E('div', 'g4', null, v), cs = [], b = [], score = 0, over = 0;
   for (var i = 0; i < 16; i++) { cs.push(E('div', '', '', g)); b.push(0); }
@@ -198,15 +207,15 @@ RUN['2048'] = function (v) {
       while (o.length < 4) o.push(0);
       l.forEach(function (x, k) { if (b[x] != o[k]) ch = 1; b[x] = o[k]; });
     }
-    if (!ch) return; begin(); hap(); add(); draw();
-    if (!can()) { over = 1; st.textContent = 'حرکتی نمانده'; finish(score, 'امتیاز ' + FA(score)); }
+    if (!ch) return; I.begin(); hap(); add(); draw();
+    if (!can()) { over = 1; st.textContent = 'حرکتی نمانده'; I.finish(score, 'امتیاز ' + FA(score)); }
   }
   swipe(g, mv); pad(v, mv); add(); add(); draw();
   var end = E('button', '', 'پایان و ثبت امتیاز', v); end.style.marginTop = '10px'; end.style.width = '100%';
-  end.onclick = function () { if (!over && score > 0) { over = 1; st.textContent = 'تمام شد'; finish(score, 'امتیاز ' + FA(score)); } };
+  end.onclick = function () { if (!over && score > 0) { over = 1; st.textContent = 'تمام شد'; I.finish(score, 'امتیاز ' + FA(score)); } };
 };
 // ---- snake (12x12, walls, 160 ms) ----
-RUN.snake = function (v) {
+RUN.snake = function (v, I) {
   var hd = E('div', 'hd', null, v), sc = E('span', 'chip', '', hd), st = E('div', 'st', 'برای شروع یک جهت را بزن', v);
   var cv = E('canvas', '', null, v), x = cv.getContext('2d'), n = 12, Z = 288, R = Math.min(window.devicePixelRatio || 1, 3), c = Z / n;
   cv.width = cv.height = Z * R;
@@ -225,7 +234,7 @@ RUN.snake = function (v) {
     if (q.length) dr = q.shift();
     var h = [sn[0][0] + dr[0], sn[0][1] + dr[1]], eat = h[0] == fd[0] && h[1] == fd[1];
     if (h[0] < 0 || h[1] < 0 || h[0] >= n || h[1] >= n || sn.some(function (s, i) { return s[0] == h[0] && s[1] == h[1] && (eat || i < sn.length - 1); })) {
-      clearInterval(iv); dead = 1; note('error'); st.textContent = 'باختی'; if (score > 0) finish(score, 'امتیاز ' + FA(score)); else st.textContent = 'باختی؛ دوباره امتحان کن'; return;
+      clearInterval(iv); dead = 1; note('error'); st.textContent = 'باختی'; if (score > 0) I.finish(score, 'امتیاز ' + FA(score)); else st.textContent = 'باختی؛ دوباره امتحان کن'; return;
     }
     sn.unshift(h); if (eat) { score++; hap('medium'); food(); } else sn.pop(); draw();
   }
@@ -235,11 +244,11 @@ RUN.snake = function (v) {
     if (l[0] == -a[0] && l[1] == -a[1] || l[0] == a[0] && l[1] == a[1]) { if (!iv) go(); return; }
     if (q.length < 2) q.push(a); if (!iv) go();
   }
-  function go() { begin(); st.textContent = ''; iv = setInterval(step, 160); }
+  function go() { if (iv || dead) return; I.begin(); st.textContent = ''; iv = I.every(step, 160); }
   swipe(cv, turn); pad(v, turn); food(); draw();
 };
 // ---- memory (8 pairs) ----
-RUN.memory = function (v) {
+RUN.memory = function (v, I) {
   var hd = E('div', 'hd', null, v), mvc = E('span', 'chip', '', hd), pr = E('span', 'chip', '', hd), st = E('div', 'st', 'یک کارت را بزن', v);
   var em = ['🍎', '🚀', '🐱', '⭐', '🎈', '🍕', '🌈', '🎲'], a = em.concat(em), bs = [], fl = [], lock = 0, moves = 0, pairs = 0;
   for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; }
@@ -248,18 +257,18 @@ RUN.memory = function (v) {
   a.forEach(function (e, i) {
     var b = E('button', '', '❔', g); bs.push(b);
     b.onclick = function () {
-      if (lock || fl.indexOf(i) >= 0 || b.className == 'm') return; begin(); hap();
+      if (lock || fl.indexOf(i) >= 0 || b.className == 'm') return; I.begin(); hap();
       fl.push(i); b.textContent = a[i]; b.className = 'f'; if (fl.length < 2) return;
       moves++; var x = fl[0], y = fl[1];
-      if (a[x] == a[y]) { bs[x].className = bs[y].className = 'm'; fl = []; pairs++; if (pairs == 8) { st.textContent = '🎉 همه پیدا شد'; finish(moves, FA(moves) + ' حرکت'); } }
-      else { lock = 1; setTimeout(function () { bs[x].textContent = bs[y].textContent = '❔'; bs[x].className = bs[y].className = ''; fl = []; lock = 0; }, 700); }
+      if (a[x] == a[y]) { bs[x].className = bs[y].className = 'm'; fl = []; pairs++; if (pairs == 8) { st.textContent = '🎉 همه پیدا شد'; I.finish(moves, FA(moves) + ' حرکت'); } }
+      else { lock = 1; I.after(function () { bs[x].textContent = bs[y].textContent = '❔'; bs[x].className = bs[y].className = ''; fl = []; lock = 0; }, 700); }
       r();
     };
   });
   r();
 };
 // ---- minesweeper (8x8, 10 mines, first tap safe) ----
-RUN.mines = function (v) {
+RUN.mines = function (v, I) {
   var n = 8, M = 10, hd = E('div', 'hd', null, v), mc = E('span', 'chip', '💣 ' + FA(M), hd), tc = E('span', 'chip', '⏱ ۰', hd);
   var md = E('div', 'mode', null, v), dig = E('button', 'on', '⛏ باز کردن', md), fg = E('button', '', '🚩 پرچم', md), flag = 0;
   dig.onclick = function () { flag = 0; dig.className = 'on'; fg.className = ''; }; fg.onclick = function () { flag = 1; fg.className = 'on'; dig.className = ''; };
@@ -274,26 +283,26 @@ RUN.mines = function (v) {
     if (over) return; hap();
     if (flag) { if (!V[i]) F[i] = !F[i]; return draw(); }
     if (F[i] || V[i]) return;
-    if (first) { first = 0; place(i); t0 = Date.now(); begin(); tm = setInterval(function () { tc.textContent = '⏱ ' + FA(Math.floor((Date.now() - t0) / 1000)); }, 1000); }
-    if (G[i] < 0) { over = 1; clearInterval(tm); V.forEach(function (x, k) { if (G[k] < 0) V[k] = 1; }); draw(); note('error'); st.textContent = '💥 روی مین رفتی'; round = null; return; }
+    if (first) { first = 0; place(i); t0 = Date.now(); I.begin(); tm = I.every(function () { tc.textContent = '⏱ ' + FA(Math.floor((Date.now() - t0) / 1000)); }, 1000); }
+    if (G[i] < 0) { over = 1; clearInterval(tm); V.forEach(function (x, k) { if (G[k] < 0) V[k] = 1; }); draw(); note('error'); st.textContent = '💥 روی مین رفتی'; I.round = null; return; }
     open(i); draw();
-    if (!V.some(function (x, k) { return !x && G[k] >= 0; })) { over = 1; clearInterval(tm); var s = secs(); st.textContent = '🎉 بردی'; finish(s, FA(s) + ' ثانیه'); }
+    if (!V.some(function (x, k) { return !x && G[k] >= 0; })) { over = 1; clearInterval(tm); var s = secs(); st.textContent = '🎉 بردی'; I.finish(s, FA(s) + ' ثانیه'); }
   }
   draw();
 };
 // ---- reaction (5 rounds, average ms) ----
-RUN.react = function (v) {
+RUN.react = function (v, I) {
   var hd = E('div', 'hd', null, v), rc = E('span', 'chip', '', hd), box = E('div', 'rx', 'برای شروع لمس کن', v), res = [], ph = 0, t0 = 0, tm = 0;
   function r() { rc.textContent = 'دور ' + FA(Math.min(res.length + 1, 5)) + '/' + FA(5); }
-  function wait() { ph = 1; box.className = 'rx w'; box.textContent = 'صبر کن تا سبز شود…'; clearTimeout(tm); tm = setTimeout(function () { ph = 2; t0 = performance.now(); box.className = 'rx g'; box.textContent = 'الان بزن!'; }, 1300 + Math.random() * 2200); }
+  function wait() { ph = 1; box.className = 'rx w'; box.textContent = 'صبر کن تا سبز شود…'; clearTimeout(tm); tm = I.after(function () { ph = 2; t0 = performance.now(); box.className = 'rx g'; box.textContent = 'الان بزن!'; }, 1300 + Math.random() * 2200); }
   box.addEventListener('pointerdown', function (e) {
     e.preventDefault(); hap();
-    if (ph == 0) { begin(); return wait(); }
+    if (ph == 0) { I.begin(); return wait(); }
     if (ph == 1) { clearTimeout(tm); ph = 3; box.className = 'rx'; box.textContent = 'زود بود! برای تکرار لمس کن'; note('error'); return; }
     if (ph == 3 || ph == 4) return wait();
     if (ph == 2) {
       var t = Math.round(performance.now() - t0); res.push(t); r();
-      if (res.length >= 5) { ph = 5; var a = Math.round(res.reduce(function (x, y) { return x + y; }, 0) / res.length); box.className = 'rx'; box.textContent = 'میانگین ' + FA(a) + ' میلی‌ثانیه'; finish(a, 'میانگین ' + FA(a) + ' میلی‌ثانیه'); return; }
+      if (res.length >= 5) { ph = 5; var a = Math.round(res.reduce(function (x, y) { return x + y; }, 0) / res.length); box.className = 'rx'; box.textContent = 'میانگین ' + FA(a) + ' میلی‌ثانیه'; I.finish(a, 'میانگین ' + FA(a) + ' میلی‌ثانیه'); return; }
       ph = 4; box.className = 'rx'; box.textContent = FA(t) + ' میلی‌ثانیه — برای دور بعد لمس کن';
     }
   });
@@ -302,7 +311,7 @@ RUN.react = function (v) {
 
 if (tg) {
   tg.ready(); try { tg.expand(); } catch (e) { }
-  if (tg.BackButton) tg.BackButton.onClick(function () { location.hash = ''; GAME = ''; $('lb').hidden = true; $('res').hidden = true; tg.BackButton.hide(); menu(); });
+  if (tg.BackButton) tg.BackButton.onClick(function () { stopGame(); location.hash = ''; GAME = ''; $('lb').hidden = true; $('res').hidden = true; tg.BackButton.hide(); menu(); });
 }
 window.addEventListener('hashchange', function () { var h = location.hash.replace('#', ''); if (!h && GAME) { GAME = ''; $('lb').hidden = true; $('res').hidden = true; menu(); } });
 GAME ? start() : menu();
