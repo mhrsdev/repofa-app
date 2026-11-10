@@ -1455,6 +1455,7 @@ or click one of the badges below.
   - Adjustable similarity thresholds and live category preview
   - Automatic indexing and offline search after downloading the models
   - People groups with names, face covers, matching thresholds, merging and photo exclusions
+  - OCR indexing to search text in images
 - AI Assistant
   - On-device answers grounded in Help & Tips, with tool navigation and contextual settings help
 - Emoji Kitchen
@@ -1660,7 +1661,7 @@ or click one of the badges below.
     - Squircle
     - Smooth
 - Main screen layout customization
-- Mini-Games to play when waiting for result
+- 40 Mini-Games to play when waiting for result
   - Dino
   - Doodle Jump
   - Flappy Bird
@@ -1696,6 +1697,11 @@ or click one of the badges below.
   - Laser Mirrors
   - Flow Connect
   - Balance Tower
+  - Temple Escape
+  - Spiral Shaft
+  - Tint Ascent
+  - Trace And Claim
+  - Orchard Pile
 
 (Yes, the app supports dynamic coloring based on wallpapers for every android version)
 

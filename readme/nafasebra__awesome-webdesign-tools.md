@@ -64,6 +64,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [Tilda](https://tilda.cc/free-icons/) - 400+ free vector icons in 27 sets for landing pages.
 - [VisualPharm](https://www.visualpharm.com/) - 400k free icons available for download in SVG and PNG.
 - [Zwicon](https://www.zwicon.com/) - Open icon library originally built to support work at @zwoelf.
+- [Zyff Favicon Generator](https://www.zyff.app/tools/favicon-generator) - Turns one image into a multi-size .ico, PNG and Apple touch icons, a maskable icon and a web manifest, plus the HTML tags to paste.
 - [Blush](https://blush.design/collections) - Free customizable illustrations made by artists worldwide.
 - [Peeps Avatar Builder](https://peeps.ui8.net/) - Build custom 3D-style avatar illustrations by UI8.
 - [Sapiens Character Builder](https://sapiens.ui8.net/9f4c6r2) - Character builder for illustrations by UI8.
@@ -73,6 +74,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 - [antvibe Colors](https://antvibe.dev/en/web-dev/colors) - Browse and copy CSS color codes in HEX, RGB, HSL, and OKLCH filtered by hue, saturation, brightness, and mood.
 - [Bada55](http://bada55.io/) - Find memorable hex color words for your CSS code.
+- [Color Contrast Checker](https://benjaminolsen.dev/contrast-checker/) - Compare solid text and background colors, preview a color pair, and check WCAG AA and AAA text contrast thresholds.
 - [Color Designer](https://colordesigner.io/tools) - Palette generator, gradient generator, and color name finder.
 - [Color Forge](https://ryudi84.github.io/sovereign-tools/tools/color_forge/) - Generate and explore color palettes with CSS export. Free, no signup required.
 - [Color Hunt](https://colorhunt.co/) - Hand-picked color palettes for design and art projects.
@@ -82,6 +84,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [ColorOf](https://colorof.app/) - Color guide for palettes with comparison and accessibility checks.
 - [ColorTools](https://colorpicker.cx/color-picker) - Free browser-based image color picker with a color wheel, palette generator, CSS gradient builder, color converter, and WCAG contrast checker.
 - [Contrast Checker](https://optimize-overseas.github.io/autonomousbot/tools/contrast-checker.html) - Check WCAG color contrast ratios for accessibility compliance.
+- [Contrast Fixer](https://artigram.cafeboon.com/p/vdx8b4n) - Type two colors to get the exact WCAG contrast ratio and the nearest color that passes. I built it.
 - [CSS Gradient](https://cssgradient.io/) - Create colorful gradient backgrounds for websites, blogs, and social profiles.
 - [CSS Gradient Generator](https://dailytoolkit.app/tools/css-gradient-generator) - Create CSS gradients with a visual editor and copy code instantly.
 - [Easing Gradient](https://larsenwork.com/easing-gradients) - Supercharge gradients with non-linear color mix and custom color spaces.
@@ -164,7 +167,9 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [1001 Fonts](https://www.1001fonts.com/) - 56,000+ free fonts with commercial-use licenses.
 - [1Fonts by AliMD](http://alimd.github.io/1fonts/demo/) - Collection of Farsi (Persian) and Arabic web fonts.
 - [Abstract Fonts](https://www.abstractfonts.com/) - 10,000+ free fonts with web font download options.
+- [Copy Paste Fonts](https://copypaste-fonts.me/) - Free online generator for 230+ copy-and-paste Unicode text styles (cursive, bold, gothic, aesthetic) for social media bios, usernames and posts, with no sign-up required.
 - [Cursive Text Generator](https://cursive-text-generator.net) - Generate copyable Unicode cursive, script, and calligraphy text for social profiles, messages, and creative projects.
+- [Fluid Typography Calculator](https://maniruzzamanjubayer.com/tools/fluid-typography-calculator) - Build a fluid type scale with CSS clamp(), preview it at any width, and check every step against WCAG zoom.
 - [Font Converter](https://www.fontconverter.io/en) - Convert font files between formats.
 - [Font Library](https://fontlibrary.dev/) - Open source project to tag and browse Google Fonts.
 - [Font Space](https://www.fontspace.com/) - Free licensed fonts for design projects.
@@ -203,6 +208,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [Base64 Encoder/Decoder](https://dailytoolkit.app/tools/base64-encoder) - Encode and decode Base64 strings client-side.
 - [Base64 Image](https://www.base64-image.de/) - Convert images to Base64 for use in HTML and CSS.
 - [BeginThings](https://beginthings.com) - 96+ free browser-based tools for freelancers including invoicing, time tracking, and QR codes.
+- [BGNinja](https://bgninja.com) - Remove a photo background or erase objects with a brush and download a transparent PNG at full resolution.
 - [BidiLens](https://github.com/CodeinScrubs/BidiLens) - Tools and integration guides for rendering mixed RTL/LTR text in web interfaces.
 - [BulkPicTools](https://bulkpictools.com/) - Bulk image processor for compress, convert, resize, and crop — no upload required.
 - [Can I Email](https://www.caniemail.com/) - Support tables for HTML and CSS in email clients.
@@ -210,6 +216,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [Cleanmock](https://cleanmock.com/) - Create beautiful website and design mockups.
 - [Compare Two Lists](https://comparetwolists.net/) - Compare pasted lists or TXT, CSV, and XLSX columns to find shared, missing, and duplicate values, with local browser processing and downloadable results; free without signup.
 - [Compify](https://compify.app/) - Open-source React component workflow.
+- [ConvertNinja](https://convert.shinobitools.com) - Convert images, video and e-books in the browser at full size, no account needed.
 - [CompressFast](https://compressfast.site) - Free browser-side image compressor (PNG/JPEG/WebP/AVIF/HEIC), 30-image batch, 100% local with zero uploads.
 - [CSS Ruler](https://katydecorah.com/css-ruler/) - Explore and compare CSS length units.
 - [CSS Toolkit](https://csstoolkit.net) - Box shadow, border radius, px-to-rem, text shadow, and animation generators.
@@ -225,6 +232,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [Hidden Tools](https://hiddentools-eight.vercel.app/) - Curated collection of unique online tools.
 - [Image Landscape Converter](https://image-landscape-converter.vercel.app/) - Rotate portrait photos to landscape orientation in the browser.
 - [Image to ASCII](https://imagetoascii.art/) - Turn images into ASCII art in the browser; adjust character style and width, then copy text or export TXT, PNG, SVG, HTML, or ANSI without uploading the image.
+- [ImageSplit](https://www.imagesplit.online/) - Split images into grids, custom cuts and carousel slides in the browser, then download individual pieces or a ZIP without uploading image files.
 - [ImgTools](https://imgtools.davrapps.dev) - Compress, resize, crop, convert, watermark, and remove backgrounds from images.
 - [JSON Crack](https://jsoncrack.com/editor) - Visualize and explore JSON data.
 - [JSON Formatter](https://dailytoolkit.app/tools/json-formatter) - Format, validate, and beautify JSON with syntax highlighting.
@@ -244,6 +252,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [Password Generator](https://dailytoolkit.app/tools/password-generator) - Generate strong, random passwords with customizable length and character sets.
 - [pic2svg](https://pic2svg.com/) - Convert PNG/JPG images to editable SVG vectors with a side-by-side trace preview (vtracer engine); trace and preview are free, file downloads are part of the Pro tier.
 - [Pixelate Image](https://www.pixelateimage.co/) - Pixelate images instantly in the browser.
+- [PicReviver](https://picreviver.com) - Restore and colorize old or damaged photos, no account needed.
 - [ProtoPeek](https://protopeek.shreyam1008.com.np/) - Local Go workbench with a browser interface for inspecting HTTP and gRPC services.
 - [PWA Manifest Generator](https://www.simicart.com/manifest-generator.html/) - Generate a web app manifest with optimized icons.
 - [README Generator](https://dailytoolkit.app/tools/readme-generator) - Build a formatted README.md by filling in project details.
@@ -263,16 +272,19 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [Typing Words GIF](https://typingwordsgif.com/) - Free online typing text GIF generator. Create typing animations and export as GIFs without signup. Perfect for GitHub READMEs, Discord status, and portfolio hero sections.
 - [TinyPNG](https://tinypng.com/) - Popular tool for compressing PNG and JPEG images.
 - [TinyTools](https://tinytools-smoky.vercel.app/) - Domain generator, OG image maker, favicon generator, and other browser-based utilities.
+- [Tool Kumar](https://tools.vikasmaur.com/) - Free browser-based JSON viewer, formatter, validator, repair and comparison tool with tree and table views.
 - [ToolArks](https://toolarks.com) - Privacy-first toolbox with image compression and JSON formatting — 100% local.
 - [ToolBox](https://www.toolbox-kit.com) - 170+ client-side tools for developers and designers.
 - [ToolCraft SVG to PNG](https://toolcraftbox.com/en/tools/svg-to-png) - Convert SVG vector graphics to PNG in the browser, with no upload or signup.
 - [Toolio](https://toolio.pongvn.com) - 195 free browser tools including PDF, image, converter, and developer utilities — most run client-side with no upload.
+- [Toolkoa](https://toolkoa.com) - 230 free tools for images, PDF, CSS, colors and development that run entirely in the browser, with nothing uploaded.
 - [ToolSparkr](https://toolsparkr.com) - 35+ developer tools including JSON formatter, hash generators, and DNS lookup.
 - [TranslateMyImage Image to Text](https://translatemyimage.com/tools/image-to-text) - Extract the text from an image (OCR) in the browser; the image is not uploaded and no signup is needed.
 - [Unix Timestamp Converter](https://optimize-overseas.github.io/autonomousbot/tools/unix-timestamp.html) - Convert between Unix timestamps and human-readable dates.
 - [Unused CSS](https://unused-css.com/) - Find and remove unused CSS rules from your stylesheets.
 - [URL Encoder & Decoder](https://dailytoolkit.app/tools/url-encoder) - Encode and decode URL components and percent-encoded strings locally in your browser.
 - [UUID Generator](https://dailytoolkit.app/tools/uuid-generator) - Generate random UUID v4 values, including bulk generation.
+- [VideoBGNinja](https://videobgninja.com) - Remove or replace a video background without a green screen, no watermark on the export.
 - [Webcode Tools](https://webcode.tools/) - Generate common website sections and components.
 - [WhatRuns](https://www.whatruns.com/) - Discover technologies used on any website.
 - [Zapsplat](https://www.zapsplat.com/) - 150,000+ free sound effects for creative projects.
@@ -301,6 +313,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [HTML Reference](https://htmlreference.io/) - Guide to HTML elements and attributes.
 - [Shortcode](https://shortcode.dev/) - Useful HTML, CSS, and JavaScript snippets and examples.
 - [SitePoint](https://www.sitepoint.com/) - Web design and development tutorials, courses, and books.
+- [WebCheatSheet](https://webcheatsheet.com/) - Free tutorials and references for PHP, JavaScript, HTML, and SQL.
 - [WP Sessions](https://wpsessions.com/) - WordPress video tutorials from industry experts.
 
 ## Good for you
@@ -331,6 +344,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [Image Translate AI](https://imagetranslateai.org/) - Translate text in images across 200+ languages while preserving layout.
 - [LogNorm](https://lognorm.com) - Crawls a website, ranks SEO and AI-visibility issues, and hands the fixes to AI agents (Claude Code, Codex, Cursor) over MCP.
 - [powerfulwebsites.online](https://powerfulwebsites.online/) - A curated directory of highly useful, viral, and hidden tools across the internet with Quiz and AI-assistant.
+- [Remorphy](https://remorphy.com/) - AI image-to-image and photo editing tool for transforming and remorphing pictures.
 - [Rix](https://hashnode.com/rix) - AI chatbot for debugging programming issues (beta).
 - [Seona AI](https://seona.usestyle.ai/new) - AI-powered SEO assistant with weekly optimization suggestions.
 - [WebCoreLab](https://webcorelab.com) - SEO and Core Web Vitals audit tool with AI-powered GEO/AEO visibility tracking.

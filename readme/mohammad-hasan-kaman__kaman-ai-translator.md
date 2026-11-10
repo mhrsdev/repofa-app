@@ -1,4 +1,4 @@
-![Kaman AI Translator v3.1.0 – مترجم هوشمند کتاب](assets/translator-banner.jpg)
+![Kaman AI Translator v3.2.0 – مترجم هوشمند کتاب](assets/translator-banner.jpg)
 
 ### 🌐 Telegram: [@mohaka_programmer](https://t.me/mohaka_programmer)
 
@@ -138,6 +138,14 @@ Press **Test connection** after entering the values; a success report means the 
 - Progress percentage follows RTL (fills from the right, number on the right).
 - Live statistics: translated pages vs. reviewed pages of the current book.
 
+<p align="center">
+  <img src="assets/screenshot-main-dark.png" width="49%" alt="Main window, dark theme (Persian UI)">
+  <img src="assets/screenshot-main-light.png" width="49%" alt="Main window, light theme (Persian UI)">
+</p>
+<p align="center">
+  <img src="assets/screenshot-settings.png" width="60%" alt="Settings dialog (Persian UI)">
+</p>
+
 ### 6. Save & export
 
 - Per-page auto-save to a per-file job store (resume-safe across restarts and app updates).
@@ -187,7 +195,7 @@ The UI runs on `QThread` workers — translation, structure analysis and exports
 
 ### Option A — Windows executable (recommended)
 
-Download `kaman-ai-translator-3.1.0.exe` from the [latest release](../../releases/latest) and run it. No Python required.
+Download `kaman-ai-translator-3.2.0.exe` from the [latest release](../../releases/latest) and run it. No Python required.
 
 ### Option B — Run from source
 
@@ -261,7 +269,7 @@ pyinstaller --noconfirm --clean --onefile --windowed `
   --add-data "icon.png;." `
   --collect-data google.genai `
   --collect-all pydantic --collect-all pydantic_core `
-  --name kaman-ai-translator-3.1.0 `
+  --name kaman-ai-translator-3.2.0 `
   translator_app_v3.py
 ```
 

@@ -15,7 +15,8 @@ Everything runs locally on your Mac, Windows PC, or Linux. An optional LLM pass 
 
 ## Setup
 
-Needs an Apple Silicon Mac on macOS 13 or later (macOS 26 for the Liquid Glass look), and about 2 GB of disk.
+Needs a Mac on macOS 13 or later (macOS 26 for the Liquid Glass look), and about 2 GB of disk.
+Intel Macs work too, with [a few differences](#intel-macs).
 
 ```sh
 git clone https://github.com/amywork777/lipflow.git ~/code/lipflow
@@ -43,6 +44,16 @@ Everything personal (clips, phrases, trained models) lives in
 To start Lipflow at login: System Settings → General → Login Items → add Lipflow. Logs are in
 `~/Library/Logs/Lipflow.log`. Running from a terminal (`uv run lipflow`) also works, but then
 macOS asks for permissions in the terminal's name.
+
+### Intel Macs
+
+Same setup. Differences from Apple Silicon:
+
+- **Speed:** the encoder runs on the CPU (PyTorch's Apple GPU backend is unreliable on Intel Macs'
+  AMD GPUs), so expect a few seconds from release to text. Training on your face is slower too.
+- **PyTorch 2.2.2:** the last release with Intel Mac builds. `uv sync` picks it for you.
+- **Cleanup:** the on-device model needs Apple Silicon. Use Claude, ChatGPT (Codex CLI), or Ollama
+  for better accuracy (see [LLM cleanup](#better-accuracy-turn-on-llm-cleanup)).
 
 ### Windows
 
@@ -99,10 +110,13 @@ How it differs from the Mac version:
 
 - **Key:** hold **Right Ctrl** by default (tray menu → *Push-to-talk key*: Right Alt / AltGr, Left Alt,
   or Right Shift). Double-tap for hands-free; Esc cancels.
-- **Paste:** Wayland needs [wl-clipboard](https://github.com/bugaevc/wl-clipboard) and one key
-  tool: [wtype](https://github.com/atx/wtype) on Hyprland and Sway, or
-  [ydotool](https://github.com/ReimuNotMoe/ydotool) (with `ydotoold` running) on GNOME, KDE, and
-  other compositors. X11 needs `xdotool` and `xclip`. `--copy-only` leaves the text on the clipboard.
+- **Paste:** Wayland needs [wl-clipboard](https://github.com/bugaevc/wl-clipboard) and a keystroke
+  injector: [wtype](https://github.com/atx/wtype) on Hyprland and Sway, direct `/dev/uinput` via `evdev`
+  (kernel virtual keyboard, works across GNOME, KDE, and wlroots), or [ydotool](https://github.com/ReimuNotMoe/ydotool)
+  (with `ydotoold`). X11 uses `xdotool`, `/dev/uinput`, and `xclip`. `--copy-only` leaves the text on the clipboard.
+  > **Note on `/dev/uinput`:** To allow pasting via `/dev/uinput` without root, ensure your user has access
+  > (e.g. create `/etc/udev/rules.d/99-uinput.rules` with `KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess"`,
+  > or add your user to the `input` group: `sudo usermod -aG input $USER` and reload udev: `sudo udevadm control --reload-rules && sudo udevadm trigger`).
 - **Tray:** pystray needs PyGObject and an AppIndicator typelib. If the pink icon never appears,
   install them (Ubuntu: `gir1.2-ayatanaappindicator3-0.1`).
 - **Camera:** PipeWire/v4l2 (`/dev/video0`). Pick a camera by number in the tray menu if the default
@@ -114,8 +128,29 @@ How it differs from the Mac version:
 - **Context / corrections:** names come from the active window title (Hyprland: `hyprctl`; Sway:
   `swaymsg`; KDE: `kdotool`; X11: `xdotool`). GNOME has no stable title API. Learning from
   in-field corrections is Mac-only for now (same as Windows).
-- **Global hotkey:** on Wayland Lipflow reads the keyboard from `/dev/input`, so your user needs
-  to be in the `input` group (log in again after adding it). X11 uses the same hook as Windows.
+- **Global hotkey & Wayland triggers:** on Wayland Lipflow can read the keyboard from `/dev/input`
+  if your user is in the `input` group. Alternatively, on compositors where you prefer system shortcuts
+  (KDE Plasma, GNOME, Hyprland, Sway), bind any shortcut key in your desktop settings to:
+  - `lipflow trigger-toggle`: toggle recording (press once to start hands-free, press again to stop and type; Esc cancels).
+  - `lipflow trigger-start` / `lipflow trigger-stop`: push-to-talk key down / key up.
+  - `lipflow trigger-cancel`: cancel current dictation.
+  X11 uses the standard key hook as on Windows.
+
+#### Docker (Linux)
+
+You can also run Lipflow in an isolated container with webcam, GUI, and GPU pass-through:
+
+```bash
+# 1. Download model weights locally
+./scripts/download-models.sh
+
+# 2. Run Lipflow via Docker (non-root, X11/Wayland display and GPU pass-through)
+./scripts/docker-run.sh
+
+# Or with Docker Compose:
+docker compose up lipflow-gui
+# (with NVIDIA GPU: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up lipflow-gui)
+```
 
 ### Most accurate: whisper mode
 
@@ -138,7 +173,7 @@ model output reads like "WALLET OFFICER" when you said "while in office". Lipflo
 top-3 guesses plus your last few dictations to an LLM, which picks the sentence you meant and
 fixes casing, punctuation and numbers. You choose which one under **Cleanup** in the menu bar (tray
 on Windows), or with `--cleanup <name>` for one run. **Automatic**, the default, uses Claude if you've
-set a key, otherwise the on-device model, otherwise the offline rules.
+set a key, otherwise the on-device model (Apple Silicon), otherwise Ollama if it's running, otherwise the offline rules.
 
 1. **Claude**: `export ANTHROPIC_API_KEY=…` (model `claude-opus-5-5` at low effort; override with
    `LIPFLOW_MODEL`, e.g. `LIPFLOW_MODEL=claude-haiku-4-5` for lower latency). Best at fixing badly
