@@ -1985,7 +1985,7 @@ Design implications:
 - **Vision-capable model required.** The LLM must be multimodal. We pay image-token costs on every step.
 - **Slow.** Each step is one screenshot plus one model decision plus one action. End-to-end tasks take minutes.
 - **Sandboxing is critical.** The agent has full keyboard and mouse access. We run it inside a virtual machine or browser sandbox so a misstep cannot damage the host system.
-- **Human-in-the-loop for risky actions.** Before clicking "Pay $1000" or "Delete all", the agent should ask the user.
+- **[Human-in-the-loop](https://outcomeschool.com/blog/human-in-the-loop-agents) for risky actions.** Before clicking "Pay $1000" or "Delete all", the agent should ask the user.
 - **Failure recovery.** UI changes break the agent. We need retries, screenshots saved for debugging, and fallback paths.
 
 Computer-use agents work well for tasks like filling out forms, scraping data from web apps without APIs, navigating legacy enterprise UIs, and running back-office workflows. They replace traditional RPA (Robotic Process Automation) with something far more flexible.
@@ -3009,5 +3009,4 @@ But, here is the catch. The judge has biases, and we must handle them:
 
 - **Position bias:** In pairwise comparison, the judge often prefers the answer that comes first. We swap the order, run twice, and average.
 - **Verbosity bias:** The judge often prefers longer answers. We tell it not to.
-- **Style bias:** The judge rewards a writing style (like bullet points) over actual content. We tell it exactly what style is expected.
 <!-- truncated -->

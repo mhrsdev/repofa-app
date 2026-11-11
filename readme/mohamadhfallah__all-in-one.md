@@ -12,6 +12,8 @@ A modern full-stack monorepo starter built with Turborepo, featuring a type-safe
 - 🎨 **Tailwind CSS** + **shadcn/ui** for beautiful UI components
 - ⚡ **TanStack Query** for powerful data fetching
 
+<img width="720" height="412" alt="image" src="https://github.com/user-attachments/assets/6dbae917-716b-4d38-bd03-20672b5332f3" />
+
 ## 🛠️ Tech Stack
 
 ### Backend

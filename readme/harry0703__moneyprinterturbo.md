@@ -144,6 +144,30 @@
   </tr>
   <tr>
     <td align="center" width="120">
+      <a href="https://apinebula.ai/ref/luDuqJIb"><img src="docs/sponsors/apinebula-logo.png" alt="APINEBULA" width="56" height="56"></a><br>
+      <a href="https://apinebula.ai/ref/luDuqJIb"><strong>APINEBULA</strong></a>
+    </td>
+    <td align="left">
+      感谢 <a href="https://apinebula.ai/ref/luDuqJIb">APINEBULA</a> 赞助本项目！<br>
+      APINEBULA 是银河录像局旗下的企业级 AI 聚合平台，依托大平台资源，为开发者、团队与企业提供稳定、高性价比的大模型 API 接入服务。<br>
+      聚合 Claude、GPT、Gemini 等主流满血模型，一个接口即可接入全球顶尖 AI 大模型，价格<strong>低至 0.6 折</strong>；支持企业级高并发，提供<strong>正式合同、对公打款与开票服务</strong>。<br>
+      通过<a href="https://apinebula.ai/ref/luDuqJIb">专属链接注册</a>，充值时填写优惠码 <strong>MPT</strong>，即可享<strong>九折优惠</strong>！
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="120">
+      <a href="https://apixo.ai/zh?utm_source=github&amp;utm_medium=sponsorship&amp;utm_campaign=harry0703&amp;utm_content=moneyprinterturbo_logo"><img src="docs/sponsors/apixo-seedream-zh.png" alt="APIXO AI：Seedream 5.5 官价七折，&#36;0.014/张起" width="100" height="100"></a><br>
+      <a href="https://apixo.ai/zh?utm_source=github&amp;utm_medium=sponsorship&amp;utm_campaign=harry0703&amp;utm_content=moneyprinterturbo_text_brand"></a>
+    </td>
+    <td align="left">
+      <strong><a href="https://apixo.ai/zh?utm_source=github&amp;utm_medium=sponsorship&amp;utm_campaign=harry0703&amp;utm_content=moneyprinterturbo_text_brand">APIXO AI</a>：一站式 AI 图片与视频创作平台</strong><br>
+      在 <strong>APIXO AI</strong> 网页生成图片与视频，也可通过 API 接入应用与自动化流程。<br>
+      <strong><a href="https://apixo.ai/zh/models/seedream-5-5?utm_source=github&amp;utm_medium=sponsorship&amp;utm_campaign=harry0703&amp;utm_content=moneyprinterturbo_text_model">Seedream 5.5</a> 文生图 API 限时官价七折，&#36;0.014/张起。</strong><br>
+      <a href="https://apixo.ai/zh/deals/black-friday?utm_source=github&amp;utm_medium=sponsorship&amp;utm_campaign=harry0703&amp;utm_content=moneyprinterturbo_text_deals">探索 APIXO AI 模型与优惠 →</a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="120">
       <a href="https://reccloud.cn"><img src="docs/sponsors/reccloud-logo.svg" alt="录咖" height="36"></a><br>
       <a href="https://reccloud.cn">录咖 AI</a>
     </td>
@@ -634,3 +658,5 @@ Trying to load the model directly from the local cache, if it exists.
 ## 许可证 📝
 
 点击查看 [`LICENSE`](LICENSE) 文件
+
+APIXO AI verification: apixo.ai

@@ -20,7 +20,7 @@
   </br>
   </br>
 
- <img src="https://img.shields.io/badge/569.2K-aeff4d?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI%2BCiAgICA8cGF0aCBkPSJNMTIuODksM0wxNC44NSwzLjRMMTEuMTEsMjFMOS4xNSwyMC42TDEyLjg5LDNNMTkuNTksMTJMMTYsOC40MVY1LjU4TDIyLjQyLDEyTDE2LDE4LjQxVjE1LjU4TDE5LjU5LDEyTTEuNTgsMTJMOCw1LjU4VjguNDFMNC40MSwxMkw4LDE1LjU4VjE4LjQxTDEuNTgsMTJaIgogICAgICAgIGZpbGw9IndoaXRlIiAvPgo8L3N2Zz4%3D&label=Lines%20of%20code&labelColor=4b731a"/>
+ <img src="https://img.shields.io/badge/602.9K-aeff4d?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI%2BCiAgICA8cGF0aCBkPSJNMTIuODksM0wxNC44NSwzLjRMMTEuMTEsMjFMOS4xNSwyMC42TDEyLjg5LDNNMTkuNTksMTJMMTYsOC40MVY1LjU4TDIyLjQyLDEyTDE2LDE4LjQxVjE1LjU4TDE5LjU5LDEyTTEuNTgsMTJMOCw1LjU4VjguNDFMNC40MSwxMkw4LDE1LjU4VjE4LjQxTDEuNTgsMTJaIgogICAgICAgIGZpbGw9IndoaXRlIiAvPgo8L3N2Zz4%3D&label=Lines%20of%20code&labelColor=4b731a"/>
 
 <img src="https://img.shields.io/github/commits-since/t8rin/ImageToolbox/v1.0?color=palegreen&label=Commits&style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRpdGxlPnNvdXJjZS1jb21taXQ8L3RpdGxlPjxwYXRoIGQ9Ik0xNywxMkMxNywxNC40MiAxNS4yOCwxNi40NCAxMywxNi45VjIxSDExVjE2LjlDOC43MiwxNi40NCA3LDE0LjQyIDcsMTJDNyw5LjU4IDguNzIsNy41NiAxMSw3LjFWM0gxM1Y3LjFDMTUuMjgsNy41NiAxNyw5LjU4IDE3LDEyTTEyLDlBMywzIDAgMCwwIDksMTJBMywzIDAgMCwwIDEyLDE1QTMsMyAwIDAsMCAxNSwxMkEzLDMgMCAwLDAgMTIsOVoiIGZpbGw9IndoaXRlIiAvPjwvc3ZnPg==&labelColor=07ab4e&v=2">
  
@@ -1661,38 +1661,38 @@ or click one of the badges below.
     - Squircle
     - Smooth
 - Main screen layout customization
-- 40 Mini-Games to play when waiting for result
+- 41 Mini-Games to play when waiting for result
   - Dino
-  - Doodle Jump
-  - Flappy Bird
+  - Doodle Hopper
+  - Wing Dash
   - Tower Builder
   - Ping Pong
   - 2048
   - Snake
-  - Tetris
+  - Block Stack
   - Retro Racer
   - Ricochet
-  - Asteroids
+  - Space Rocks
   - Fruit Slice
-  - Knife Hit
-  - Missile Command
+  - Blade Toss
+  - Missile Defense
   - River Hop
-  - Whack-a-Mole
+  - Mole Smash
   - Simon Says
   - Bubble Pop
   - Fishing
-  - Super Hexagon
+  - Hexagon Rush
   - Bomber
   - Minesweeper
   - Gravity Flip
   - Maze Chaser
-  - ZigZag
-  - Timberman
+  - Sharp Turns
+  - Timber Chop
   - Orbit Survival
-  - Lunar Lander
+  - Moon Landing
   - Brick Breaker
   - Light Cycles
-  - Flight Control
+  - Air Traffic
   - Basketball
   - Laser Mirrors
   - Flow Connect
@@ -1700,8 +1700,9 @@ or click one of the badges below.
   - Temple Escape
   - Spiral Shaft
   - Tint Ascent
-  - Trace And Claim
+  - Trace & Claim
   - Orchard Pile
+  - Hill Drive
 
 (Yes, the app supports dynamic coloring based on wallpapers for every android version)
 

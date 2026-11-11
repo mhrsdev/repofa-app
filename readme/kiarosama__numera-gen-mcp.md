@@ -1,10 +1,10 @@
-# Numera Image-Gen MCP
+# Numera Gen MCP
 
 <div align="center">
 
-<img src="docs/assets/logo.png" alt="Numera Image-Gen MCP logo" width="240" />
+<img src="docs/assets/logo.png" alt="Numera Gen MCP logo" width="240" />
 
-[![CI](https://github.com/KiaroSama/Numera-Image-Gen-MCP/actions/workflows/ci.yml/badge.svg)](https://github.com/KiaroSama/Numera-Image-Gen-MCP/actions/workflows/ci.yml)
+[![CI workflow on main](https://github.com/KiaroSama/Numera-Gen-MCP/actions/workflows/ci.yml/badge.svg?branch=main&event=workflow_dispatch)](https://github.com/KiaroSama/Numera-Gen-MCP/actions/workflows/ci.yml?query=branch%3Amain+event%3Aworkflow_dispatch)
 [![License GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue)](LICENSE)
 [![Rust 1.99](https://img.shields.io/badge/Rust-1.99-CE422B)](rust-toolchain.toml)
 [![Rust edition 2024](https://img.shields.io/badge/edition-2024-CE422B)](Cargo.toml)
@@ -12,8 +12,9 @@
 [![MCP stdio](https://img.shields.io/badge/MCP-stdio-7651a8)](docs/ARCHITECTURE.md)
 [![Windows target](https://img.shields.io/badge/target-Windows_11-0078d4)](docs/WINDOWS-WSL.md)
 [![Linux CI](https://img.shields.io/badge/CI_matrix-Linux-555)](.github/workflows/ci.yml)
+[![macOS CI](https://img.shields.io/badge/CI_matrix-macOS-555)](.github/workflows/ci.yml)
 [![JSON Schema](https://img.shields.io/badge/config-JSON_Schema-3068b7)](schemas/config.schema.json)
-[![PNG JPEG WebP](https://img.shields.io/badge/images-PNG_JPEG_WebP-99cc00)](native/files/images.rs)
+[![Media formats](https://img.shields.io/badge/media-PNG_JPEG_WebP_MP4_WAV_GLB-668c00)](docs/COMPATIBILITY.md)
 [![SQLite receipts](https://img.shields.io/badge/receipts-SQLite-003b57)](native/jobs/store.rs)
 [![Documentation](https://img.shields.io/badge/docs-Markdown-blue)](docs/CONFIGURATION.md)
 [![RMCP SDK](https://img.shields.io/badge/SDK-RMCP-7651a8)](Cargo.toml)
@@ -21,24 +22,42 @@
 
 </div>
 
-A local provider-independent image generation/editing MCP server. Keep your host chat model unchanged;
-image work is an explicitly selected tool operation. Named connections, separate OmniRoute/9router
-profiles, native image protocols and configured GPU ComfyUI workflows. No paid POST retries, hidden
-uploads, prompt enhancement or automatic provider/model fallback.
+A local provider-independent MCP server for explicitly selected image, video, audio and 3D work.
+Keep your host chat model unchanged. Named connections separate native image protocols, gateway
+forwarding, configured GPU ComfyUI workflows and exact fal queue endpoint contracts. No paid POST
+retries, hidden uploads, prompt enhancement or automatic provider/model fallback.
+
+**0.3.0 release candidate:** multimedia generation, explicit output kinds/modes, twelve tools and
+Rust-only maintained tooling are integrated. Use the new installation guide only with the signed
+[0.3.0 release](https://github.com/KiaroSama/Numera-Gen-MCP/releases/tag/v0.3.0) after it is published.
+If that release is absent, retain the working [historical 0.2.0](docs/releases/0.2.0.md) installation;
+source or an unsigned CI intermediate is not an installable final release.
+
+The runtime, developer utility, CI driver and maintained tests are Rust. All 51 replaced
+Python/JavaScript/PowerShell source files have been removed; historical oracle archives remain
+immutable test data. One explicit manual qualification runs tests, Clippy, formatting, release
+builds and extracted-binary checks on Windows, Linux and macOS, each on x64 and ARM64, plus
+production coverage and the authenticated execution collector. The commit's check list links to
+those actual jobs; source preparation is separate and never a test pass. Main-only signing promotes
+the same qualified binaries without rerunning the heavy suites. The workflow badge is an aggregate,
+not proof that preparation, tests and signatures all ran; [test evidence](docs/TEST-RESULTS.md) records
+the exact source/run/attempt. [Rust migration](docs/RUST-MIGRATION.md) records scope and dispositions.
 
 **Native 0.2.0 is available:** all 470 frozen baseline cases and 50 suites have reviewed native assertion
 mappings and applicable execution at `f2535577c2e3145da03e2d5c123d7de061656860`.
-[Run40244894089](https://github.com/KiaroSama/Numera-Image-Gen-MCP/actions/runs/40244894089), attempt 2,
+[Run40244894089](https://github.com/KiaroSama/Numera-Gen-MCP/actions/runs/40244894089), attempt 2,
 passed all sixteen jobs: six native targets, strict quality checks, real publisher signatures,
 tamper/wrong-signer rejection and signed extracted stdio/HTTP SDK execution. Coverage was
 85.7791% regions / 83.3426% branches, above unchanged 85% / 80% floors. Signed maintenance passed
 all six targets, including native activation checks and full-width Windows child exit codes.
 The published Windows x64 archive additionally passed current-host pinned signature verification and
 ten-tool SDK readiness. [Signing and trust](docs/SIGNING.md) explains why self-signed identity is not
-public OS trust, Apple Developer ID or notarization. The production implementation is Rust;
-Node is only the frozen CI oracle/SDK test runtime.
-The previous working installation remains until the owner changes only Numera's host entry and
-verifies the actual native connection. CI and isolated readiness do not establish that cutover.
+public OS trust, Apple Developer ID or notarization. That release's production implementation is Rust; its historical CI used a frozen Node oracle/SDK
+runtime. The 0.3.0 source replaces maintained Python/JavaScript tooling with the separate Rust
+`numera-task` workspace and retains independently generated expected bytes rather than regenerating
+expectations with the implementation under test. Qualification is still pending.
+Preserve the working installation until a replacement is signed and its actual host connection is
+verified. Historical cutover evidence does not qualify the new source tree.
 See [migration acceptance](docs/testing/MIGRATION-MATRIX.md) and [historical test evidence](docs/TEST-RESULTS.md).
 
 The native target also adds an optional direct HTTP MCP endpoint at `http://127.0.0.1:1969/mcp`,
@@ -49,10 +68,21 @@ registration and interactive GUI use remain unverified.
 
 ## Installation and setup
 
+**Use a signed released binary, not a source build or unsigned CI intermediate.** The five steps
+below target **0.3.0** and its actual `numera-gen-mcp` executable. Require the published release's
+exact-source qualification, signatures and matching checksums before installation. If publication
+is still pending, keep the current installation. The immutable image-only **0.2.0** release retains
+`numera-image-gen-mcp` and its own template; never rename those signed bytes or copy media settings
+into that old version. [Historical installation and trust evidence](docs/releases/0.2.0.md) remains available.
+
+You need a local MCP-capable client, a writable installation folder, and an endpoint/key/model
+that actually supports your intended image operation. Hosted generation also needs network access;
+ComfyUI needs its own configured installation. Nothing in setup authorizes a paid request.
+
 ### 1. Download the ready native build
 
-Download [native 0.2.0](https://github.com/KiaroSama/Numera-Image-Gen-MCP/releases/tag/v0.2.0)
-from this repository's Releases page.
+Download [native 0.3.0](https://github.com/KiaroSama/Numera-Gen-MCP/releases/tag/v0.3.0)
+from this repository's Releases page after publication; a missing Release is not permission to use an unsigned artifact.
 Normal usage needs **no Node.js, npm, Rust toolchain, Python, compiler or local build**.
 Your MCP client runs the executable directly. ComfyUI remains an optional separately installed backend,
 not a bundled runtime.
@@ -61,10 +91,12 @@ Choose the archive for your actual OS/CPU:
 
 | OS      | CPU                       | Archive suffix                                                         |
 | ------- | ------------------------- | ---------------------------------------------------------------------- |
-| Windows | Intel/AMD 64-bit          | `x86_64-pc-windows-msvc.zip`                                           |
-| Windows | ARM64                     | `aarch64-pc-windows-msvc.zip`                                          |
-| Linux   | Intel/AMD 64-bit or ARM64 | `x86_64-unknown-linux-gnu.tar.gz` / `aarch64-unknown-linux-gnu.tar.gz` |
-| macOS   | Intel or Apple Silicon    | `x86_64-apple-darwin.tar.gz` / `aarch64-apple-darwin.tar.gz`           |
+| Windows | Intel/AMD 64-bit | `numera-gen-mcp-0.3.0-x86_64-pc-windows-msvc.zip` |
+| Windows | ARM64 | `numera-gen-mcp-0.3.0-aarch64-pc-windows-msvc.zip` |
+| Linux GNU | Intel/AMD 64-bit | `numera-gen-mcp-0.3.0-x86_64-unknown-linux-gnu.tar.gz` |
+| Linux GNU | ARM64 | `numera-gen-mcp-0.3.0-aarch64-unknown-linux-gnu.tar.gz` |
+| macOS | Intel | `numera-gen-mcp-0.3.0-x86_64-apple-darwin.tar.gz` |
+| macOS | Apple Silicon | `numera-gen-mcp-0.3.0-aarch64-apple-darwin.tar.gz` |
 
 Published compatibility and minimum OS versions must match that Release's actual native CI evidence.
 A Linux binary is not proof that Claude Desktop itself supports Linux.
@@ -72,51 +104,81 @@ A Linux binary is not proof that Claude Desktop itself supports Linux.
 ### 2. Verify and extract
 
 Download the archive **and its `.sha256` sidecar** from the same Release. Match the SHA-256 before
-extracting. The archive contains `bin/numera-image-gen-mcp` (Windows: `.exe`), license/notices,
+extracting. The archive contains `bin/numera-gen-mcp` (Windows: `.exe`), license/notices,
 configuration templates, schemas and examples. Extract into a writable installation folder you own;
 do not overwrite an existing private configuration or outputs.
 
 Windows PowerShell, replacing the downloaded filename:
 
 ```powershell
-Get-FileHash -Algorithm SHA256 -LiteralPath './numera-image-gen-mcp-0.2.0-x86_64-pc-windows-msvc.zip'
+$archive = './numera-gen-mcp-0.3.0-x86_64-pc-windows-msvc.zip'
+$expected = ((Get-Content -LiteralPath "$archive.sha256" -Raw -Encoding utf8).Trim() -split '\s+')[0]
+if ($expected -notmatch '^[a-fA-F0-9]{64}$' -or (Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash -ine $expected) { throw 'Release checksum mismatch; do not extract or run.' }
 ```
+
+Use the sidecar for that exact version and target. Check the Release's source and approved signer
+pins too; a matching checksum does not authenticate an untrusted replacement sidecar.
 
 Linux, from the download folder:
 
 ```bash
-sha256sum -c numera-image-gen-mcp-0.2.0-x86_64-unknown-linux-gnu.tar.gz.sha256
+sha256sum -c numera-gen-mcp-0.3.0-x86_64-unknown-linux-gnu.tar.gz.sha256
 ```
 
 macOS, replacing the archive filename for Intel if necessary:
 
 ```bash
-shasum -a 256 -c numera-image-gen-mcp-0.2.0-aarch64-apple-darwin.tar.gz.sha256
+shasum -a 256 -c numera-gen-mcp-0.3.0-aarch64-apple-darwin.tar.gz.sha256
 ```
 
-Use your OS archive extractor. On Linux/macOS the tar archive preserves the executable permission.
-Do not bypass an OS security warning blindly: verify origin/checksum and follow your platform's
-normal permission process. Managed temporary files and caches stay inside the installation folder;
-a non-writable managed path fails instead of falling back to a global temporary directory.
+Extract into a **new** directory using your OS archive extractor. Archives contain one top-level
+`numera-gen-mcp-0.3.0-<target>/` folder. That folder is the **installation root**: it contains
+`bin/`, `.env.example`, `docs/` and `manifest.json`. Open a terminal there for the relative commands
+below. You may give that extracted folder a stable installation name before registering it, for
+example `C:/tools/numera-gen-mcp` or `$HOME/tools/numera-gen-mcp`; keep its contents together.
 
-### 3. Create your private configuration
-
-Copy [.env.example](.env.example) to .env in the extracted installation root (the parent of `bin/`). Do not overwrite an existing private config.
-
-Windows PowerShell:
+On Linux/macOS, `tar -xzf ARCHIVE.tar.gz` preserves executable permissions. Confirm the binary before
+adding credentials (Windows PowerShell, from the installation root):
 
 ```powershell
-Copy-Item -LiteralPath .env.example -Destination .env
+& './bin/numera-gen-mcp.exe' --version
 ```
 
 Linux/macOS:
 
 ```bash
-cp -n .env.example .env
+./bin/numera-gen-mcp --version
 ```
 
-Edit .env: set API_ENDPOINT, API_KEY and MODEL_1_ID/MODEL_1_NAME. The template has three consistent
-slots, each with ENABLED, OUTPUT_FORMAT, SIZE and QUALITY. Extra slots are disabled; fill their exact
+Expect version `0.3.0`, publisher `KiaroSama` and the exact source SHA recorded in that Release.
+Do not accept a different build source merely because its version string matches.
+Check [signature verification and self-signed trust limits](docs/SIGNING.md) before running a download;
+a checksum alone is not a public OS-trust certificate. Do not blindly bypass security warnings or
+install a new trust root. Managed `.runtime/temp` and `.runtime/cache` stay inside the installation
+root; it must remain writable. No launcher, admin install or global cache is required.
+
+### 3. Create your private configuration
+
+Copy the **extracted release's own** `.env.example` to `.env` in the installation root, not `bin/`
+and not your client's working directory. Edit it in a UTF-8 text editor. Existing installation?
+Back up and retain its selected private config and data instead of replacing them with a template.
+
+Windows PowerShell:
+
+```powershell
+[IO.File]::Copy((Join-Path $PWD '.env.example'), (Join-Path $PWD '.env'), $false)
+```
+
+Linux/macOS:
+
+```bash
+(set -o noclobber; umask 077; cat .env.example > .env)
+```
+
+Edit `.env`: set `API_ENDPOINT`, `API_KEY` and `MODEL_1_ID` / `MODEL_1_NAME`. The 0.3.0 template has
+three slots with `ENABLED`, image defaults and optional paired `OUTPUT_TYPES` / `MODES` declarations.
+Leave both declaration fields empty for existing image configurations.
+Extra slots are disabled; fill their exact
 IDs/names before setting ENABLED=true. At least one model must be enabled; the first enabled slot
 is the default. Names are display labels, never routing aliases. Empty output fields preserve provider
 defaults; explicit tool arguments override them. Use only native values your selected model supports.
@@ -168,13 +230,13 @@ Keep key names unchanged: unknown keys and duplicate assignments reject the save
 | Field                 | Purpose                                                                                                                                                                                                                         | Required / default                                                                  |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | `API_ENDPOINT`        | Your image API's HTTP(S) base prefix, such as `https://gateway.example/v1`. Numera appends the operation path. Do not include `/images/generations`, `/images/edits` or `/responses`.                                           | Required. No fixed host or port.                                                    |
-| `API_KEY`             | Private credential for that endpoint. Gemini profiles send `x-goog-api-key`; other compact profiles send bearer authentication. Never paste a real key into host config, prompts or public files.                               | Required, nonblank, without newline/NUL.                                            |
+| `API_KEY`             | Private credential for that endpoint. Gemini sends `x-goog-api-key`; other released compact profiles send bearer authentication. Never paste a real key into host config, prompts or public files.                               | Required, nonblank, without newline/NUL.                                            |
 | `PROFILE`             | Selects the actual API contract. Accepted: `openai-images`, `omniroute`, `9router`, `openai-responses`, `gemini`, `gemini-interactions`, `openrouter-images`. Gateway profiles use Images with their specific forwarding rules. | Empty/omitted: `openai-images`. Choose the protocol your endpoint actually exposes. |
 | `ORCHESTRATION_MODEL` | Exact conversation-model ID that drives a Responses request. It is separate from the image model selected through `MODEL_n_ID`.                                                                                                 | Required for `openai-responses`; leave empty for every other profile.               |
 
 **Model slots: replace `n` with 1, 2, 3, ... up to 100**
 
-The same six fields apply to every slot. Slots are ordered numerically; the first enabled model is the
+The same image-default fields and optional paired media declarations apply to every slot. Slots are ordered numerically; the first enabled model is the
 default. A nonempty slot needs both ID and NAME, including disabled placeholders. At least one model
 must be enabled, and IDs must be unique. A configured model is not proof of account entitlement.
 
@@ -186,6 +248,10 @@ must be enabled, and IDs must be unique. A configured model is not proof of acco
 | `MODEL_n_OUTPUT_FORMAT` | Default output format: `png`, `jpeg` or `webp`, only if the selected route supports it.                                                             | Empty: provider default, nothing sent.                              |
 | `MODEL_n_SIZE`          | Default native pixel dimensions, for example `1024x1024`, if accepted by that API/model. Numera does not resize the returned original to match.     | Empty: provider default; nonblank values up to100 characters.       |
 | `MODEL_n_QUALITY`       | Default native quality value, for example `auto`, `low`, `medium` or `high` on models supporting those values. It is not a universal quality scale. | Empty: provider default; nonblank values up to100 characters.       |
+
+The optional `MODEL_n_OUTPUT_TYPES` / `MODEL_n_MODES` pair requires **0.3.0** and is documented in
+[Video, audio and 3D](#video-audio-and-3d). Both fields must be nonempty together or empty together.
+Adding them to an old 0.2.0 configuration rejects it; retain that release's own template until upgrading.
 
 Explicit image-tool arguments override these model defaults. Native Gemini uses `aspect_ratio` and
 `image_size` tool arguments instead of Images-style SIZE/QUALITY; generateContent does not accept a
@@ -224,7 +290,10 @@ Save .env and call `list_models` again to apply a valid change; no image is subm
 ### 4. Register with your MCP client
 
 Registration is one-time. Preserve unrelated settings and back up the host file before merging only
-Numera's entry. After registration **no launcher needs to be opened**: the host runs the executable
+Numera's entry. The exact current client entry is `numera-gen-mcp`; use that name consistently. If you
+already have `numera-image-gen`, update that selected entry instead of adding a second server against
+the same state. The 0.3.0 registration command manages exactly `numera-gen-mcp`; it never removes
+older entries implicitly. Use either manual configuration or explicit entry-scoped registration, not both. After registration **no launcher needs to be opened**: the host runs the executable
 with `args: ["bridge"]`, which starts MCP over stdin/stdout. No background daemon or listening port
 must be started first.
 
@@ -236,8 +305,8 @@ installation. Keep every other `mcpServers` member unchanged:
 ```json
 {
   "mcpServers": {
-    "numera-image-gen": {
-      "command": "C:/tools/numera-image-gen-mcp/bin/numera-image-gen-mcp.exe",
+    "numera-gen-mcp": {
+      "command": "C:/tools/numera-gen-mcp/bin/numera-gen-mcp.exe",
       "args": ["bridge"]
     }
   }
@@ -255,7 +324,7 @@ remain supported. If private configuration is elsewhere, add only this entry's `
 ```
 
 Never put the API key in host settings or arguments. On macOS use an actual absolute POSIX executable
-path, such as `/Users/your-name/tools/numera/bin/numera-image-gen-mcp`; `args` stays `["bridge"]`.
+path, such as `/Users/your-name/tools/numera-gen-mcp/bin/numera-gen-mcp`; `args` stays `["bridge"]`.
 Use Desktop's Edit Config to locate its actual settings, fully quit/reopen the app and call
 `health_check` plus `list_connections` to confirm the selected configuration.
 [Claude clients](docs/CLAUDE.md) has the registration and reconnect details.
@@ -265,26 +334,42 @@ Use Desktop's Edit Config to locate its actual settings, fully quit/reopen the a
 Linux/macOS, from the extracted installation root:
 
 ```bash
-claude mcp add --transport stdio --scope user numera-image-gen -- "$PWD/bin/numera-image-gen-mcp" bridge
+claude mcp add --transport stdio --scope user numera-gen-mcp -- "$PWD/bin/numera-gen-mcp" bridge
 ```
 
 Windows PowerShell, with your actual executable:
 
 ```powershell
-claude mcp add --transport stdio --scope user numera-image-gen -- 'C:/tools/numera/bin/numera-image-gen-mcp.exe' bridge
+claude mcp add --transport stdio --scope user numera-gen-mcp -- 'C:/tools/numera-gen-mcp/bin/numera-gen-mcp.exe' bridge
 ```
 
-Project JSON alternative: [Claude project entry](examples/claude-project.json). Do not replace the
-whole `.mcp.json`. Save endpoint/key/models in the private application config and call `list_models`
-again; accepted reloads retain operation snapshots and never resubmit existing image work.
+For project scope, use the same command with `--scope project` instead of `--scope user`; review
+and preserve the existing `.mcp.json`. Current [project JSON examples](examples/claude-project.json)
+use the 0.3.0 binary name; keep the immutable legacy name only for historical 0.2.0. CLI user
+scope is distinct from Claude Desktop chat's config. Restart/reconnect the selected client after
+registration; endpoint/model saves then reload through `list_models`, without another submission.
 
 #### Codex and other local MCP clients
 
-Merge [Codex TOML](examples/codex.toml), changing its absolute executable/config paths and retaining
-the long-operation timeout. Codex command registration from the extracted POSIX installation:
+Merge only this table into the actual `~/.codex/config.toml` (or trusted project's `.codex/config.toml`),
+backing it up first and replacing example paths with your installation. A 360-second tool timeout
+allows the server's ordinary long-operation timeout to report its receipt instead of the client's
+60-second default ending first. Do not add duplicate tables.
+
+```toml
+[mcp_servers.numera-gen-mcp]
+command = "C:/tools/numera-gen-mcp/bin/numera-gen-mcp.exe"
+args = ["bridge"]
+startup_timeout_sec = 10
+tool_timeout_sec = 360
+env = { NUMERA_CONFIG = "C:/tools/numera-gen-mcp/.env" }
+```
+
+On Linux/macOS use actual absolute POSIX paths. The alternative CLI command below adds the stdio
+entry; set `tool_timeout_sec = 360` in its resulting table afterward, then restart/reconnect Codex:
 
 ```bash
-codex mcp add numera-image-gen -- "$PWD/bin/numera-image-gen-mcp" bridge
+codex mcp add numera-gen-mcp -- "$PWD/bin/numera-gen-mcp" bridge
 ```
 
 Cursor/Windsurf use their local `mcpServers` configuration. Kiro uses `mcpServers` with its `disabled`
@@ -297,7 +382,7 @@ and `"bridge"`. Existing host trust/approval and installation support remain the
 Optional native entry-scoped registration (never automatic at startup):
 
 ```bash
-./bin/numera-image-gen-mcp register --client ClaudeDesktop --host-config /absolute/claude_desktop_config.json --config /absolute/numera/.env --dry-run
+./bin/numera-gen-mcp register --client ClaudeDesktop --host-config /absolute/claude_desktop_config.json --config /absolute/numera/.env --dry-run
 ```
 
 Review the dry run first. Removing `--dry-run` deliberately updates only Numera with an exact-byte
@@ -305,18 +390,63 @@ backup and concurrent-change protection. `--remove` removes only that member, ne
 application data. Ambiguous TOML, links, active registration locks and invalid host JSON are rejected.
 These instructions are not registration performed by this repository task.
 
-### 5. Verify the connection before approving an image
+#### Current-name replacement (0.3.0)
 
-In the host call `health_check`, `list_connections`, `list_models`, then `get_model_capabilities`
-with the exact selected model ID. Readiness is not account entitlement or a successful generation.
-An optional native read-only diagnosis is available:
+The new build is `numera-gen-mcp.exe` on Windows and `numera-gen-mcp` on Linux/macOS; its exact
+host entry is `numera-gen-mcp`. **Do not switch until that build is signed, qualified and installed.**
+The commands above use the real 0.3.0 executable. An old 0.2.0 binary cannot be upgraded by renaming it.
+After the qualified new installation is verified, replace only the selected Numera entry:
 
-```bash
-./bin/numera-image-gen-mcp readiness --config /absolute/numera/.env --probe
+```json
+{
+  "mcpServers": {
+    "numera-gen-mcp": {
+      "command": "C:/tools/numera-gen-mcp/bin/numera-gen-mcp.exe",
+      "args": ["bridge"],
+      "env": {
+        "NUMERA_CONFIG": "C:/tools/numera-gen-mcp/.env",
+        "TEMP": "C:/tools/numera-gen-mcp/.runtime/temp",
+        "TMP": "C:/tools/numera-gen-mcp/.runtime/temp",
+        "TMPDIR": "C:/tools/numera-gen-mcp/.runtime/temp"
+      }
+    }
+  }
+}
 ```
 
-The report distinguishes local configuration/storage/credentials from a read-only provider catalog;
-it never submits an image. Logs go to stderr/files, never MCP stdout.
+Replace every example root with the same actual project directory. The binary's installation root
+(parent of `bin/`) owns `.runtime/temp` and `.runtime/cache`, regardless of the config path or host
+working directory; there is no extra cache environment key. [Desktop](examples/claude-desktop.json),
+[project JSON](examples/claude-project.json) and [Codex TOML](examples/codex.toml) use the same new name.
+Back up and explicitly migrate a selected old `numera-gen`/`numera-image-gen` entry rather than running
+two processes against the same state. Registration manages only the exact current entry; it does not
+remove legacy entries automatically. Keep the working runtime and data until actual reconnection.
+
+### 5. Verify the connection before approving an image
+
+First check local configuration/storage/declared credentials without contacting a provider. Windows
+PowerShell, replacing the absolute config path:
+
+```powershell
+& './bin/numera-gen-mcp.exe' readiness --config 'C:/tools/numera-gen-mcp/.env'
+```
+
+Linux/macOS:
+
+```bash
+./bin/numera-gen-mcp readiness --config "$PWD/.env"
+```
+
+Expect `local_ready: true` and exit 0 for a valid writable installation. Missing credentials or
+connection blockers return exit 2; invalid arguments/configuration return exit 1. This is not a
+successful generation or actual host reconnection.
+
+After restarting the MCP client, ask it to call `health_check` with `probe=false`, `list_connections`
+and `list_models` with `refresh=false`. Inspect `get_model_capabilities` for the exact selected model.
+Expect twelve tools in 0.3.0, the selected connection and your configured model name. Only if you
+want to test the provider's read-only catalog, add `--probe` to the readiness command; it performs
+provider GETs but never submits a generation. Readiness does not prove model entitlement or quality.
+Logs go to stderr/files, never MCP stdout.
 
 When you explicitly approve potentially billable work, ask: **Use Numera generate_image once to create
 a blue mug beside an orange. count=1; request_id=my-first-image-001.** Reuse that ID for the same
@@ -341,6 +471,11 @@ system/global cache.
 | No configured models | At least one enabled model with exact ID and readable name                                               |
 | Catalog/probe fails  | Selected route, API prefix, credentials and account; this is not generation failure proof                |
 | Unknown outcome      | Inspect the same receipt with `get_job`; do not submit a replacement automatically                       |
+
+If a 0.2.0 installation reports unknown `OUTPUT_TYPES` / `MODES` or `PROFILE=fal`, restore its own
+release template; these belong to 0.3.0 source. A missing `numera-gen-mcp` filename is the same version
+mix-up: use `numera-image-gen-mcp` for 0.2.0. A manually launched `bridge` waiting on stdin is normal;
+use readiness for diagnosis and let the MCP host own bridge startup/shutdown.
 
 ## Protocols and tools
 
@@ -369,14 +504,76 @@ tools, dedicated OpenRouter Images, opt-in chat image output and explicitly boun
 [Compatibility/limitations](docs/COMPATIBILITY.md) distinguish protocol evidence from account/model
 availability. Antigravity refs are blocked at the examined gateway versions that drop input images.
 
-10 tools: health_check, list_connections, list_models, get_model_capabilities, generate_image,
-edit_image, get_job, cancel_job, list_outputs, get_output_info. Use one request_id per logical operation
+12 source-defined tools: health_check, list_connections, list_models, get_model_capabilities,
+generate_image, edit_image, get_job, cancel_job, list_outputs, get_output_info, generate_media and
+get_media_output_info. The published 0.2.0 has only the original ten. Use one request_id per logical operation
 and reuse it on host retries. Unknown outcomes never automatically resubmit. Native batches require
 verified limits. Edit sources are typed output_id/path/url/data_url objects; no ambiguous strings.
 
 Saved originals provide owned IDs, paths, actual MIME/dimensions/bytes/alpha/SHA256. Optional bounded
 previews are derivatives. Local paths are not automatically accessible to cloud hosts. Prompts/input
 bytes preserved unless explicit in-image translation or upscale instructions are requested; provider policy/terms still apply. Read [privacy](docs/PRIVACY.md).
+
+## Video, audio and 3D
+
+Declare both output kinds and exact transformations for each model. Full JSON uses
+`modelOverrides.<exact-id>.outputTypes` and `modes`; compact JSON uses `models[].output_types` and
+`modes`; dotenv uses comma-separated `MODEL_n_OUTPUT_TYPES` and `MODEL_n_MODES`. Kinds are
+`image`, `video`, `audio`, `3d`. Omitting both declarations preserves legacy image configuration;
+it does not silently enable a new media route. A configured mode is not account entitlement.
+
+The [full fal example](examples/fal.json) declares every implemented endpoint's output kinds and modes,
+including image sidecars and the GLB geometry selection for Rodin. It reads the credential from `FAL_KEY`;
+no real credential belongs in a public example. Configuration alone does not submit a request.
+
+For compact dotenv configuration, select `PROFILE=fal`, the origin `https://queue.fal.run` and an exact implemented endpoint:
+
+```dotenv
+API_ENDPOINT=https://queue.fal.run
+API_KEY=replace-with-your-private-fal-key
+PROFILE=fal
+MODEL_1_ID=fal-ai/stable-audio
+MODEL_1_NAME="Audio generation"
+MODEL_1_ENABLED=true
+MODEL_1_OUTPUT_TYPES=audio
+MODEL_1_MODES=text-to-audio
+```
+
+A tool request for that explicit configuration is:
+
+```json
+{
+  "request_id": "my-audio-001",
+  "model": "fal-ai/stable-audio",
+  "mode": "text-to-audio",
+  "prompt": "Gentle rain on a wooden roof",
+  "parameters": {},
+  "wait": false
+}
+```
+
+Submit through `generate_media` only after authorizing the destination and cost. Use the same
+`request_id` with `get_job`; cancellation does not verify a refund. Typed references carry `kind`,
+`role` and exactly one `output_id`, `path`, `url` or `data_url`. Numera validates original bytes and
+forwards inline data only where that exact endpoint implements the role; it makes no hidden upload.
+
+Implemented endpoint bindings cover text/image-to-image, text/image/video-to-video, text/audio-to-audio,
+and text/image/3D-to-3D paths individually, not all possible conversions. Unsupported endpoint/mode,
+reference, parameter or format fails explicitly. Initial original-byte validation covers PNG/JPEG/WebP,
+PCM/IEEE-float WAV, self-contained single-visual-track nonfragmented MP4, and a bounded self-contained
+GLB 2.0 mesh subset. Audio tracks in MP4, fragmented video, compressed/animated/skinned GLB and other
+media formats are not supported by these validators. Structural validation is not full decode,
+rendering, semantic quality or live-provider proof. Provider artifacts outside these limits can yield
+partial or failed storage after generation; inspect the receipt, never resubmit automatically.
+For the exact Flux dev image endpoints, explicit effective `num_images`, `output_format` and numeric
+`image_size` requirements are saved with the request. Mismatching originals remain unchanged and
+produce `deviations` with overall `partial` status; successful storage remains `completed`.
+Local recovery uses that saved requirement snapshot, not later configuration defaults. Omitted
+provider defaults, named size presets and other media parameters are not conformance guarantees.
+
+`get_media_output_info` checks owned original bytes, actual MIME, kind, role, format, byte count,
+SHA-256 and available kind-specific metadata. No invented image dimensions for audio or meshes.
+[Configuration](docs/CONFIGURATION.md) records the exact endpoint and declaration contracts.
 
 ## Image-to-image, comic and selected-region editing
 
@@ -410,9 +607,23 @@ silently resizes output to match. [Dimension selection details](docs/CONFIGURATI
 [Architecture](docs/ARCHITECTURE.md) · [Testing](docs/TESTING.md) · [Requirements](docs/REQUIREMENTS.md) ·
 [References](docs/REFERENCES.md)
 
+## Native private maintenance
+
+Version 0.3.0 adds Windows `numera-dev protect-secret --path ABSOLUTE_FILE` with hidden
+CurrentUser DPAPI input and exclusive owner-only output. `--dry-run`/`--what-if` reads no secret and
+creates no file. Native `identity inspect` and `identity create --dry-run`, both with explicit
+`--root ABSOLUTE_ROOT`, inspect local conditions without creating custody or logs. Actual identity
+creation/checking requires separately selected qualified native crypto-library inputs; no command
+runs automatically or rotates the approved signer. [Credential details](docs/CONFIGURATION.md) and
+[identity/custody limits](docs/SIGNING.md) describe the exact boundaries.
+
+These commands and the all-51-file Rust tooling migration require the qualified 0.3.0 release;
+they are not features of the historical 0.2.0 developer binary. Standard OS/native third-party tools remain permitted;
+substantive first-party bootstrap/preparation logic belongs to the Rust driver, not hidden scripts.
+
 ## Logs and troubleshooting
 
-New UTF8 JSON log per execution: `numera-image-gen-mcp_YYYY-MM-DD_HH-mm-ss_UTC-<pid>-<uuid>.log`, UTC
+New UTF8 JSON log per execution: `numera-gen-mcp_YYYY-MM-DD_HH-mm-ss_UTC-<pid>-<uuid>.log`, UTC
 ISO8601 timestamp, INFO/WARNING/ERROR/DEBUG and component. Default directory configured/per-user;
 14-day own runtime-log retention, initialization falls back stderr. Prompts/keys/auth/cookies/Base64/
 signed query data/original paths not logged. Every accepted tool call records start/completion/failure,
