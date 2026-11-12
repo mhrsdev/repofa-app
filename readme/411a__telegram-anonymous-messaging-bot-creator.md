@@ -75,11 +75,19 @@ cd Telegram-Anonymous-Messaging-Bot-Creator
 cp .env.example .env
 nano .env  # Edit with your bot token and settings
 
-# 3. Start the bot
+# 3. Start the bot from the prebuilt image (no local build)
 cd docker/
-chmod +x run.sh
-./run.sh start
+./run.sh pull
 ```
+
+> `./run.sh pull` downloads the CI-built image from GitHub Container Registry.
+> If the package is still private, run `docker login ghcr.io` first or make the
+> package public in its GitHub package settings. To build locally instead, use
+> `./run.sh start -b`.
+>
+> `run.sh` is stored executable in Git. If you copied the project from
+> Windows without preserving file modes, run `chmod +x docker/run.sh` once;
+> normal `git clone` and `git pull` keep the bit.
 
 See [docker/README.md](docker/README.md) for complete Docker documentation, [docker/cloudflared/README.md](docker/cloudflared/README.md) for Cloudflare Tunnel setup, and [docker/MIGRATION.md](docker/MIGRATION.md) for moving an existing deployment to a new VPS.
 
@@ -124,7 +132,7 @@ cp .env.example .env
 | `MAIN_BOT_TOKEN` | Telegram Bot API token from @BotFather | `123456:ABC-DEF...` |
 | `WEBHOOK_BASE_URL` | Public HTTPS URL for webhooks | `https://bot.yourdomain.com` |
 | `TG_SECRET_TOKEN` | Secret token for webhook security | `random-secure-string` |
-| `FASTAPI_PORT` | Port for the FastAPI server | `13360` (default) |
+| `FASTAPI_PORT` | Port for the ASGI server (name kept for compatibility) | `13360` (default) |
 | `FASTAPI_BIND_ADDR` | Host bind address for the bot port | `127.0.0.1` (loopback only) |
 | `TRUSTED_PROXY_CIDRS` | Proxies allowed to forward the client IP | `172.30.0.1/32,172.30.0.2/32` |
 | `LOG_FILENAME` | Log file name | `Logs.log` |
@@ -362,13 +370,16 @@ python bot_creator.py
 ```bash
 cd docker/
 
-# Start bot (and tunnel if configured)
+# Pull the prebuilt image and start (no build on the VPS)
+./run.sh pull
+
+# Start bot (and tunnel if configured) from the existing local image
 ./run.sh start
 
 # Install host watchdog recovery after Infisical is configured
 ./run.sh install-watchdog
 
-# Start with rebuild
+# Start with a local rebuild
 ./run.sh start -b
 
 # Reconcile/recreate containers immediately
@@ -475,6 +486,37 @@ curl -i -X POST https://webhook.yourdomain.com/webhook/test
 ```
 
 `https://webhook.yourdomain.com/health` now returns `404` by design.
+
+### CPU Monitoring (1 vCPU / burstable plans)
+
+A single `docker stats` snapshot can miss the spikes that trigger provider
+throttling. Record history instead of sampling by eye:
+
+```bash
+# One-off: which container is using CPU right now?
+docker stats --no-stream \
+  --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}"
+
+# Host-wide total (container plus everything outside Docker)
+top -b -n1 | head -25
+
+# History: sysstat is tiny and records every 10 minutes by default
+sudo apt install -y sysstat
+sudo systemctl enable --now sysstat
+sar -u          # today's host CPU history
+sar -u -f "/var/log/sysstat/sa$(date +%d)"   # a specific day
+
+# Optional per-container history every 5 minutes
+STATS_CMD='*/5 * * * * docker stats --no-stream '
+STATS_CMD+='--format "{{.Name}} {{.CPUPerc}} {{.MemUsage}}" '
+STATS_CMD+='>> /var/log/docker-stats.log'
+(crontab -l 2>/dev/null; echo "$STATS_CMD") | crontab -
+```
+
+On a 1 vCPU plan, `100%` in `docker stats` means one full core, not the
+provider's guaranteed share. If throttling recurs, capture `docker stats` and
+`top -b -n1 | head -25` during the spike, with the timestamp and timezone, and
+identify which container is responsible before changing limits.
 
 ### Common Issues
 

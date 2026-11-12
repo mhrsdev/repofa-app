@@ -170,13 +170,19 @@ ax ssh task123                        # interactive shell (task needs spec.debug
 ax ssh task123 -- ls -la /workspace   # one-off command
 ax ssh task123 -- python3 main.py
 
-# Workspaces and models follow the same pattern
+# Workspaces, gateways, and models follow the same pattern
 
 ax get workspaces
 # NAME                ATESPACE   GIT-REPOS   MCP-SERVERS
 # default-workspace   default    1           1
 ax describe workspace default-workspace
 ax delete workspace default-workspace
+
+ax get gateways
+# NAME            ATESPACE   EGRESS-RULES
+# review-bot-gw   default    3
+ax describe gateway review-bot-gw
+ax delete gateway review-bot-gw
 
 ax get models
 # NAME            ATESPACE   PROVIDER   MODEL
@@ -214,6 +220,7 @@ ax --context=dev-cluster get tasks
 | `-n`, `--namespace` | Kubernetes namespace where AX is installed | `ax-system` |
 | `--context` | Kubernetes context to target | active `kubectx` / `current-context` |
 | `--server` | Control plane address, bypassing auto-detection | derived from kube context, or `$AX_SERVER` |
+| `--trace` | Trace the command and print its trace ID to stderr. Its RPCs send a sampled W3C `traceparent`, and CLI spans are exported over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Without it, the CLI sends no trace context and ax-server samples on its own. See [CLI traces](docs/observability.md#cli-traces) | off |
 
 ## License
 

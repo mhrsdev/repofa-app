@@ -97,6 +97,18 @@ The framework encodes career guidance best practices, including structured evalu
 
 ### 1. Fork and clone
 
+**For your own job search**, start from a private copy:
+
+```bash
+gh repo clone ai-job-search-dev/ai-job-search
+cd ai-job-search
+git remote rename origin upstream
+gh repo create ai-job-search --private --source=. --remote=origin --push
+gh repo set-default <your-github-username>/ai-job-search
+```
+
+**To contribute changes back**, fork instead:
+
 ```bash
 gh repo fork ai-job-search-dev/ai-job-search --clone
 cd ai-job-search
@@ -106,10 +118,8 @@ cd ai-job-search
 > **A fork of this repo is always public** — GitHub does not allow private forks of
 > public repositories — and `/setup` (step 3 below) writes your personal data (name,
 > contact details, employment history, salary expectations) into **tracked** files.
-> If this copy is for your own job search rather than for contributing changes back,
-> use a **private repository** with this repo as `upstream` instead — the two-minute
-> recipe is in [SETUP.md section 8](SETUP.md#8-pulling-upstream-updates-into-your-fork),
-> and every update workflow works identically. Fork only to contribute.
+> Fork only to contribute. Updates work the same way from a private copy; see
+> [SETUP.md section 8](SETUP.md#8-pulling-upstream-updates-into-your-fork).
 
 ### 2. Install job search tools
 
@@ -414,6 +424,8 @@ ai-job-search/
 │   ├── references/                    # Reference letters
 │   └── applications/                  # Past application records (<company>_<role>/)
 ├── .github/workflows/ci.yml           # CI: LaTeX smoke compiles, skill lint, CLI typechecks
+├── .github/workflows/release.yml      # Weekly SemVer release from merged PR titles (skipped on forks)
+├── .github/workflows/upstream-watch.yml  # Weekly upstream triage into a rolling issue (reports only)
 ├── salary_lookup.py                   # Salary benchmarking tool (BYO data)
 ├── tools/
 │   ├── check_framework_version.py     # CI check: framework_version bumped when skill files change
@@ -421,9 +433,13 @@ ai-job-search/
 │   ├── convert_salary_excel.py        # Convert salary Excel to JSON
 │   ├── fetch_page.py                  # GET-only browser-header retry for 403s (robots.txt enforced)
 │   ├── install_portal_clis.py         # Install every discovered portal CLI (bun install)
+│   ├── job_key.py                     # Canonical job key (company + title slug) shared by /scrape and /rank
 │   ├── lint_skills.py                 # CI lint for skills, commands, settings.json
+│   ├── page_decode.py                 # Decode a saved page by its declared charset (EUC-KR, Shift_JIS, ...)
 │   ├── posting_guard.py               # Integrity gate: strip hidden text, flag injection-shaped lines
+│   ├── rank_state.py                  # /rank state: candidates, deadline sweep, apply scores to seen_jobs.json
 │   ├── robots_check.py                # Gate the browser-header retry against robots.txt
+│   ├── scrape_state.py                # /scrape state: candidates, store, history over seen_jobs.json
 │   ├── security_guards.py             # CI guards: permission allow/ask/deny, skill grants, gitignore, manifests
 │   ├── upstream_triage.py             # Sort upstream commits into worth-reviewing vs probably-skip
 │   ├── verify_layout.py               # Measure a compiled PDF's page layout (holes, orphans, footer collisions)

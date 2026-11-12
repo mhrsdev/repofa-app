@@ -1,53 +1,106 @@
 # OrbitLang 🪐
 
-OrbitLang is a small interpreted programming language written in Python.
+**Simple syntax. Small language. Built from scratch.**
 
-It features Python-inspired syntax and its own lexer, parser, Abstract Syntax Tree (AST), and tree-walk interpreter. The project also includes a command-line interface, an interactive REPL, and a graphical installer built with Tkinter.
+OrbitLang is a small interpreted programming language implemented in Python.
 
-OrbitLang is an ongoing project focused on building a programming language from scratch and exploring how interpreters work.
+It features a Python-inspired syntax while keeping the language itself small and understandable. OrbitLang includes its own lexer, parser, Abstract Syntax Tree (AST), tree-walk interpreter, command-line interface, interactive REPL, and graphical installer.
 
 ## ✨ Features
 
-### Language Features
+### Language
 
-- Variables and assignments
+- Variables and typed assignments
 - Numbers, strings, and booleans
-- Typed variable declarations
-- Lists
-- List and string indexing
-- List element assignment
+- Lists and dictionaries
+- Arithmetic, comparison, and logical operators
+- Membership operator (`in`)
 - User input with `input()`
-- Integer conversion with `int()`
 - Output with `show`
-- Arithmetic operators
-- Comparison operators
-- Logical operators: `and`, `or`, `not`
-- Conditional statements: `if`, `elif`, `else`
+- Conditional statements (`if`, `elif`, `else`)
 - One-line conditions
-- `while` loops
-- `repeat` loops
-- `for` loops
+- `while`, `for`, and `repeat` loops
 - `range()`
 - `break` and `continue`
-- User-defined functions with `func`
+- Functions with `func`
 - Function parameters and `return`
+- List indexing and assignment
+- Dictionary key access and assignment
+- Dictionary operations
 - Indentation-based blocks
 - Comments
 
-### Tooling
+### Tooling & Implementation
 
+- Custom lexer
+- Custom parser
+- Abstract Syntax Tree (AST)
+- Tree-walk interpreter
 - Command-line interface
 - Interactive REPL
 - Graphical installer built with Tkinter
 - Lexer, parser, and interpreter error handling
-- Example programs
-- Language-level test programs
+- Example programs and language-level tests
 
-## 🚀 Installation
+---
+
+## 📦 Installation
+
+Prebuilt packages are available for Windows, macOS, and Linux.
+
+**Download the latest release:**
+
+[OrbitLang Releases](https://github.com/amiralikazemi1321/orbitlang/releases)
+
+### Windows
+
+1. Download `OrbitLang-Setup-0.1.0.exe`.
+2. Run the installer.
+3. Follow the installation instructions.
+
+### macOS
+
+1. Download `OrbitLang-0.1.0.dmg`.
+2. Open the DMG file.
+3. Copy or use the included `orbit` executable.
+
+The macOS package currently provides a command-line executable, not a graphical application.
+
+### Linux
+
+1. Download `OrbitLang-0.1.0-x86_64.AppImage`.
+2. Open a terminal in the download directory.
+3. Make the file executable:
+
+```bash
+chmod +x OrbitLang-0.1.0-x86_64.AppImage
+```
+
+4. Run OrbitLang:
+
+```bash
+./OrbitLang-0.1.0-x86_64.AppImage version
+```
+
+To execute a program:
+
+```bash
+./OrbitLang-0.1.0-x86_64.AppImage run program.orbit
+```
+
+The Linux package currently targets x86_64 systems.
+
+---
+
+## 🐍 Installation from Source
+
+You can also install OrbitLang directly from its source code.
 
 ### Requirements
 
 - Python 3.10 or newer
+- pip
+- A terminal
 
 Clone the repository:
 
@@ -62,15 +115,19 @@ Install OrbitLang:
 pip install .
 ```
 
-## ▶️ Quick Start
+After installation, the `orbit` command will be available in your terminal.
 
-Create a file named `hello.orbit`:
+---
+
+## 🚀 Quick Start
+
+Create a file with the `.orbit` extension:
 
 ```orbit
-name = "OrbitLang"
-
-show "Hello, " + name + "!"
+show "Hello, OrbitLang!"
 ```
+
+Save it as `hello.orbit`.
 
 Run it:
 
@@ -78,63 +135,100 @@ Run it:
 orbit run hello.orbit
 ```
 
-Expected output:
+Output:
 
 ```text
 Hello, OrbitLang!
 ```
 
+---
+
 ## 💻 REPL
 
-Start the interactive REPL:
+OrbitLang provides an interactive Read-Eval-Print Loop:
 
 ```bash
 orbit repl
 ```
 
-You can enter and execute OrbitLang statements interactively.
+Example:
 
-Multiline REPL support is planned for a future version.
-
-## 📦 Graphical Installer
-
-OrbitLang includes a graphical installer implemented with Tkinter.
-
-Run it from the repository root:
-
-```bash
-python installer/installer.py
+```text
+OrbitLang REPL
+Type 'exit' or 'quit' to quit.
+>>> show "Hello"
+Hello
+>>> show 10 + 5
+15
+>>> exit
 ```
 
-On Fedora, install Tkinter if it is not already available:
+The current REPL is designed for single-line interaction. Multiline interactive blocks are planned for a future version.
 
-```bash
-sudo dnf install python3-tkinter
-```
-
-The installer is intended to simplify the installation process through a graphical interface.
+---
 
 ## 📖 Language Syntax
 
 ### Variables
 
+Variables can be created with a simple assignment:
+
 ```orbit
-name = "OrbitLang"
-age = 13
+name = "Alex"
+age = 25
 
 show name
 show age
 ```
 
-### Typed Assignments
+### Data Types
+
+OrbitLang supports:
+
+- Numbers
+- Strings
+- Booleans
+- Lists
+- Dictionaries
 
 ```orbit
-number age = 13
-string name = "OrbitLang"
+age = 25
+name = "Alex"
+active = true
+
+numbers = [10, 20, 30]
+
+person = {
+    "name": "Alex",
+    "age": 25
+}
+```
+
+### Typed Assignments
+
+Variables can optionally specify their type:
+
+```orbit
+number age = 25
+string name = "Alex"
 boolean active = true
 ```
 
+The interpreter checks that the assigned value matches the declared type.
+
+### Output
+
+Use `show` to print a value:
+
+```orbit
+show "Hello"
+show 10
+show 5 + 3
+```
+
 ### Input
+
+Use `input()` to read user input:
 
 ```orbit
 name = input("What is your name? ")
@@ -142,18 +236,9 @@ name = input("What is your name? ")
 show name
 ```
 
-### Integer Conversion
-
-`input()` returns text. Use `int()` to convert numeric input into an integer.
-
-```orbit
-first = int(input("Enter the first number: "))
-second = int(input("Enter the second number: "))
-
-show first + second
-```
-
 ### Arithmetic
+
+OrbitLang supports common arithmetic operators:
 
 ```orbit
 x = 10
@@ -165,71 +250,143 @@ show x * y
 show x / y
 ```
 
+### Comparisons
+
+```orbit
+x = 10
+
+show x == 10
+show x != 5
+show x > 5
+show x < 20
+show x >= 10
+show x <= 10
+```
+
 ### Conditions
+
+OrbitLang uses indentation to define blocks:
 
 ```orbit
 x = 10
 
 if x > 5:
-    show "x is greater than 5"
-elif x == 5:
-    show "x equals 5"
-else:
-    show "x is less than 5"
+    show "x is bigger"
 ```
 
 One-line conditions are also supported:
 
 ```orbit
-if x > 5: show "Greater than 5"
+if x > 5: show "x is bigger"
+```
+
+### `elif` and `else`
+
+```orbit
+x = 15
+
+if x > 20:
+    show "big"
+elif x > 10:
+    show "medium"
+else:
+    show "small"
+```
+
+One-line form:
+
+```orbit
+if x > 20: show "big"
+elif x > 10: show "medium"
+else: show "small"
 ```
 
 ### Logical Operators
 
-OrbitLang supports `and`, `or`, and `not`.
+OrbitLang supports:
+
+- `and`
+- `or`
+- `not`
+
+Example:
 
 ```orbit
-age = 13
+age = 15
 
 if age > 10 and age < 18:
-    show "Condition matched"
+    show "teenager"
 ```
 
-### While Loops
+### `while` Loops
 
 ```orbit
-i = 0
+x = 0
 
-while i < 5:
-    show i
-    i = i + 1
+while x < 5:
+    show x
+    x = x + 1
 ```
 
-### Repeat Loops
+One-line loops are also supported:
 
 ```orbit
-repeat 3:
-    show "OrbitLang"
+while x < 5: x = x + 1
 ```
 
-### For Loops
+### `repeat` Loops
+
+`repeat` executes a block a specified number of times:
+
+```orbit
+repeat 5:
+    show "Hello"
+```
+
+One-line form:
+
+```orbit
+repeat 3: show "Orbit"
+```
+
+### `for` Loops
+
+OrbitLang supports `for` loops with iterables such as `range()`:
 
 ```orbit
 for i in range(5):
     show i
 ```
 
-`range()` supports one, two, or three arguments.
+Output:
+
+```text
+0
+1
+2
+3
+4
+```
+
+One-line form:
+
+```orbit
+for i in range(5): show i
+```
+
+#### `range()`
+
+`range()` supports one, two, or three integer arguments:
 
 ```orbit
 range(5)
-range(2, 8)
+range(2, 5)
 range(0, 10, 2)
 ```
 
-### Break and Continue
+### `break` and `continue`
 
-`break` exits the current loop.
+`break` stops the current loop:
 
 ```orbit
 for i in range(10):
@@ -239,7 +396,7 @@ for i in range(10):
     show i
 ```
 
-`continue` skips the remaining statements in the current iteration.
+`continue` skips the rest of the current iteration:
 
 ```orbit
 for i in range(5):
@@ -251,127 +408,392 @@ for i in range(5):
 
 ### Functions
 
-Functions are declared with `func`.
+Functions are declared using `func`:
+
+```orbit
+func greet(name):
+    show name
+```
+
+Functions can receive parameters:
 
 ```orbit
 func add(a, b):
     return a + b
+```
 
+They can then be called:
+
+```orbit
 result = add(10, 5)
 show result
 ```
 
-Output:
+### `return`
 
-```text
-15
+`return` sends a value back from a function:
+
+```orbit
+func square(x):
+    return x * x
+
+show square(5)
 ```
 
-### Lists and Indexing
+A function can also return without a value:
 
-Lists can store multiple values:
+```orbit
+func hello():
+    show "Hello"
+    return
+```
+
+### Lists
+
+Lists store multiple values in a single variable.
+
+Create a list using square brackets:
 
 ```orbit
 numbers = [10, 20, 30]
 
+show numbers
+```
+
+#### List Indexing
+
+Individual elements can be accessed using their index:
+
+```orbit
 show numbers[0]
 show numbers[1]
 show numbers[2]
 ```
 
-List indexing starts at zero.
+List indexing starts at `0`.
 
-Existing list elements can be reassigned:
+#### List Assignment
+
+List elements can be updated using indexed assignment:
 
 ```orbit
 numbers = [10, 20, 30]
 
-numbers[1] = 99
+numbers[1] = 50
 
-show numbers[1]
+show numbers
 ```
 
 Output:
 
 ```text
-99
+[10, 50, 30]
 ```
 
-String indexing is also supported.
+### Dictionaries
 
-### Comments
+Dictionaries store data as key-value pairs.
 
-Use `#` to write comments:
+Create a dictionary using curly braces:
+
+```orbit
+person = {
+    "name": "Alex",
+    "age": 25,
+    "city": "London"
+}
+
+show person
+```
+
+#### Dictionary Access
+
+Access a value using its key:
+
+```orbit
+show person["name"]
+show person["age"]
+```
+
+#### Dictionary Assignment
+
+Dictionary values can be updated, and new keys can be added:
+
+```orbit
+person["age"] = 26
+person["active"] = true
+
+show person
+```
+
+#### Empty Dictionaries
+
+```orbit
+data = {}
+
+show data
+```
+
+#### Dictionary Operations
+
+OrbitLang provides several built-in functions for working with dictionaries.
+
+**`keys()`**
+
+Returns a list containing the dictionary's keys:
+
+```orbit
+show keys(person)
+```
+
+**`values()`**
+
+Returns a list containing the dictionary's values:
+
+```orbit
+show values(person)
+```
+
+**`remove()`**
+
+Removes a key from a dictionary and returns its associated value:
+
+```orbit
+removed = remove(person, "age")
+
+show removed
+show person
+```
+
+**`clear()`**
+
+Removes all entries from a dictionary:
+
+```orbit
+clear(person)
+
+show person
+```
+
+**`merge()`**
+
+Combines two dictionaries and returns a new dictionary.
+
+If both dictionaries contain the same key, the value from the second dictionary takes priority. The original dictionaries remain unchanged.
+
+```orbit
+first = {
+    "name": "Alex",
+    "age": 25
+}
+
+second = {
+    "age": 26,
+    "city": "London"
+}
+
+combined = merge(first, second)
+
+show combined
+```
+
+### Membership Operator
+
+OrbitLang supports the `in` operator for checking whether a value exists in a collection.
+
+It works with lists, dictionaries, and strings.
+
+**Lists**
+
+```orbit
+numbers = [10, 20, 30]
+
+show 20 in numbers
+show 50 in numbers
+```
+
+**Dictionaries**
+
+For dictionaries, `in` checks whether a key exists:
+
+```orbit
+person = {
+    "name": "Alex",
+    "age": 25
+}
+
+show "name" in person
+show "city" in person
+```
+
+**Strings**
+
+For strings, `in` checks whether a substring exists:
+
+```orbit
+message = "Hello, OrbitLang!"
+
+show "OrbitLang" in message
+show "Python" in message
+```
+
+---
+
+## 🧰 Built-in Functions
+
+| Function | Description |
+|---|---|
+| `input()` | Reads user input |
+| `type()` | Returns the type of a value |
+| `range()` | Creates a range of numbers |
+| `int()` | Converts a value to an integer |
+| `len()` | Returns the length of a supported value |
+| `keys()` | Returns dictionary keys |
+| `values()` | Returns dictionary values |
+| `remove()` | Removes a dictionary entry and returns its value |
+| `clear()` | Removes all entries from a dictionary |
+| `merge()` | Merges two dictionaries into a new dictionary |
+
+### `type()`
+
+Returns the type of a value:
+
+```orbit
+show type(10)
+show type("Hello")
+show type(true)
+show type([1, 2, 3])
+show type({"name": "Alex"})
+```
+
+### `len()`
+
+Returns the length of a supported value:
+
+```orbit
+show len("OrbitLang")
+show len([10, 20, 30])
+show len({"name": "Alex", "age": 25})
+```
+
+---
+
+## 💬 Comments
+
+Comments start with `#`:
 
 ```orbit
 # This is a comment
-show "Hello"
+
+x = 10  # This is also a comment
 ```
 
-## 🧠 How It Works
+---
 
-OrbitLang uses a lexer, parser, AST, and tree-walk interpreter.
+## 🧠 How OrbitLang Works
+
+OrbitLang follows a traditional interpreter pipeline:
 
 ```text
-Source Code
-    |
-    v
-   Lexer
-    |
-    v
-   Tokens
-    |
-    v
-   Parser
-    |
-    v
-    AST
-    |
-    v
- Interpreter
-    |
-    v
-   Output
+OrbitLang source code
+       |
+       v
+     Lexer
+       |
+       v
+     Tokens
+       |
+       v
+     Parser
+       |
+       v
+      AST
+       |
+       v
+  Interpreter
+       |
+       v
+     Output
 ```
 
 ### Lexer
 
-Reads source code and converts it into tokens.
+The lexer reads source code and converts it into tokens.
+
+It handles:
+
+- Keywords
+- Identifiers
+- Numbers
+- Strings
+- Operators
+- Indentation
+- New lines
+- Comments
 
 ### Parser
 
-Processes tokens according to the language grammar and constructs an Abstract Syntax Tree.
+The parser takes the tokens produced by the lexer and builds an Abstract Syntax Tree.
 
-### Abstract Syntax Tree
+It is responsible for understanding OrbitLang's grammar and structure.
 
-Represents the structure of the program using AST nodes.
+### AST
+
+The AST represents the structure of a program using Python objects such as:
+
+- `Number`
+- `String`
+- `Boolean`
+- `Variable`
+- `BinaryOp`
+- `UnaryOp`
+- `Assign`
+- `Show`
+- `If`
+- `While`
+- `For`
+- `FunctionDef`
+- `Return`
+- `Call`
+- `ListLiteral`
+- `Index`
+- `IndexAssign`
+- `Dictionary`
 
 ### Interpreter
 
-Walks the AST and executes the program.
+The interpreter walks the AST and executes the program directly.
 
-OrbitLang is interpreted directly rather than compiled to machine code.
+OrbitLang currently uses a tree-walk interpreter rather than compiling programs to machine code or another intermediate language.
+
+---
 
 ## 📁 Project Structure
 
 ```text
 orbitlang/
+├── .github/
+│   └── workflows/
+│       └── build.yml
 ├── examples/
 │   └── program.orbit
 ├── installer/
-│   └── installer.py
+│   ├── installer.py
+│   └── windows.iss
 ├── orbit/
+│   ├── __init__.py
 │   ├── ast.py
 │   ├── cli.py
-│   ├── __init__.py
 │   ├── interpreter.py
 │   ├── lexer.py
 │   └── parser.py
 ├── tests/
 │   ├── test_basic.orbit
+│   ├── test_bool.orbit
 │   ├── test_break.orbit
 │   ├── test_continue.orbit
 │   ├── test_data_type.orbit
+│   ├── test_dictionary.orbit
 │   ├── test_elif.orbit
 │   ├── test_for.orbit
 │   ├── test_function.orbit
@@ -381,23 +803,36 @@ orbitlang/
 │   ├── test_repeat.orbit
 │   ├── test_return.orbit
 │   └── test_while.orbit
+├── .gitignore
 ├── LICENSE
-├── main.py
+├── orbit.spec
 ├── pyproject.toml
 └── README.md
 ```
 
+---
+
 ## 🧪 Testing
 
-OrbitLang includes programs written in OrbitLang to test language features.
+OrbitLang includes test programs written in OrbitLang itself.
 
-Run an individual test:
+The tests are stored in the `tests/` directory and cover different language features and interpreter behavior.
+
+### Run an Individual Test
 
 ```bash
 orbit run tests/test_basic.orbit
 ```
 
-Run all test programs on Linux:
+For example:
+
+```bash
+orbit run tests/test_dictionary.orbit
+```
+
+### Run All Tests
+
+On Linux and other Unix-like systems:
 
 ```bash
 for f in tests/*.orbit; do
@@ -406,34 +841,76 @@ for f in tests/*.orbit; do
 done
 ```
 
-The test suite covers basic expressions, data types, control flow, loops, functions, input, lists, and indexed assignment.
+The command stops if a test exits with an error.
 
-This command stops when a program exits with a non-zero status. It does not automatically compare output against expected results.
+The test programs exercise the same lexer, parser, interpreter, and CLI used by normal programs.
+
+---
 
 ## 🛣️ Roadmap
 
-Planned improvements include:
+Planned features and improvements include:
 
-- Dictionaries
 - Imports and modules
-- A standard library
+- Expanded standard library
+- More comprehensive testing
 - Multiline REPL support
-- More comprehensive automated testing
-- Improved error diagnostics
-- Additional developer tooling
+- Better error diagnostics
+- Improved tooling
+- More language features
+- Continued interpreter improvements
+
+The roadmap may change as OrbitLang evolves.
+
+---
 
 ## 🎯 Philosophy
 
-OrbitLang is a small project built to explore programming language implementation.
+OrbitLang is intentionally small.
 
-Its goal is to make the process of building an interpreter understandable while gradually developing a useful language of its own.
+The goal is not to create another Python replacement or a huge production language. The goal is to build a programming language from scratch and understand how its individual components work.
+
+OrbitLang aims to be:
+
+- Simple
+- Understandable
+- Consistent
+- Small enough to study
+- Powerful enough to build interesting programs
+
+---
 
 ## 🤝 Contributing
 
-Suggestions, bug reports, and contributions are welcome.
+Contributions, ideas, bug reports, and improvements are welcome.
 
-Feel free to open an issue or submit a pull request.
+If you find a bug or have an idea for OrbitLang, feel free to open an issue or submit a pull request.
 
-## 📄 License
+---
 
-OrbitLang is licensed under the MIT License. See [`LICENSE`](LICENSE) for details.
+## 📄 Project Information
+
+| Property | Value |
+|---|---|
+| Name | OrbitLang |
+| Version | 0.1.0 |
+| Description | A simple programming language made in Python |
+| Implementation | Python |
+| License | MIT |
+
+The command-line entry point is configured as:
+
+```toml
+[project.scripts]
+orbit = "orbit.cli:main"
+```
+
+This makes the `orbit` command available after installing the package.
+
+---
+
+## 📜 License
+
+OrbitLang is released under the MIT License.
+
+See [`LICENSE`](LICENSE) for the full license text.
