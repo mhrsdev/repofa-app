@@ -2621,7 +2621,11 @@ In production, we use **bidirectional streaming**: STT streams text out as the u
 
 The transport is usually **[WebRTC](https://outcomeschool.com/blog/voice-and-video-call)** (a browser-native protocol designed for real-time audio and video), **WebSocket** (a long-lived two-way connection), or **SIP** (the standard protocol used by phone networks to set up voice calls). Plain HTTP cannot keep up.
 
+To see how these transports differ, we have a detailed blog on [How do WebRTC and WebSocket differ for voice AI agents?](https://outcomeschool.com/blog/webrtc-vs-websocket-for-voice-ai) that explains why a lost packet freezes the audio on a WebSocket, how WebRTC keeps the delay low with UDP, a jitter buffer, and echo cancellation, and when to use which one.
+
 We have a detailed blog on [What are audio frames and chunk sizes in a real-time voice pipeline?](https://outcomeschool.com/blog/audio-frames-and-chunk-sizes) that explains how the audio is cut into small frames, how to calculate their size, and how the chunk size trades delay against overhead.
+
+We also have a detailed blog on [Why do sample rates like 8 kHz, 16 kHz, and 24 kHz matter for voice agents?](https://outcomeschool.com/blog/sample-rates-for-voice-agents) that explains why phone audio arrives at 8 kHz, why speech recognition expects 16 kHz, why voice output often uses 24 kHz, and what goes wrong when these sample rates do not match.
 
 Modern providers expose **Realtime APIs** that bundle all three: OpenAI Realtime API, Amazon Polly Bidirectional Streaming, Deepgram Voice Agent, Inworld, Soniox, x.ai Voice. These collapse STT, LLM, and TTS into a single low-latency pipeline.
 
@@ -2997,13 +3001,4 @@ Without evals, we are flying blind. A change that "feels" better can actually ma
 Tools: OpenAI Evals, Promptfoo, Braintrust, Ragas (specifically for RAG).
 
 ### LLM as a Judge
-
-Human eval is the most reliable, but it is slow and expensive. Exact match does not work for open-ended answers like a summary or a support reply. So, here comes [**LLM as a Judge**](https://outcomeschool.com/blog/llm-as-a-judge) to the rescue. **LLM as a Judge is a technique where we use a large language model to evaluate the output of another large language model.**
-
-There are four common types:
-
-- **Single answer scoring:** The judge rates one answer on a scale, like 1 to 5. Useful to track quality over time.
-- **Pairwise comparison:** The judge picks the better of two answers. Useful to compare two models or two prompts.
-- **Reference-based evaluation:** The judge compares the answer with a known correct answer.
-- **Rubric-based evaluation:** The judge gives a separate score for each criterion, like accuracy, helpfulness, clarity, and tone. This is the most common type in production today.
 <!-- truncated -->
