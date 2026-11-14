@@ -6,7 +6,7 @@
 
 **Encrypted Iran ↔ Kharej port forwarding that keeps working when the network is filtered, even when only ping gets through.**
 
-[![Release](https://img.shields.io/badge/release-v3.3.4-blue?style=flat-square)](https://github.com/JohnWatsoon/WatTunnel/releases)
+[![Release](https://img.shields.io/badge/release-v3.3.7-blue?style=flat-square)](https://github.com/JohnWatsoon/WatTunnel/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Go](https://img.shields.io/badge/Go-1.26-00ADD8?style=flat-square&logo=go)](go.mod)
 ![Platform](https://img.shields.io/badge/platform-linux%20amd64%20%7C%20arm64%20%7C%20windows-lightgrey?style=flat-square)
@@ -119,10 +119,10 @@ forwards any TCP or UDP port between them. One static binary, no dependencies.
 - **Gets past filters:** fake-SNI desync, `udp-dns`, `tcp-mimic`, connection rotation with `pool-rotate`, and `wattun matrix NAME` to
   try the combinations and apply the best. `wattun blackout NAME` turns the whole kit on.
 - **Hard to classify:** no constant byte in a packet header, idle packets at random sizes, HTTP carriers that answer like
-  nginx, and 13 shaped carriers such as `vxlan` and `ntp-direct`. Opt-in `shape-data` and `noise` cost bandwidth.
+  nginx (or pass probes on to a real site with `decoy`), and 13 shaped carriers such as `vxlan` and `ntp-direct`. Opt-in `shape-data` and `noise` cost bandwidth.
 - **Tunes itself:** defaults follow the CPU and RAM, and the auto test tunes sessions and conns on your route.
 - **Loss does not slow it down:** pacing follows delay, and `fec: auto` sends parity only while packets are really being lost.
-- **Runs itself:** live port changes, per-port stats and quotas, auto-heal, update with rollback.
+- **Runs itself:** live port changes, per-port stats and quotas (optionally reset every day, week or month), auto-heal, update with rollback.
 
 ## Speed
 

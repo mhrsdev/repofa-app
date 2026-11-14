@@ -111,6 +111,10 @@ TELEGRAM_RESOLVE_PHONE_STATE_FILE=/path/to/resolve-phone.json  # keep the count 
 
 Without a state file the count lives in memory and restarts from zero with the server. The state file holds only lookup timestamps (owner-only, written atomically), is shared by every server process that points at it, and covers all accounts together. A `<state file>.lock` file next to it serialises those processes. If it exists but cannot be parsed, lookups are refused until you fix or delete it; deleting it resets the count. A malformed limit value also refuses lookups instead of running unlimited. The history keeps only the newest `max(MAX_PER_DAY, 1)` timestamps, so after raising the cap the first window counts only the lookups that were kept.
 
+### Call history
+
+`list_calls(chat_id=None, from_date=None, to_date=None, limit=50, account=None)` lists voice and video calls, newest first, from Telegram's phone-call search filter. Each record has `peer` (`id`, `name`, and `username`/`phone` when visible), `date`, `direction` (`outgoing` or `incoming`), `duration` in seconds (0 for a call that never connected), `end_reason` (`missed`, `busy`, `hangup`, `disconnect`, another Telegram reason in lower case, or `null` when Telegram gives none) and `video`. Pass `chat_id` for one user's calls, and `from_date`/`to_date` (`YYYY-MM-DD`, UTC, both inclusive) for a date range. `limit` is 1 to 500. It is read-only, so it is part of `TELEGRAM_EXPOSED_TOOLS=read-only`.
+
 ### Remembered contacts
 
 `set_contact_alias` teaches the server what you call someone, and every tool that takes a `chat_id` understands it from then on — `send_message("андрей бекендер", ...)` just works. A contact can carry any number of aliases, which is how tags work: save both `андрей бекендер` and `бекендер` for the same person and either resolves.
@@ -854,11 +858,28 @@ Numeric IDs are matched exactly in Telegram's marked form, the same `chat_id` th
 When `TELEGRAM_ALLOWED_CHAT_IDS` is set:
 - **`list_chats` / `get_chats`:** Only chats matching the allowlist are returned; all other conversations remain completely invisible to the agent.
 - **Messaging & Chat Tools (`send_message`, `get_messages`, `get_chat`, `create_poll`, etc.):** Any attempt to interact with a chat outside the allowlist is rejected with a structured error message: `Access to chat '<chat_id>' is restricted by privacy policy (TELEGRAM_ALLOWED_CHAT_IDS)`.
-- **Search & Drafts (`search_global`, `get_drafts`):** Global searches and draft listings omit unallowed conversations.
+- **Search, Drafts & Calls (`search_global`, `get_drafts`, `list_calls`):** Global searches, draft listings and the call list omit unallowed conversations.
 - **Contact, folder & group-admin tools:** a chat named by `contact_id` or `group_id` (`get_last_interaction`, `get_contact_chats`, `invite_to_group`, `promote_admin`, `demote_admin`) is checked like `chat_id`; `get_common_chats`, `get_contact_chats`, `get_direct_chat_by_contact` and `get_folder` leave unallowed chats out of their results; `create_folder` refuses unallowed `chat_ids`.
 - **Incoming Events:** Notifications and debounce feeds only process events from allowed chats.
 
 If `TELEGRAM_ALLOWED_CHAT_IDS` is unset or empty, the server operates in unrestricted mode (default), preserving 100% backward compatibility.
+
+### Forum topics
+
+An entry written as `<chat>:<topic id>` allows the chat, but only that forum topic (`1` is General). Several entries allow several topics of one chat; a plain entry for the same chat allows it whole again. Topic ids come from `list_topics`.
+
+```env
+# Only the topic with id 163 of a forum supergroup, plus one whole private chat
+TELEGRAM_ALLOWED_CHAT_IDS=-100123456789:163,12345678
+```
+
+For a chat limited to topics:
+- **Reading tools that keep to the topics:** `get_history` (the allowed topic is the default when there is only one), `list_messages`, `get_messages`, `search_messages`, `get_message_context`, `get_messages_after`, `list_topics` (only the allowed topics), `get_chat` (`last_message` only from an allowed topic), `open_photo`, `inspect_document`, `get_media_info`, `transcribe_voice` and `wait_for_events`. Messages of other topics are left out, and a message id from another topic is refused. `get_messages_after` also returns `next_after_id`, the newest message it read, so a reader can continue past messages it left out.
+- **Every other tool that takes the chat** (sending, editing, pinned and scheduled messages, members, the admin log, exports, …) is refused with `Access to chat '<chat_id>' is restricted by privacy policy (TELEGRAM_ALLOWED_CHAT_IDS): only forum topic(s) <ids> are allowed, and <tool> cannot be limited to a topic.` A tool has to be taught about topics before it can be used, so a tool that does not know about them never reaches the rest of the chat.
+- **Tools that read many chats:** `search_global`, `get_drafts` and the incoming event log leave out the chat's other topics.
+- Chat-level metadata stays visible: the title, the member count and the chat's total unread count.
+
+`TELEGRAM_BLOCKED_CHAT_IDS` takes whole chats only; a `<chat>:<topic>` entry there blocks nothing.
 
 ### Global chat blocklist
 

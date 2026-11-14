@@ -1235,7 +1235,7 @@ Even with good chunking, a chunk can lose its context. A chunk that says "Revenu
 
 Vector search is great at finding meaning. But it is bad at exact-match queries like "Order ID 12345" or "Section 4.2.1".
 
-For exact-match, the old keyword search (**BM25** - Best Matching 25) is much better.
+For exact-match, the old keyword search (**BM25** - Best Matching 25) is much better. Keyword search finds documents fast using an inverted index, which maps each word to the list of documents that contain it. We have a detailed blog on [How does an Inverted Index work?](https://outcomeschool.com/blog/inverted-index).
 
 So in production RAG, we use [**Hybrid Search**](https://outcomeschool.com/blog/how-does-hybrid-search-work): run both vector search and BM25, combine the scores, and return the best results from both.
 
@@ -2627,6 +2627,8 @@ We have a detailed blog on [What are audio frames and chunk sizes in a real-time
 
 We also have a detailed blog on [Why do sample rates like 8 kHz, 16 kHz, and 24 kHz matter for voice agents?](https://outcomeschool.com/blog/sample-rates-for-voice-agents) that explains why phone audio arrives at 8 kHz, why speech recognition expects 16 kHz, why voice output often uses 24 kHz, and what goes wrong when these sample rates do not match.
 
+We have a detailed blog on [How does the Opus codec compress voice for real-time calls?](https://outcomeschool.com/blog/opus-codec) that explains how Opus shrinks the voice around 30 times with its SILK and CELT engines, how it saves data during silence, and how it handles lost packets.
+
 Modern providers expose **Realtime APIs** that bundle all three: OpenAI Realtime API, Amazon Polly Bidirectional Streaming, Deepgram Voice Agent, Inworld, Soniox, x.ai Voice. These collapse STT, LLM, and TTS into a single low-latency pipeline.
 
 Latency targets in voice AI are tight. End-to-end speech-to-speech latency under 800 ms feels conversational. Above 1.5 s feels broken. This is much tighter than text chat.
@@ -2993,12 +2995,4 @@ Types of evals:
 We run evals:
 
 - Every time we change the prompt
-- Every time we change the model
-- Every time we change the system architecture
-
-Without evals, we are flying blind. A change that "feels" better can actually make things worse for some user segment.
-
-Tools: OpenAI Evals, Promptfoo, Braintrust, Ragas (specifically for RAG).
-
-### LLM as a Judge
 <!-- truncated -->
