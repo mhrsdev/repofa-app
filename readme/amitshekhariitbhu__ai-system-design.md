@@ -2629,6 +2629,10 @@ We also have a detailed blog on [Why do sample rates like 8 kHz, 16 kHz, and 24 
 
 We have a detailed blog on [How does the Opus codec compress voice for real-time calls?](https://outcomeschool.com/blog/opus-codec) that explains how Opus shrinks the voice around 30 times with its SILK and CELT engines, how it saves data during silence, and how it handles lost packets.
 
+We also have a detailed blog on [How does a jitter buffer keep voice audio smooth over a bad network?](https://outcomeschool.com/blog/jitter-buffer) that explains how the jitter buffer holds and reorders the incoming packets, how a fixed jitter buffer differs from an adaptive one, and how late and lost packets are handled.
+
+We have a detailed blog on [How does packet loss concealment hide missing audio?](https://outcomeschool.com/blog/packet-loss-concealment) that explains how the receiver fills a lost packet with a believable sound, how the approaches evolved from playing silence to repeating the pitch of the voice, and how codecs like Opus and neural networks make a better guess.
+
 Modern providers expose **Realtime APIs** that bundle all three: OpenAI Realtime API, Amazon Polly Bidirectional Streaming, Deepgram Voice Agent, Inworld, Soniox, x.ai Voice. These collapse STT, LLM, and TTS into a single low-latency pipeline.
 
 Latency targets in voice AI are tight. End-to-end speech-to-speech latency under 800 ms feels conversational. Above 1.5 s feels broken. This is much tighter than text chat.
@@ -2977,22 +2981,4 @@ When something goes wrong, we open the trace and see exactly which step failed a
 In regular software, we run unit tests. They are deterministic. Same input, same output.
 
 In AI, we cannot do that. The same prompt can give different outputs. So we run **evals** (evaluations).
-
-[**LLM Evaluation**](https://outcomeschool.com/blog/llm-evaluation) **is the process of measuring how well a Large Language Model performs on the tasks we expect it to do.**
-
-An eval is a test that:
-
-- Runs a prompt against the model
-- Scores the output against an expected answer or some quality metric
-
-Types of evals:
-
-- **Exact match:** For fact-based questions where the answer is known.
-- **[LLM-as-a-judge](https://outcomeschool.com/blog/llm-as-a-judge):** We use a stronger LLM to grade the output of our LLM.
-- **Human eval:** A human reads the output and rates it. Slow but most reliable.
-- **Code-based eval:** For code generation, run the generated code and check if tests pass.
-
-We run evals:
-
-- Every time we change the prompt
 <!-- truncated -->

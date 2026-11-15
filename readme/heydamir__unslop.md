@@ -8,14 +8,31 @@ unslop is a skill for Claude Code, Codex and Google Antigravity that turns vibec
 
 ## Install
 
-For Claude Code, copy the skill into your skills folder.
+For Claude Code, install it as a plugin. Run this in a terminal to get it in every project:
 
 ```bash
-git clone https://github.com/heydamir/unslop
-mkdir -p ~/.claude/skills && cp -r unslop/skills/unslop ~/.claude/skills/
+claude plugin install unslop --marketplace heydamir/unslop
 ```
 
-For a single project, copy it into `.claude/skills/` inside that project instead.
+On an older Claude Code without `--marketplace`, the same in two steps:
+
+```bash
+claude plugin marketplace add heydamir/unslop
+claude plugin install unslop@heydamir
+```
+
+To get it in a single project only, run the install from that project's root folder, the one you start Claude Code in, and add `--scope local`. To turn it on for everyone who works in the project, add `--scope project` instead and commit `.claude/settings.json`. Each teammate then runs this once in their own copy of the project:
+
+```bash
+claude plugin marketplace add heydamir/unslop
+claude plugin install unslop@heydamir --scope project
+```
+
+Then start a new Claude Code session, or run `/reload-plugins` in one that is already open.
+
+To update, run `claude plugin update unslop@heydamir`, or turn on auto-update for the heydamir marketplace under Marketplaces in `/plugin`.
+
+If you copied unslop into `~/.claude/skills/` or a project's `.claude/skills/` before, delete that copy, or `/unslop` keeps running it instead of the plugin.
 
 For Codex, ask it to install the skill straight from this repo.
 
@@ -34,7 +51,7 @@ For Google Antigravity, copy the skill into your skills folder.
 
 ```bash
 git clone https://github.com/heydamir/unslop
-mkdir -p ~/.gemini/antigravity/skills && cp -r unslop/skills/unslop ~/.gemini/antigravity/skills/
+mkdir -p ~/.gemini/config/skills && cp -r unslop/skills/unslop ~/.gemini/config/skills/
 ```
 
 For a single project, copy it into `.agents/skills/` inside that project instead.
@@ -50,7 +67,7 @@ Story videos also require ffmpeg installed and available on your PATH.
 
 ## Use
 
-In Claude Code, type `/unslop` with what you want. In Codex, type `$unslop` the same way. Or just ask in your own words and the agent picks the skill up by itself.
+In Claude Code, type `/unslop` with what you want, or `/unslop:unslop` if another skill already has that name. In Codex, type `$unslop` the same way. Or just ask in your own words and the agent picks the skill up by itself.
 
 ```
 /unslop this dashboard
