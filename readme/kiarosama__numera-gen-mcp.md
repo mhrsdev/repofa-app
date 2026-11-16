@@ -4,19 +4,21 @@
 
 <img src="docs/assets/logo.png" alt="Numera Gen MCP logo" width="240" />
 
-[![CI workflow on main](https://github.com/KiaroSama/Numera-Gen-MCP/actions/workflows/ci.yml/badge.svg?branch=main&event=workflow_dispatch)](https://github.com/KiaroSama/Numera-Gen-MCP/actions/workflows/ci.yml?query=branch%3Amain+event%3Aworkflow_dispatch)
-[![License GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)](#license)
-[![Rust 1.99.1](https://img.shields.io/badge/Rust-1.99.1-CE422B)](rust-toolchain.toml)
-[![Rust edition 2024](https://img.shields.io/badge/edition-2024-CE422B)](Cargo.toml)
-[![Native executable](https://img.shields.io/badge/distribution-native_binary-blue)](Cargo.toml)
-[![MCP stdio](https://img.shields.io/badge/MCP-stdio-7651a8)](docs/ARCHITECTURE.md)
-[![Platforms](https://img.shields.io/badge/platforms-Windows_|_Linux_|_macOS-555)](.github/workflows/ci.yml)
-[![Architectures](https://img.shields.io/badge/architectures-x64_|_ARM64-555)](.github/workflows/ci.yml)
-[![JSON Schema](https://img.shields.io/badge/config-JSON_Schema-3068b7)](schemas/config.schema.json)
-[![Media formats](https://img.shields.io/badge/media-PNG_JPEG_WebP_GIF_MP4_WAV_GLB-668c00)](docs/COMPATIBILITY.md)
-[![SQLite receipts](https://img.shields.io/badge/receipts-SQLite-003b57)](native/jobs/store.rs)
-[![Documentation](https://img.shields.io/badge/docs-Markdown-blue)](docs/CONFIGURATION.md)
-[![RMCP SDK](https://img.shields.io/badge/SDK-RMCP-7651a8)](Cargo.toml)
+[![CI runs on GitHub Actions across seven native jobs](https://img.shields.io/badge/CI-GitHub%20Actions-2563eb)](.github/workflows/ci.yml)
+[![License GPL-3.0-or-later, the first-party grant](https://img.shields.io/badge/license-GPL--3.0--or--later-16a34a)](LICENSE)
+[![Latest release v0.3.0](https://img.shields.io/badge/release-v0.3.0-ea580c)](CHANGELOG.md)
+[![Measured CI coverage: 85.3% regions and 80.7% branches](https://img.shields.io/badge/coverage-regions%2085.3%25%20%7C%20branches%2080.7%25-059669)](docs/testing)
+[![Rust 1.99.1 pinned toolchain](https://img.shields.io/badge/rust-1.99.1-8b5cf6)](rust-toolchain.toml)
+[![Runs on Windows, macOS and Linux](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-0891b2)](.github/workflows/ci.yml)
+[![Distributed as a native binary](https://img.shields.io/badge/distribution-native%20binary-dc2626)](#installation-and-setup)
+[![Documentation in Markdown](https://img.shields.io/badge/docs-Markdown-4f46e5)](docs/CONFIGURATION.md)
+[![Tracked repository tree is 13.8 MB](https://img.shields.io/badge/repo%20size-13.8%20MB-ca8a04)](.)
+[![Built with the rmcp 3.10.0 MCP SDK](https://img.shields.io/badge/built%20with-rmcp%203.10.0-be185d)](Cargo.toml)
+[![Job receipts stored in SQLite](https://img.shields.io/badge/receipts-SQLite-0f766e)](native/jobs/store.rs)
+[![MCP transports: stdio and local HTTP](https://img.shields.io/badge/MCP-stdio%20%7C%20HTTP-7651a8)](docs/ARCHITECTURE.md)
+[![Media formats PNG, JPEG, WebP, GIF (images), MP4 (video), WAV (audio) and GLB (3D); all eleven modes: text-to-image, image-to-image with editing and masks, text-to-video, image-to-video, video-to-video, text-to-audio, audio-to-audio, video-to-audio, text-to-3D, image-to-3D and 3D-to-3D](https://img.shields.io/badge/media-PNG%20JPEG%20WebP%20GIF%20%C2%B7%20MP4%20%C2%B7%20WAV%20%C2%B7%20GLB%20%7C%20text%E2%86%92image%20%C2%B7%20image%E2%86%92image%20%28edit%2C%20mask%29%20%C2%B7%20text%E2%86%92video%20%C2%B7%20image%E2%86%92video%20%C2%B7%20video%E2%86%92video%20%C2%B7%20text%E2%86%92audio%20%C2%B7%20audio%E2%86%92audio%20%C2%B7%20video%E2%86%92audio%20%C2%B7%20text%E2%86%923D%20%C2%B7%20image%E2%86%923D%20%C2%B7%203D%E2%86%923D-65a30d)](#video-audio-and-3d)
+[![Built for x64 and ARM64](https://img.shields.io/badge/architectures-x64%20%7C%20ARM64-475569)](.github/workflows/ci.yml)
+[![Configuration validated by JSON Schema](https://img.shields.io/badge/config-JSON%20Schema-3068b7)](schemas/config.schema.json)
 [![Support donations](https://img.shields.io/badge/Support-donations-d04a9a)](#donate)
 
 </div>
@@ -642,14 +644,10 @@ Never retry unknown generation automatically. Cancel waiting does not prove upst
 
 ## License
 
-Numera Gen MCP's current first-party code is licensed under **GPL-3.0-or-later**.
-You may redistribute it and/or modify it under the GNU General Public License as published by the
-Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-It is distributed without any warranty; see the complete, unchanged [GPLv3 text](LICENSE).
-
-[Third-party notices](THIRD_PARTY_NOTICES.md) retain their own grants. This first-party license change
-does not rewrite historical signed releases or establish rights to generated media, inputs, models
-or other assets.
+Numera Gen MCP is licensed under **GPL-3.0-or-later**. You may redistribute it and/or modify it
+under the GNU General Public License as published by the Free Software Foundation,
+either version 3 of the License, or (at your option) any later version.
+It is distributed without any warranty; see the complete [GPLv3 text](LICENSE).
 
 ## Donate
 

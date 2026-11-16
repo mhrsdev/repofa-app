@@ -18,6 +18,7 @@
 | ![صمیم](./data/preview-images/samim.webp) | <a id="row-samim"></a>صمیم<br>Samim | سنس | ۳ وزن | [<br><span style='font-size: 1.6rem'>↩</span>](#samim) |
 | ![شبنم](./data/preview-images/shabnam.webp) | <a id="row-shabnam"></a>شبنم<br>Shabnam | سنس | ۲ وزن | [<br><span style='font-size: 1.6rem'>↩</span>](#shabnam) |
 | ![استعداد](./data/preview-images/estedad.webp) | <a id="row-estedad"></a>استعداد<br>Estedad | سنس | متغیر | [<br><span style='font-size: 1.6rem'>↩</span>](#estedad) |
+| ![کوهمرد](./data/preview-images/kuhmard.webp) | <a id="row-kuhmard"></a>کوهمرد<br>Kuhmard | سنس | ۱ وزن | [<br><span style='font-size: 1.6rem'>↩</span>](#kuhmard) |
 | ![سپهر](./data/preview-images/sepehr.webp) | <a id="row-sepehr"></a>سپهر<br>Sepehr | سنس | ۵ وزن | [<br><span style='font-size: 1.6rem'>↩</span>](#sepehr) |
 | ![ساحل](./data/preview-images/sahel.webp) | <a id="row-sahel"></a>ساحل<br>Sahel | سنس | متغیر | [<br><span style='font-size: 1.6rem'>↩</span>](#sahel) |
 | ![ناهید](./data/preview-images/nahid.webp) | <a id="row-nahid"></a>ناهید<br>Nahid | سنس | ۱ وزن | [<br><span style='font-size: 1.6rem'>↩</span>](#nahid) |
@@ -221,6 +222,27 @@
 [منبع](https://github.com/aminabedi68/Estedad) - [بارگیری](https://github.com/alr-rashidi/Awesome-Persian-Fonts/raw/refs/heads/main/data/font-files/Estedad-v8.5.zip)
 
 ![استعداد](./data/preview-images/estedad.webp)
+
+---
+
+<a id="kuhmard"></a>
+## [↑](#row-kuhmard) کوهمرد
+
+**توضیحات:** یک فونت نمایشی و سنگین فارسی با الهام از فونت Rockwell است که با پایه‌های تخت و چهارگوش، برای تیتر، پوستر و بسته‌بندی طراحی شده
+
+**طراح:** علی تقی‌پور، علی شیردستیان، فاطمه چراغی، فاطمه بلوکی
+
+**سبک:** سنس
+
+**مجوز:** OFL
+
+**زبان‌ها:** عربی، فارسی، انگلیسی
+
+**وزن‌ها:** ۱ وزن
+
+[منبع](https://azrast.com/kuhmard.html) - [بارگیری](https://github.com/alr-rashidi/Awesome-Persian-Fonts/raw/refs/heads/main/data/font-files/Kuhmard-v1.003.zip)
+
+![کوهمرد](./data/preview-images/kuhmard.webp)
 
 ---
 
