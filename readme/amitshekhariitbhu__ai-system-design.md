@@ -2635,6 +2635,10 @@ We have a detailed blog on [How does packet loss concealment hide missing audio?
 
 We also have a detailed blog on [How does a voice AI agent answer a phone call?](https://outcomeschool.com/blog/phone-calls-in-voice-agents) that explains how a call travels from the phone network through a telephony provider to our server, how the caller's voice arrives as a stream of small audio chunks over a WebSocket, how the agent speaks back into the call and handles interruptions, and how the call ends or gets transferred to a human.
 
+We have a detailed blog on [How do SIP and RTP carry a phone call to a voice agent?](https://outcomeschool.com/blog/sip-and-rtp) that explains how SIP rings the voice agent and agrees on the audio format with SDP, how RTP carries the voice in small packets with sequence numbers and timestamps, what the agent does with those packets, and how the call ends.
+
+We also have a detailed blog on [Why does phone audio make speech recognition worse?](https://outcomeschool.com/blog/phone-audio-and-speech-recognition) that explains how a phone call cuts off the high sounds of our voice, how the codec, lost packets, and noise damage the audio further, why a model trained on clean audio struggles with phone audio, and what we can do to make speech recognition work better on phone calls.
+
 Modern providers expose **Realtime APIs** that bundle all three: OpenAI Realtime API, Amazon Polly Bidirectional Streaming, Deepgram Voice Agent, Inworld, Soniox, x.ai Voice. These collapse STT, LLM, and TTS into a single low-latency pipeline.
 
 Latency targets in voice AI are tight. End-to-end speech-to-speech latency under 800 ms feels conversational. Above 1.5 s feels broken. This is much tighter than text chat.
@@ -2970,9 +2974,4 @@ This is much more detailed than regular **APM (Application Performance Monitorin
 For AI Agents, this becomes even more important, because one user request can turn into dozens of LLM calls and tool calls. [**AI Agent Observability**](https://outcomeschool.com/blog/ai-agent-observability) **is the practice of recording and understanding everything an AI Agent does internally, step by step, so that we can see why it behaved the way it did.** It is built on two words:
 
 - **A span is a record of one single step or operation inside the agent.**
-- **A trace is the complete record of one full run of the agent, made up of many spans.**
-
-Let's say a user asks a flight booking agent to book a flight. That full run is one **trace**. Inside it, each step is a **span**: receive the request, the LLM decides to search, call the flight search tool, read the results, the LLM picks the cheapest flight, call the booking tool, return the confirmation. Each span records the input, the output, the time taken, the tokens, and any error. Spans can be nested, so the trace becomes a tree that shows the full structure of the agent's work.
-
-When something goes wrong, we open the trace and see exactly which step failed and why. The industry standard for this is **OpenTelemetry**, and most AI observability tools support it.
 <!-- truncated -->

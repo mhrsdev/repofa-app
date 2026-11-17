@@ -1,3 +1,5 @@
+![agent-stream-doctor banner](assets/banner.jpg)
+
 ### 🌐 Telegram: [@mohaka_programmer](https://t.me/mohaka_programmer)
 
 [![Telegram](https://img.shields.io/badge/Telegram-%40mohaka__programmer-2CA5E0?logo=telegram&logoColor=white)](https://t.me/mohaka_programmer)

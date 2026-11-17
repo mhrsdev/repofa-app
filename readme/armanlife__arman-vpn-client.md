@@ -9,15 +9,14 @@
 
 <h1 align="center">Arman VPN</h1>
 
-<h2 align="center">⚠️ Unofficial project</h2>
-
-<h3 align="center">Arman VPN is an independent project. It is not made, owned, sponsored, or endorsed by Mozilla, and is not affiliated with Mozilla in any way. See the <a href="#disclaimer">disclaimer</a>.</h3>
+<p align="center"><b>Unofficial project.</b> Arman VPN is an independent project. It is not made, owned, sponsored, or endorsed by Mozilla, and is not affiliated with Mozilla in any way. See the <a href="#disclaimer">disclaimer</a>.</p>
 
 <div align="center">
 
 [![Downloads](https://img.shields.io/github/downloads/armanlife/arman-vpn-client/total?style=flat-square&logo=github&label=Downloads)](https://github.com/armanlife/arman-vpn-client/releases)
 [![Last Version](https://img.shields.io/github/v/release/armanlife/arman-vpn-client?style=flat-square&label=Version)](https://github.com/armanlife/arman-vpn-client/releases/latest)
 [![License](https://img.shields.io/github/license/armanlife/arman-vpn-client?style=flat-square&label=License)](LICENSE)
+[![Telegram](https://img.shields.io/badge/Telegram-ArmanVPNClient-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/ArmanVPNClient)
 
 </div>
 
@@ -92,6 +91,7 @@ For **Android, Windows, macOS, and Linux**; completely free, with no ads.
 - **Android:** if you are not sure, take **Universal**; it installs on every phone. **ARMv8** is for most of today's phones and is smaller.
 - **Windows:** **Setup** is a normal installer; **Portable** needs no install and runs from any folder.
 - **Linux:** **App** for a Linux desktop (with a graphical environment); **Core** for a server (without a graphical environment, with a web panel).
+- **A server, in Docker:** the core image from the same release tag. See [Docker](#docker).
 
 ## 💻 Install and update on Linux and macOS
 
@@ -148,6 +148,19 @@ $ sudo arman-vpn
 ## OpenWrt routers
 
 To install on an OpenWrt router, see the [OpenWrt guide](docs/OPENWRT.md).
+
+## Docker
+
+The Linux core (the proxy and the web panel) is also a container image. A release tag `vX.Y.Z`, the same tag as the downloads above, publishes `ghcr.io/<owner>/<repository>:<version>`, plus the `v` form, the major and minor, and `latest`. The owner and repository are the GitHub repository that runs the workflow. The example uses the upstream name.
+
+```bash
+docker run -d --name arman-vpn --restart unless-stopped \
+  -p 10820:10820 -p 127.0.0.1:10810:10810 \
+  -v arman-vpn:/var/lib/arman-vpn \
+  ghcr.io/armanlife/arman-vpn-client:latest
+```
+
+The first start prints a panel login and a proxy login. Accounts and settings stay in the `arman-vpn` volume. See the [Docker guide](docs/DOCKER.md).
 
 ## Known limitations
 

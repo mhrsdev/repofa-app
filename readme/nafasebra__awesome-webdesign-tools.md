@@ -116,6 +116,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [CSS Buttons](https://cssbuttons.app/) - Button collection focused on simplicity and ease of use.
 - [CSS Buttons Examples](https://getcssscan.com/css-buttons-examples) - Curated collection of CSS button examples.
 - [Checkboxes Examples](https://getcssscan.com/css-checkboxes-examples) - Curated collection of CSS checkbox examples.
+- [Design Details](https://designdetails.io/) - Free library of real website designs with full-page captures, motion recordings, typography, and color breakdowns.
 - [Design Systems Repo](https://designsystemsrepo.com/design-systems-recent/) - Curated gallery of design systems.
 - [Dribbble](https://dribbble.com/) - Community for discovering and sharing web design inspiration.
 - [Figma Community](https://www.figma.com/community) - Free design files, plugins, and resources from the Figma community.
@@ -221,15 +222,18 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [CSS Ruler](https://katydecorah.com/css-ruler/) - Explore and compare CSS length units.
 - [CSS Toolkit](https://csstoolkit.net) - Box shadow, border radius, px-to-rem, text shadow, and animation generators.
 - [CSS Tools Online](https://codebeautify.org/css-tools) - Collection of CSS utilities for common developer tasks.
+- [CurlShot](https://curlshot.com) - Capture full-page or device-sized screenshots of any website as PNG, JPEG, WebP or PDF, in the browser without an account or through an API.
 - [Cut My Image](https://cutmyimage.com/) - Split any image into rows, columns or a grid in the browser, then download the pieces one by one or as a ZIP.
 - [DevTools](https://devtools.davrapps.dev) - 16 free browser-based tools: JSON formatter, JWT decoder, regex tester, cron builder, and more.
 - [Down for Everyone or Just Me](https://downforeveryoneorjustme.com/) - Check if a website is down globally or only for you.
 - [EncodingBase64](https://encodingbase64.com/) - Base64 encoding and decoding for text, files, images, and URL-safe formats.
+- [FreeKitHub](https://freekithub.com) - Free browser-based image and PDF utilities to compress images under a target KB size, convert HEIC to JPG, and merge, split, or compress PDFs locally so files never leave your device.
 - [FreeToolHub](https://freetoolhub.org) - 190+ free browser-based tools for developers and designers, including image compression, PDF utilities, color tools, and calculators. Everything runs client-side with no uploads or signup.
 - [Gitignore Generator](https://www.toptal.com/developers/gitignore) - Generate `.gitignore` files for any project type.
 - [Haikei](https://app.haikei.app/) - Generate unique SVG design assets.
 - [Hash Generator](https://optimize-overseas.github.io/autonomousbot/tools/hash-generator.html) - Generate MD5, SHA-1, SHA-256, and SHA-512 hashes client-side.
 - [Hidden Tools](https://hiddentools-eight.vercel.app/) - Curated collection of unique online tools.
+- [Image Aspect Ratio](https://imageaspectratio.com/) - Find a photo's aspect ratio, calculate matching dimensions, and preview square, portrait and widescreen framing in the browser.
 - [Image Landscape Converter](https://image-landscape-converter.vercel.app/) - Rotate portrait photos to landscape orientation in the browser.
 - [Image to ASCII](https://imagetoascii.art/) - Turn images into ASCII art in the browser; adjust character style and width, then copy text or export TXT, PNG, SVG, HTML, or ANSI without uploading the image.
 - [ImageSplit](https://www.imagesplit.online/) - Split images into grids, custom cuts and carousel slides in the browser, then download individual pieces or a ZIP without uploading image files.
@@ -251,6 +255,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [OneLang](https://ide.onelang.io/) - Convert code between programming languages.
 - [Password Generator](https://dailytoolkit.app/tools/password-generator) - Generate strong, random passwords with customizable length and character sets.
 - [pic2svg](https://pic2svg.com/) - Convert PNG/JPG images to editable SVG vectors with a side-by-side trace preview (vtracer engine); trace and preview are free, file downloads are part of the Pro tier.
+- [Pic2Vector](https://pic2vector.com/) - Convert PNG/JPG/WebP images to color-layered SVG in the browser (vtracer compiled to WebAssembly); images are not uploaded and the SVG download is free with no watermark.
 - [Pixelate Image](https://www.pixelateimage.co/) - Pixelate images instantly in the browser.
 - [PicReviver](https://picreviver.com) - Restore and colorize old or damaged photos, no account needed.
 - [ProtoPeek](https://protopeek.shreyam1008.com.np/) - Local Go workbench with a browser interface for inspecting HTTP and gRPC services.
@@ -263,6 +268,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 - [Regex Tester](https://optimize-overseas.github.io/autonomousbot/tools/regex-tester.html) - Test and debug regular expressions with match highlighting.
 - [Remove Audio](https://remove-audio.com) - Strip audio from video files locally via WebAssembly — no uploads.
 - [Responsive Tool](https://responsivetool.com) - Preview a pasted URL across multiple real device viewport sizes at once — swap any pane's device instantly, test custom widths, and check behavior right at a CSS breakpoint boundary. No signup, no install.
+- [SFXMint](https://sfxmint.com/) - CC0 UI and interaction sound effects (clicks, toggles, notifications) with hotlinkable, CORS-enabled audio URLs; AI-generated or synthesized.
 - [Slug Generator](https://optimize-overseas.github.io/autonomousbot/tools/slug-generator.html) - Convert text to SEO-friendly URL slugs.
 - [SnappyKit](https://snappykit.site) - 40+ free browser-based image tools: compression (JPG/PNG/WebP/AVIF), 40+ conversion pairs incl. HEIC, resize, crop, filters, EXIF cleanup, batch ZIP. 100% client-side, no signup.
 - [Strong Password Generator](https://www.strong-password.com/) - Generate passwords, passphrases, PINs, and Wi-Fi QR codes client-side, with an embeddable widget.
@@ -336,8 +342,10 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 ## AI
 
+- [agent-qa](https://github.com/vostride/agent-qa) - Natural-language web and mobile testing with advanced memidex memory and self-improvement.
 - [AISO Tools Audit](https://aisotools.com/audit) - Check whether ChatGPT recommends your tool in its category by running five buying-intent prompts and scoring the mentions.
 - [DeepSeek Chat](https://chat.deepseek.com/) - AI chat assistant for coding and general questions.
+- [DESIGN:OS Studio](https://github.com/jangtrinh/design-os-studio) - Free, source-available interface design tool built in Rust, with a local MCP server that lets AI agents inspect and edit the open file.
 - [Hotpot.ai](https://hotpot.ai/) - AI image editor, generator, and writing tools.
 - [igly.ai](https://igly.ai) - AI image editor for background removal, inpainting, upscaling, and generative fill.
 - [Image to Layer](https://image2layers.org/) - AI splits a flat JPG, PNG or WebP into editable transparent layers with the hidden background filled in and exports a layered PSD; the single-layer PSD converter is free and runs in the browser.
