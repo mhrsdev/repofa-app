@@ -75,6 +75,17 @@ It focuses on real proxy verification, fast one-tap connection, fail-closed rout
 
 ## The expressive shell: one control, one decision
 
+**V281: `docs/ONE_LANGUAGE_V281.md`** — one design language for every screen. A token layer
+(`MarbleSpace`, `MarbleRadius`, `MarbleWash`, `MarbleVeil`, `MarbleElevation`, `MarbleSelectionRung`)
+replaces 15 corner radii, 14 wash strengths, 20 quieted inks, 12 gaps and 4 shadows; one tone table
+(`marbleToneColor` and its ink/container twins) replaces eleven private verdict-colour functions, and
+the connection's colour now comes from the model's `ConnectPhase` in all six places that draw it. One
+component per role in the kit, so fourteen duplicates were merged rather than restyled: five stat
+tiles, two icon buttons, two bottom sheets, two sweep controls, two navigation-chrome accent tables
+and every raw `AlertDialog`/`Slider`/`Switch`/`Card`. No capability was removed — the same tags,
+descriptions and verbs survive. `tools/design-system-conformance.py` now fails CI on a literal that
+bypasses a scale.
+
 **V279: `docs/HARMONY_AND_SHADE_V279.md`** — the Home and Settings glyphs share one row-icon language,
 the selected dock tab fills its own silhouette, and a 28 px live-page blur now moves inside the
 transparent glass lens (paused while the page scrolls and gated on API 31). Connected controls gain
@@ -1699,7 +1710,7 @@ folded into the next release. Add `[skip release]` to a merge commit message to 
 Nothing is published automatically: the result is a draft to review and publish by hand.
 
 A release can still be built by hand: open **Actions → Build signed Android APKs → Run
-workflow**, select the source branch (normally `main`), and enter both:
+workflow**, select `main`, and enter both:
 
 - `version_name`: a numeric semantic version such as `11.5.1` (without `v`). The APK
   versionName is exactly this value and the Git tag is `v11.5.1`.
@@ -1711,10 +1722,13 @@ workflow**, select the source branch (normally `main`), and enter both:
 The workflow checks the most recent published release APK when available and rejects a
 non-increasing versionCode. The same selected values apply to every APK. An existing tag
 or release (including a draft) causes a failure, never an automatic version change or
-deletion. On success the tag points to the selected commit and a **draft** GitHub Release
-is created; review and publish it manually. If publishing fails after tag creation, inspect
-and manually remove the incomplete tag/draft before retrying that same version. No release
-is silently replaced.
+deletion. On `main`, success creates a tag at the selected commit and a **draft**
+GitHub Release; review and publish it manually. If publishing fails after tag creation,
+inspect and manually remove the incomplete tag/draft before retrying that same version.
+No release is silently replaced. PRs that touch the native build or its toolchain run the
+same build, packaging and APK checks automatically. You can also dispatch the workflow on
+a branch to test other changes. These runs use a temporary signing key and upload test
+artifacts only; they cannot create a release or update an installed production APK.
 
 ## Android ABIs
 

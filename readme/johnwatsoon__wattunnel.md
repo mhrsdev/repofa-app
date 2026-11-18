@@ -6,7 +6,7 @@
 
 **Encrypted Iran ↔ Kharej port forwarding that keeps working when the network is filtered, even when only ping gets through.**
 
-[![Release](https://img.shields.io/badge/release-v3.3.7-blue?style=flat-square)](https://github.com/JohnWatsoon/WatTunnel/releases)
+[![Release](https://img.shields.io/badge/release-v3.3.8-blue?style=flat-square)](https://github.com/JohnWatsoon/WatTunnel/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Go](https://img.shields.io/badge/Go-1.26-00ADD8?style=flat-square&logo=go)](go.mod)
 ![Platform](https://img.shields.io/badge/platform-linux%20amd64%20%7C%20arm64%20%7C%20windows-lightgrey?style=flat-square)
@@ -31,18 +31,36 @@ bash <(curl -fsSL https://raw.githubusercontent.com/JohnWatsoon/WatTunnel/main/i
 ```
 
 <details>
-<summary>GitHub is blocked on the server?</summary>
+<summary>GitHub is blocked on the Iran server? (Offline install &amp; update)</summary>
+
+**Recommended — signed offline bundle (no GitHub needed on Iran):**
+
+1. On **Kharej** (after installing WatTunnel there), build a verified archive:
+
+```bash
+wattun bundle amd64          # writes wattun-offline-amd64.tar.gz (or arm64)
+scp wattun-offline-amd64.tar.gz root@IRAN_IP:/root/
+```
+
+2. On **Iran**, install or update from that file (checked against the pinned RSA release signature):
+
+```bash
+# Fresh install:
+tar xzf /root/wattun-offline-amd64.tar.gz -C /root && bash /root/wattun-offline-amd64/install.sh
+
+# Update an existing install later:
+wattun update --from /root/wattun-offline-amd64.tar.gz
+```
+
+**Alternative — mirror or SOCKS5/HTTP proxy:**
 
 ```bash
 WAT_PROXY=https://ghproxy.net/ bash <(curl -fsSL https://ghproxy.net/https://raw.githubusercontent.com/JohnWatsoon/WatTunnel/main/install.sh)
+# or with a local SOCKS5/HTTP proxy:
+WAT_CURL_PROXY=socks5h://127.0.0.1:1080 bash install.sh
 ```
 
-The proxy is a third-party mirror. The binary and manager are still checked against the signed release, but the
-`install.sh` you fetch through it is not, so prefer the release files or a `git clone` when you can.
-
-Or download `wattun-linux-amd64`, `install.sh` and `wattun-manager` from the
-[releases](https://github.com/JohnWatsoon/WatTunnel/releases) page, put the binary in `dist/` next to `install.sh`,
-and run `bash install.sh`.
+In `wattun` → `s` (Settings) → `p`, you can save a mirror or proxy URL once so future `wattun update` runs use it automatically. You can also download `wattun-linux-amd64`, `install.sh`, `wattun-manager`, `SHA256SUMS` and `SHA256SUMS.sig` from [releases](https://github.com/JohnWatsoon/WatTunnel/releases) into one folder and run `bash install.sh`.
 </details>
 
 **2. Kharej.** Run `wattun`, press `n` (new tunnel), choose **Kharej**, and pick **Auto** as the connection type. You
@@ -66,9 +84,9 @@ offers the fastest that works: press **Enter** to take it. Then enter your ports
 
 Done. Users connect to the Iran server's IP, and Kharej forwards only to its own `127.0.0.1`.
 
-**Auto uses data.** The manager prints the worst case before it starts: up to 1184 MB for a normal test, about 416 MB
-more if the token was made with `--extended`, and far less on a filtered route. On a traffic-billed server, pick a type
-yourself:
+> **Important (avoid Iran IP filtering):** WatTunnel encrypts only **Iran ↔ Kharej**. Your panel inbound on Kharej (the config you give end users) **must also be encrypted** — use **VLESS+Reality**, **VLESS+WS+TLS**, **VLESS Encryption (PQ)**, or **Shadowsocks 2022**. Plain `VLESS + TCP header` is unencrypted between the user and your Iran server, so Iranian ISP DPI detects and blocks the Iran IP.
+
+**Auto uses data.** The manager prints the worst case before it starts: up to 1184 MB for a normal test, and far less on a filtered route (`--extended` adds shaped carriers via CLI, up to 416 MB more). On a traffic-billed server, pick a type yourself:
 
 | Your route | Use |
 |---|---|
@@ -88,26 +106,23 @@ been down for 3 minutes.
 wattun status          # one line per tunnel
 wattun test NAME       # connection doctor + speed test
 wattun ports NAME      # edit port mappings (applied live)
-wattun update          # update the binary and the menu
+wattun bundle          # build a signed offline archive on Kharej for Iran
+wattun update          # update the binary and the menu (or: wattun update --from FILE.tar.gz)
 ```
 
 | Status | Meaning |
 |---|---|
-| `up` | The link works, also when an auto tunnel's link is on its other side |
+| `up` | The link works (including when an auto tunnel connects over a background carrier) |
 | `partial` | The link works but a bond leg is down; the tunnel page shows how many |
-| `standby` | The side of an auto tunnel that Iran is not using |
 | `waiting` / `down` | No link (`waiting` on Kharej, `down` on Iran) |
 | `unknown` | The tunnel's stats did not answer, so the state is not known |
 | `stopped` | The service is not running |
 
-**After Iran picks a type,** an auto Kharej tunnel closes everything unused about 5 minutes later and restarts the side
-that stays open, so its connections drop once. The Kharej main menu shows `carriers open` or `closed` under each auto
-tunnel, with the count and the time left. Press `c` there to switch it: what you open stays open until you close it.
-On the next check after that close, the type Iran uses becomes the tunnel under the same name, and the test listeners
-are deleted. Deleting the auto tunnel before that never deletes the side Iran is connected through.
-
-To change the type or re-test later, open the carriers on Kharej first. If you skip that, the manager reopens by itself
-after 3 failed checks (at most once per 10 minutes).
+**Always-open Auto & random ports.** An auto Kharej tunnel appears as one unified entry and keeps all test carriers
+open automatically in the background on verified-free random high ports (`10000..32767`, never taking `443`, `80`,
+`8080`, or `8443` unless you ask or pass `--cdn-domain`), so Iran can re-test (`wattun auto-test NAME`), bond, or
+auto-heal failover at any time without port conflicts or manual carrier toggles. Existing 3.3.3–3.3.7 narrowed or
+finalized tunnels reopen automatically on update.
 
 ## What it does
 

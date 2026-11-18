@@ -2639,6 +2639,10 @@ We have a detailed blog on [How do SIP and RTP carry a phone call to a voice age
 
 We also have a detailed blog on [Why does phone audio make speech recognition worse?](https://outcomeschool.com/blog/phone-audio-and-speech-recognition) that explains how a phone call cuts off the high sounds of our voice, how the codec, lost packets, and noise damage the audio further, why a model trained on clean audio struggles with phone audio, and what we can do to make speech recognition work better on phone calls.
 
+We have a detailed blog on [How does DTMF keypad input work in a voice agent?](https://outcomeschool.com/blog/dtmf-in-voice-agents) that explains how every key press becomes two tones, how the tones reach the agent inside the audio or as separate events, how the agent collects the digits and passes them to the LLM, and how sensitive digits like a PIN stay away from the LLM.
+
+We also have a detailed blog on [How does voicemail and answering machine detection work?](https://outcomeschool.com/blog/answering-machine-detection) that explains how an outbound voice agent finds out whether a live person or a voicemail picked up, how timing rules on speech and silence catch many machines, how the beep is found, how an audio model and the transcript make the decision more accurate, and where the detection fails.
+
 Modern providers expose **Realtime APIs** that bundle all three: OpenAI Realtime API, Amazon Polly Bidirectional Streaming, Deepgram Voice Agent, Inworld, Soniox, x.ai Voice. These collapse STT, LLM, and TTS into a single low-latency pipeline.
 
 Latency targets in voice AI are tight. End-to-end speech-to-speech latency under 800 ms feels conversational. Above 1.5 s feels broken. This is much tighter than text chat.
@@ -2966,12 +2970,4 @@ In AI systems, we monitor a lot more:
 - **GPU utilization** (are our expensive GPUs idle or fully used)
 
 Observability tools for AI: Langfuse, Helicone, Arize Phoenix, LangSmith, Weights & Biases.
-
-These tools log every LLM call along with the prompt, response, latency, cost, and any tool calls. We can then drill down into a single user session and see exactly what happened.
-
-This is much more detailed than regular **APM (Application Performance Monitoring)** tools. In AI, we have to log the actual prompts and responses (with proper privacy) because that is the only way to debug a hallucination.
-
-For AI Agents, this becomes even more important, because one user request can turn into dozens of LLM calls and tool calls. [**AI Agent Observability**](https://outcomeschool.com/blog/ai-agent-observability) **is the practice of recording and understanding everything an AI Agent does internally, step by step, so that we can see why it behaved the way it did.** It is built on two words:
-
-- **A span is a record of one single step or operation inside the agent.**
 <!-- truncated -->
