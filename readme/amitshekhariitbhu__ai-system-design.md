@@ -1814,7 +1814,7 @@ A good embedding pipeline is incremental. It only processes what is new or chang
 
 ### Choosing an Embedding Model
 
-Now, let's pick the right embedding model. The embedding model decides the quality of our retrieval. A bad embedding model means even the best vector DB returns junk. Common production options in 2026:
+Now, let's pick the right embedding model. We have a detailed blog on [How does an embedding model work?](https://outcomeschool.com/blog/embedding-model) that explains how it turns text into a vector. The embedding model decides the quality of our retrieval. A bad embedding model means even the best vector DB returns junk. Common production options in 2026:
 
 - **Voyage AI (Voyage 4 Large):** Currently near the top of the leaderboard for English RAG quality. Uses a Mixture-of-Experts (MoE) architecture, which keeps serving cost meaningfully lower than comparable dense models. Most serious RAG teams move to Voyage when retrieval quality matters more than cost.
 - **OpenAI (text-embedding-3-small / 3-large):** Cheap, simple, and good enough for most apps. text-embedding-3-small is the cheapest viable option from a major provider at $0.02 per million tokens.
@@ -2643,6 +2643,8 @@ We have a detailed blog on [How does DTMF keypad input work in a voice agent?](h
 
 We also have a detailed blog on [How does voicemail and answering machine detection work?](https://outcomeschool.com/blog/answering-machine-detection) that explains how an outbound voice agent finds out whether a live person or a voicemail picked up, how timing rules on speech and silence catch many machines, how the beep is found, how an audio model and the transcript make the decision more accurate, and where the detection fails.
 
+We have a detailed blog on [How does an outbound calling voice agent work?](https://outcomeschool.com/blog/outbound-calling-voice-agent) that explains how the agent decides whom to call and when, how the call reaches a phone through a telephony provider, how it tells a human from a voicemail, how it opens and runs the conversation, and how every call ends with a saved outcome and a plan for the next try.
+
 Modern providers expose **Realtime APIs** that bundle all three: OpenAI Realtime API, Amazon Polly Bidirectional Streaming, Deepgram Voice Agent, Inworld, Soniox, x.ai Voice. These collapse STT, LLM, and TTS into a single low-latency pipeline.
 
 Latency targets in voice AI are tight. End-to-end speech-to-speech latency under 800 ms feels conversational. Above 1.5 s feels broken. This is much tighter than text chat.
@@ -2962,12 +2964,4 @@ In regular systems, we monitor CPU, RAM, and request latency.
 In AI systems, we monitor a lot more:
 
 - **Latency** (TTFT, total time, tokens per second)
-- **Token usage** (input tokens, output tokens, per user, per endpoint)
-- **Cost** (dollars per user, per feature, per day)
-- **Quality metrics** (how often does the model produce wrong answers, refused answers, hallucinations)
-- **Tool call success rate** (in agentic systems, how often does each tool succeed)
-- **Cache hit rate** (KV cache, prompt cache, semantic cache)
-- **GPU utilization** (are our expensive GPUs idle or fully used)
-
-Observability tools for AI: Langfuse, Helicone, Arize Phoenix, LangSmith, Weights & Biases.
 <!-- truncated -->

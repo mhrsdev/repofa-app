@@ -7,6 +7,8 @@
 
 **SEOmator is a comprehensive SEO audit tool that scans any website against 398 rules across 20 categories** — technical SEO, Core Web Vitals, structured data, accessibility, security headers, and AI/GEO search readiness — and returns a prioritized, actionable report. It ships as a **command-line tool**, an **Electron desktop app**, and a **Claude Code skill**, so you can run an SEO audit from a terminal, a visual dashboard, or directly inside an AI coding agent.
 
+![seomator audit https://books.toscrape.com in a terminal: the categories fill in as they run, then the report opens with an 85/100 score, a bar per category and the first issues](docs/assets/cli-demo.gif)
+
 > **Prefer a web interface?** Try our [Free SEO Audit Tool](https://seomator.com/free-seo-audit-tool) for a visual, browser-based SEO analysis.
 
 ## Where SEOmator fits
@@ -105,6 +107,10 @@ seomator audit https://example.com
 
 The desktop app provides a visual audit dashboard with real-time progress streaming, interactive results, score history, and light/dark theme support.
 
+![The SEOmator desktop app: audit history, a crawl's report opening on its score and a fix queue ranked by score points, the points strip filtering the queue to one category, and a new audit started from the run form](docs/assets/desktop-app.gif)
+
+`seomator serve` shows the same screens in your browser.
+
 ### Running
 
 ```bash
@@ -126,9 +132,9 @@ npm run electron:pack     # Build + package distributable
 ### Desktop App Features
 
 - **Real-time progress** - Live category-by-category progress as the audit runs
-- **Score dashboard** - Overall score circle, category grid, and issues summary table
+- **The score, then what to fix** - Each audit opens on its score, with a meter and what the next grade costs, then one fix queue ranked by the score points each fix returns. A "Where the points went" strip shows what each category costs the score; pick a column to filter the queue
 - **Interactive results** - Expandable rule cards with rule descriptions, affected items, page URL badges, and inline fix suggestions
-- **Filter & navigate** - Filter by status (All/Failures/Warnings/Passed), click issues to jump to details
+- **Filter & navigate** - Filter by status (All/Failed/Warnings/Passed/Not measured), click a fix to open its evidence
 - **Score history** - Track audit scores over time per domain with trend charts
 - **Light/dark theme** - Follows your system preference or toggle manually
 
@@ -151,7 +157,7 @@ seomator audit https://example.com --format json
 seomator audit https://example.com --format html -o report.html
 
 # LLM-optimized output (pipe to Claude)
-seomator audit https://example.com --format llm | claude "analyze and prioritize fixes"
+seomator audit https://example.com --format llm | claude "rank these issues by impact and fix the top ones"
 
 # Crawl multiple pages
 seomator audit https://example.com --crawl --max-pages 20
@@ -197,7 +203,8 @@ Audits are stored in `~/.seomator/audits.db` by default, which is what
 
 ### `seomator serve`
 
-Run the local dashboard: every audit you have run, in your browser.
+Run the local dashboard: every audit you have run, in your browser, laid out as
+the desktop app lays it out (the score, then the fix queue ranked by score points).
 
 ```bash
 seomator serve                   # opens http://127.0.0.1:7360
@@ -605,7 +612,7 @@ the launch checklist.
 | `schema-faq` | Validates FAQPage schema structure |
 | `schema-local-business` | Validates LocalBusiness for local SEO |
 | `schema-organization` | Validates Organization schema |
-| `schema-product` | Validates Product schema for e-commerce |
+| `schema-product` | Checks Product markup for shopping rich results |
 | `schema-review` | Validates Review/AggregateRating schema |
 | `schema-video` | Validates VideoObject schema |
 | `schema-website-search` | Checks WebSite sitelinks searchbox |
@@ -878,7 +885,7 @@ Create a `seomator.toml` config file with `seomator init`:
 
 ```toml
 [project]
-name = "my-website"
+name = "marketing-site"
 domains = ["example.com", "www.example.com"]
 
 [crawler]
