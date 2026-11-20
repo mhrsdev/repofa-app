@@ -10,7 +10,7 @@
   </a>
 </p>
 
-A censorship circumvention client for Windows, Linux, macOS, and Android, with TUN and local proxy modes.
+A censorship circumvention client for Windows, Linux, macOS, Android, and iOS, with TUN and local proxy modes (iOS: TUN only).
 
 ## Available cores
 
@@ -49,12 +49,13 @@ Aether supports custom routing rules directly in the UI (Routes tab) without nee
 
 ## Platforms
 
-| Platform | Backend | UI |
+| Platform | Rendering host | UI |
 |----------|---------|----|
 | Windows | DirectX 11 | ImGui |
 | Linux | GLFW + OpenGL | ImGui |
 | macOS | AppKit + Metal | ImGui |
-| Android | Kotlin Material VpnService + JNI bridge | Kotlin Material UI |
+| Android | GLSurfaceView + OpenGL ES 3 + JNI | ImGui |
+| iOS (arm64, iOS 16+) | UIKit + Metal | ImGui |
 
 ### Screenshots
 
@@ -73,6 +74,7 @@ Aether supports custom routing rules directly in the UI (Routes tab) without nee
 - CMake >= 3.22
 - Vulkan SDK or DirectX SDK (Windows)
 - For Android: NDK, Android SDK, Kotlin
+- For iOS: macOS, Xcode with iPhoneOS SDK, XcodeGen, Zig, and the Rust `aarch64-apple-ios` target
 
 ### Build the Rust engine first
 
@@ -97,7 +99,7 @@ Open `android/` in Android Studio and build. The Gradle config invokes CMake wit
 
 - **Firefox IP Protection** — Implemented in Rust. See the [Firefox IP Protection source code](https://searchfox.org/firefox-main/source/toolkit/components/ipprotection/) (used [Arman VPN](https://github.com/armanlife/arman-vpn-client) and [FoxyVPN](https://github.com/Vauth/FoxyVPN) as references).
 - **[Aether](https://github.com/CluvexStudio/aether)** — The core censorship circumvention engine by CluvexStudio. Provides MASQUE, WireGuard, WARP-in-WARP and WARP-in-MASQUE protocols.
-- **[Dear ImGui](https://github.com/ocornut/imgui)** — Immediate-mode GUI library Used for all native desktop rendering.
+- **[Dear ImGui](https://github.com/ocornut/imgui)** — Immediate-mode GUI library Used for the shared desktop and Android interface.
 - **[hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)** — C SOCKS5 tunnel engine, runs in-process.
 - **[Psiphon](https://github.com/Psiphon-Labs/psiphon-tunnel-core)** — Psiphon tunnel core library.
 - **[Xray-core](https://github.com/XTLS/Xray-core)** — Proxy core, in-process.
@@ -169,3 +171,16 @@ If this project helped you bypass censorship or just saved you some time, consid
 **Other languages:** [فارسی](READMEFA.md) | [中文](READMECH.md)
 
 </div>
+
+### iOS build
+
+CI builds an unsigned arm64 iPhone/iPad app and embedded PacketTunnel extension
+(iOS 16+). The shared ImGui UI selects tun2socks, Zeptun, or HEV; all three run
+in-process in the extension. NetworkExtension owns the virtual interface, routes,
+and DNS. Its public packetFlow API is adapted to an injected datagram descriptor
+with Darwin address-family framing; the selected engine processes those packets.
+Zeptun and HEV archives are built from the pinned submodules, not downloaded binaries.
+Mihomo and PROXY-only mode are not included in the iOS build. DNS currently requires
+a numeric UDP resolver on port 53. Installable VPN use requires signing both targets
+with matching NetworkExtension and App Group entitlements and provisioning profiles;
+the unsigned IPA is a build artifact, not a directly installable App Store package.

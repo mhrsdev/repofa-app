@@ -27,6 +27,15 @@
 </p>
 <!-- sponsor:swiftproxy:end -->
 
+<!-- sponsor:proxy-seller:start -->
+<p align="center">
+<a href="https://proxy-seller.com/?partner=018DD81930B54142"><img src="https://raw.githubusercontent.com/OthmanAdi/planning-with-files/master/media/proxy-seller-logo.png" alt="Proxy-Seller logo" width="32"></a><br>
+<sub>Proxy-Seller provides residential, ISP, datacenter IPv4/IPv6, and mobile proxies for scraping, automation, GEO-specific workflows, and data collection.<br>
+Use promo code <strong>PWF15</strong> for 15% off and <a href="https://proxy-seller.com/?partner=018DD81930B54142">get started</a>.<br>
+Paid sponsorship · Affiliate links</sub>
+</p>
+<!-- sponsor:proxy-seller:end -->
+
 <!-- oss-support:coderabbit:start -->
 <p align="center"><sub>OSS code review support: <a href="https://www.coderabbit.ai/oss">CodeRabbit’s open-source program</a>.</sub></p>
 <!-- oss-support:coderabbit:end -->
@@ -333,7 +342,7 @@ npx skills add OthmanAdi/planning-with-files --skill planning-with-files-zh -g
 npx skills add OthmanAdi/planning-with-files --skill planning-with-files-zht -g
 ```
 
-These are real translations, not an English body with a translated description: the SKILL.md prose, the templates, and the user-facing output of `check-complete`, `init-session` and `session-catchup` are all localized. The status tokens stay literal English (`**Status:** complete`) on purpose, because `check-complete.sh` matches them with `grep -F`, so translating them would disable the completion gate.
+These are real translations, not an English body with a translated description: the SKILL.md prose, the templates, and the user-facing output of `check-complete`, `init-session` and `session-catchup` are all localized. Use the phase headings and status fields in your chosen template. The completion checker reads statuses from those phase blocks and skips examples and notes outside them.
 
 Since v3.10.0 the variants also ship the full script surface: attestation, the Stop gate, the ledger, phase status and plan-doctor used to be canonical-only, which quietly made every non-English install a subset install. Full details, including what changed on the plugin route in v3.11.0, are in [docs/languages.md](docs/languages.md).
 
@@ -433,6 +442,7 @@ One hook fire measures 289ms wall-clock since the v3.6.0 optimization, down from
 
 | Version | Highlights |
 |---------|------------|
+| **v3.29.0** | Counts statuses inside their own phases across reports and integrations, handles UTF-8 byte-order marks and indented headings, and adds explicit opt-in checkbox-only re-attestation to the shell helper (PRs #381, #367). |
 | **v3.28.2** | Completes shell and native PowerShell help handling; adds recovery grader and npm README checks to pytest; documents native PowerShell fixture use and preserves trial receipts; clarifies compaction and recovery behavior (PRs #365, #366, #368, #373, #374, #375). |
 | **v3.28.1** | `attest-plan` reports one refusal that names its cause on both routes and adds `-Target` on PowerShell; echoed selectors cannot forge output; `init-session` refuses mistyped switches; localized `/plan` commands follow plan selection; faster JSON listing on Git Bash (PR #353, #360, #362, #363, #364) |
 | **v3.28.0** | Adds opt-in archive and restore for finished named plans (`--archive` / `--restore`, preview first, nothing deleted), so hooks select the remaining plan again; the multiple-plans notice names the command; fixes inventory timestamps, locked files, long paths, hidden folders and PowerShell output on Windows (#355). |
@@ -800,12 +810,12 @@ On the plugin route the model-invocable SKILL is `planning-with-files:planning-w
 The v3 line adds features aimed at long-running agentic runs. Each one is listed with the command or flag that turns it on. Without a mode marker, hooks retain the legacy content format. Since v3.24.0, Claude Code suppresses repeated unchanged PreToolUse views when session identity and private cache storage are available.
 
 - **Autonomous mode** (`/pwf --autonomous`, or `init-session.sh --autonomous`): drops the per-tool-call plan recitation, keeps the turn-start injection, and turns attestation on by default.
-- **Gated mode** (`--gated`): adds a Stop completion gate that blocks only when all completion conditions hold at once, so an incomplete plan alone never traps a session.
+- **Gated mode** (`--gated`): adds a Stop completion gate that blocks only when all completion conditions hold at once, so an incomplete plan alone never traps a session. Phase counts use `### Phase` blocks and skip fenced examples. Statuses quoted in later sections do not change the count.
 - **Auto-continue on Pi** (`agent_end` handler): re-prompts the agent up to a limit of 3 to keep an unfinished plan moving, plus an optional `/plan-goal` string appended to the prompt.
 - **Pi approval gate** (`/plan-execute`): Pi hooks stay passive with a status line until you approve the active plan for the current session.
 - **Session-catchup**: automatic recovery uses project planning files only. Explicit `--metadata` reads same-project local session records and emits aggregate counts only; explicit `--replay` may emit bounded nonce-framed excerpts.
 - **PreCompact progress flush** (`PreCompact` hook): surfaces a reminder to flush progress before compaction completes, and prints the active Plan-SHA256 when attested.
-- **SHA-256 plan attestation** (`/plan-attest`): locks `task_plan.md`; a tampered plan body is refused at injection.
+- **SHA-256 plan attestation** (`/plan-attest`): locks `task_plan.md`; a tampered plan body is refused at injection. On supported POSIX Python 3 runtimes, use the shell helper's `--enable-checkbox-only` flag to enroll a plan, then `--checkbox-only` to refresh its attestation after checking tasks.
 - **Run ledger**: an append-only JSONL record of phase transitions that replaces the raw `progress.md` tail in v3 modes with a fixed-shape summary.
 - **Host capability tiers**: hard block on Claude Code, Codex, and Continue; follow-up injection on Cursor, Pi, Kiro, Hermes Agent, and OpenCode; notify-only elsewhere.
 - **Per-invocation opt-out** (`PLANNING_DISABLED=1`, v3.4.0): a one-shot session that merely shares a cwd with an incomplete plan skips all plan reading at every hook entry point. Covers the Copilot and Cursor routes since v3.10.2 and the Hermes plugin since v3.13.0; Gemini lifecycle hooks, including SessionEnd, honor it since v3.26.0.

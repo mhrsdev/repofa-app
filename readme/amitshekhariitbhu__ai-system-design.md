@@ -2645,6 +2645,8 @@ We also have a detailed blog on [How does voicemail and answering machine detect
 
 We have a detailed blog on [How does an outbound calling voice agent work?](https://outcomeschool.com/blog/outbound-calling-voice-agent) that explains how the agent decides whom to call and when, how the call reaches a phone through a telephony provider, how it tells a human from a voicemail, how it opens and runs the conversation, and how every call ends with a saved outcome and a plan for the next try.
 
+We also have a detailed blog on [How does a voice agent transfer a call to a human with context?](https://outcomeschool.com/blog/call-transfer-with-context) that explains how the agent decides when a human is needed, what context it packages with an LLM-written summary, how a cold transfer differs from a warm transfer, and how the call and the context reach the human together through SIP headers and a context store.
+
 Modern providers expose **Realtime APIs** that bundle all three: OpenAI Realtime API, Amazon Polly Bidirectional Streaming, Deepgram Voice Agent, Inworld, Soniox, x.ai Voice. These collapse STT, LLM, and TTS into a single low-latency pipeline.
 
 Latency targets in voice AI are tight. End-to-end speech-to-speech latency under 800 ms feels conversational. Above 1.5 s feels broken. This is much tighter than text chat.
@@ -2693,6 +2695,7 @@ Other voice-specific concerns:
 - **Interruption handling (barge-in):** What happens when the user starts speaking before the agent is done. We must cancel the LLM and TTS streams, tell the client to drop the audio it has buffered but not yet played, and cut the agent's last turn in the history to only the words the user actually heard. Otherwise, in the next turn, the LLM thinks the user heard things they never heard. We have a detailed blog on [barge-in in a voice AI agent](https://outcomeschool.com/blog/what-is-barge-in-in-a-voice-ai-agent) that explains echo cancellation, false barge-ins, and how the agent detects a real interruption. We have a detailed blog on [How does a voice agent tell a real interruption from a cough or background noise?](https://outcomeschool.com/blog/interruption-vs-background-noise) that explains how noise suppression, voice activity detection, a minimum speech time, and a words check stop coughs and background sounds from cutting the agent off. We have a detailed blog on [What are backchannels, and why should "mm-hmm" not stop the agent?](https://outcomeschool.com/blog/backchannels-in-voice-agents) that explains why short sounds like "mm-hmm" and "okay" mean "go on", and how the agent uses the length, the words, the tone, and the timing of a sound to keep talking through them. We have a detailed blog on [How does a voice agent stop speaking instantly when interrupted?](https://outcomeschool.com/blog/stopping-speech-on-interruption) that explains how the agent clears every place where its audio waits, from the device to the server, cancels the TTS and the LLM, ignores late audio with a reply number, and saves only the part of the reply the user actually heard. We have a detailed blog on [Why does TTS audio buffering make interruptions slow?](https://outcomeschool.com/blog/tts-audio-buffering) that explains why audio created faster than real time piles up in buffers, and how pacing keeps only a small amount of audio on the device so the agent can stop quickly. We have a detailed blog on [How does a voice agent truncate its memory to only what the user actually heard?](https://outcomeschool.com/blog/truncating-context-on-interruption) that explains how the agent measures how much audio was played, turns that time into words with word timestamps, and cuts its saved reply to match. We have a detailed blog on [How does a voice agent recover from a false interruption?](https://outcomeschool.com/blog/false-interruption-recovery) that explains how the agent pauses instead of stopping, waits a short time to check whether the user really spoke, and then continues its reply from where it paused. We have a detailed blog on [How does a voice agent handle the user and agent talking at the same time?](https://outcomeschool.com/blog/overlapping-speech-in-voice-agents) that explains how the agent keeps listening while it speaks, removes its own voice with echo cancellation, decides whether the user's sound is an interruption, a backchannel, or noise, and then either keeps speaking or stops and gives the turn to the user.
 - **Diarization:** Knowing which speaker said what in a multi-person call.
 - **Noise and accent robustness:** STT quality drops fast in noisy environments and with non-standard accents.
+- **Spoken replies:** The caller hears the reply instead of reading it, so markdown, bullet points, links, and long paragraphs do not work. We have a detailed blog on [How do you write a system prompt for a voice agent, not a chat bot?](https://outcomeschool.com/blog/voice-agent-system-prompt) that explains how the system prompt asks for short, plain replies, numbers written the way we speak them, one question at a time, care for mishearing, and a short line while a tool runs.
 
 There are two big ways to build a voice agent: the **cascaded pipeline** (STT -> LLM -> TTS) and a single **speech-to-speech** model that takes audio in and gives audio out. Let me tabulate the key differences for your better understanding.
 
@@ -2948,20 +2951,4 @@ Two contractual checkboxes that matter:
 - **BAA (Business Associate Agreement):** Required for HIPAA workloads. Without a BAA, we cannot legally send **PHI (Protected Health Information)** to the provider.
 
 ### Voice and Multimodal Privacy
-
-Voice data is especially leaky. A single voice call can leave traces in transcripts, audio recordings, debug logs, traces, analytics, and the LLM context window. A spoken credit card number can end up in nine different systems if we are not careful. Voice systems need redaction at every stage of the pipeline, not just at the LLM call.
-
-### Audit Logs
-
-We log every LLM request along with the user, the redacted prompt, the redacted response, and the policy decisions. These logs are the evidence we need when a regulator asks "show me what happened on this date for this user". Logs are retained per the regulation that applies (often 6 months to 7 years).
-
-In short: **privacy and compliance are a layer of the system, not a checklist.** They touch every other layer (gateway, guardrails, observability, storage), and they have to be designed in from day one.
-
-## Observability in AI Systems
-
-In regular systems, we monitor CPU, RAM, and request latency.
-
-In AI systems, we monitor a lot more:
-
-- **Latency** (TTFT, total time, tokens per second)
 <!-- truncated -->

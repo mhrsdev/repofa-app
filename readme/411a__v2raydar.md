@@ -1,20 +1,20 @@
 <p align="center">
-  <a href="https://deepwiki.com/411A/V2RayDAR">
-    <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki About V2RayDAR">
-  </a>
-</p>
-
-<p align="center">
   <strong>🌐 Available in</strong><br>
-  <strong><a href="README.md">English</a></strong>
-  • <strong><a href="docs/README.fa.md">فارسی</a></strong>
-  • <strong><a href="docs/README.zh-CN.md">简体中文</a></strong>
-  • <strong><a href="docs/README.ru.md">Русский</a></strong>
-  • <strong><a href="docs/README.fr.md">Français</a></strong>
+  <strong><a href="https://github.com/411A/V2RayDAR/blob/main/README.md">English</a></strong>
+  • <strong><a href="https://github.com/411A/V2RayDAR/blob/main/docs/README.zh-CN.md">简体中文</a></strong>
+  • <strong><a href="https://github.com/411A/V2RayDAR/blob/main/docs/README.ru.md">Русский</a></strong>
+  • <strong><a href="https://github.com/411A/V2RayDAR/blob/main/docs/README.fr.md">Français</a></strong>
+  • <strong><a href="https://github.com/411A/V2RayDAR/blob/main/docs/README.fa.md">فارسی</a></strong>
 </p>
 
 <p align="center">
   <img src="assets/V2RayDAR_logo_v1.png" alt="V2RayDAR logo" width="200" height="200">
+</p>
+
+<p align="center">
+  <a href="https://deepwiki.com/411A/V2RayDAR">
+    <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki About V2RayDAR">
+  </a>
 </p>
 
 <h1 align="center">V2RayDAR</h1>
@@ -27,7 +27,7 @@
 </p>
 
 <p align="center">
-  <strong>Run it once on any always-on device — an old phone, PC, Raspberry Pi, or home server — and V2RayDAR continuously finds, verifies, and serves the best working configs to every device on your LAN. It also exposes a standard SOCKS5/HTTP proxy, so every device on your LAN gets a working V2Ray connection — no V2Ray client needed (if you need one, <a href="https://github.com/clash-verge-rev/clash-verge-rev">Clash Verge Rev</a> is recommended).</strong>
+  <strong>Tired of manually ping-testing V2Ray configs to see which one actually works for you? Does a config work for your friend but not on your network? Run V2RayDAR once on any device — or better, on an always-on device such as an old phone, PC, Raspberry Pi, or home server — and it continuously finds, verifies, and serves the best working configs to every device on your LAN. It also exposes a standard SOCKS5/HTTP proxy, so every device on your LAN gets a working V2Ray connection — no V2Ray client required (if you need one, <a href="https://github.com/clash-verge-rev/clash-verge-rev">Clash Verge Rev</a> is recommended).</strong>
 </p>
 
 <p align="center">
@@ -44,18 +44,18 @@
 ## 📖 Table of Contents
 
 - [✨ Features](#-features)
-- [🖥️ Interfaces](#-interfaces)
+- [🖥️ Interfaces](#️-interfaces)
 - [📦 Installation](#-installation)
   - [<img src="https://cdn.svglogos.dev/logos/linux-tux.svg" alt="" width="16" height="16"> Linux / macOS](#-linux--macos)
   - [<img src="https://cdn.svglogos.dev/logos/microsoft-windows-icon.svg" alt="" width="16" height="16"> Windows](#-windows-powershell)
   - [<img src="https://cdn.svglogos.dev/logos/android-icon.svg" alt="" width="16" height="16"> Android / Termux](#-android--termux)
 - [🚀 Quick Start](#-quick-start)
-- [⚙️ Configuration](#-configuration)
+- [⚙️ Configuration](#️-configuration)
 - [📡 Client Setup](#-client-setup)
 - [🌐 Persistent Proxy](#-persistent-proxy)
 - [🔒 Restricted Networks](#-restricted-networks)
 - [🤝 Contributing](#-contributing)
-- [⚠️ Disclaimer & Security](#-disclaimer--security)
+- [⚠️ Disclaimer & Security](#️-disclaimer--security)
 - [☕ Support](#-support)
 - [📄 License](#-license)
 
@@ -67,7 +67,7 @@
 - **Multi-format parsing** — reads raw, base64, JSON, and YAML feeds.
 - **Share-link protocols** — extracts `vmess`, `vless`, `trojan`, `ss`, `ssr`, `hysteria2`, `hy2`, and `tuic` links.
 - **Real-network validation** — tests each candidate through your current network with `sing-box` by loading a test URL through the proxy.
-- **Smart ranking** — ranks the configs that actually work by priority, latency, stability, and speed.
+- **Throughput-first ranking** — real 4 MB downloads are tail-scored, a body that cuts short is ranked last, and a proven bulk node outranks a low-latency handshake that cannot carry a stream.
 
 ### 🔄 Format Conversion & Output
 
@@ -79,8 +79,8 @@
 ### 🌐 Persistent Proxy
 
 - **Always-on proxy** — keeps a `sing-box` process running with the best config, exposing a local mixed SOCKS5/HTTP proxy any app can use — no V2Ray client needed.
-- **Automatic failover** — switches to the next best config when the current one fails, and to a better config on each refresh cycle.
-- **Rotation control** — `proxy.rotating_proxy` selects lowest-ping switching or sticky-config behavior.
+- **Automatic failover** — switches to the next best config when the current one fails, and adopts a better-ranked config once the proxy is idle.
+- **Rotation control** — `proxy.rotating_proxy` selects best-ranked switching or sticky-config behavior; open connections keep the current link through ranking jitter, and a measured slow link switches fast.
 
 ### 📱 LAN Sharing & QR Onboarding
 
@@ -98,9 +98,11 @@
 
 ### 🌐 Web Dashboard (default)
 
-The web dashboard is the default interface and covers daily use end to end from a single browser page: live Overview stats, ranked Configs with per-row QR codes, Subscriptions management (add, edit, on/off, delete, drag-and-drop reorder), every setting on the Settings tab, the Proxy tab, LAN sharing, live Logs, and a QR sheet for onboarding phones.
+The web dashboard is the default interface and covers daily use end to end from a single browser page: live Overview stats, ranked Configs with per-row QR codes, Subscriptions management (add, edit, on/off, delete, drag-and-drop reorder), every setting on the Settings tab, the Proxy tab, LAN sharing, live Logs with full-session history, and a QR sheet for onboarding phones.
 
 After starting the app, open http://127.0.0.1:27141 in your browser.
+
+An optional dashboard password (Settings → Dashboard password) locks the dashboard and every change request. It is stored only as an Argon2id hash, uses a personal recovery phrase for resets, and keeps a session cookie so a reload does not ask again; restarting the app signs browsers out. Read-only endpoints and subscription feeds stay open. It is recommended on public networks or a VPS; on a trusted local network the default off setting is fine. If both the password and phrase are lost, run `v2raydar --reset-dashboard-password` locally.
 
 <p align="center">
   <img src="assets/WebUI_v0.9.0.png" alt="V2RayDAR web dashboard" width="100%">
@@ -112,7 +114,7 @@ After starting the app, open http://127.0.0.1:27141 in your browser.
 
 ### 🖥️ Optional TUI (`--tui`)
 
-Run with `v2raydar --tui` for the classic terminal UI alongside the dashboard and the endpoint. It additionally offers cache cleanup and reset-to-defaults — everything else lives in the dashboard too.
+Run with `v2raydar --tui` for the classic terminal UI alongside the dashboard and the endpoint. It additionally offers cache cleanup, reset-to-defaults, and the **Dashboard Password** local management screen — everything else lives in the dashboard too.
 
 <p align="center">
   <img src="assets/Windows_TUI_v0.9.0.png" alt="V2RayDAR TUI on Windows" width="100%">
@@ -192,6 +194,7 @@ v2raydar --no-tui       # headless with details and logs, no TUI
 v2raydar --tui          # TUI + local subscription endpoint
 v2raydar --once         # refresh once, print results, exit
 v2raydar --portable     # keep all data next to the executable (auto-detected in portable folders)
+v2raydar --reset-dashboard-password  # clear dashboard password/phrase locally, then exit
 v2raydar --uninstall    # remove app data and owned firewall rules
 ```
 
@@ -224,7 +227,7 @@ Windows users replace `v2raydar` with `v2raydar.exe`. On macOS open the bundled 
 | `bind` | `127.0.0.1:27141` | Local HTTP bind address for `/subscription`, `/subscription.txt`, `/results`, and `/health`. |
 | `top_n` | `10` | Number of working configs published to clients. |
 | `refresh_seconds` | `900` | Auto-refresh interval in seconds; `0` disables the timer. |
-| `ping_seconds` | `300` | Re-ping interval in seconds for cached configs without re-fetching; `0` disables. When the cache verifies fewer than `top_n`, the ping also probes previously-seen database configs to refill. Both count toward Sub Usage. |
+| `ping_seconds` | `300` | Re-ping interval in seconds for cached configs without re-fetching; `0` disables. When the cache verifies fewer than `top_n`, the ping also probes previously-seen database configs to refill. Both count toward traffic usage. |
 | `encoded_subscription` | `true` | Returns `/subscription` as base64 (v2rayN / v2rayNG friendly). |
 | `prioritize_stability` | `true` | Re-pings the previous run's saved top-N first and keeps repeat winners ahead within the same throughput class. A proven bulk node always outranks a low-latency handshake that dies mid-body. |
 | `return_configs_asap` | `false` | When `true`, publishes working configs to the endpoint and `Current Found Configs` as soon as they are found, up to `top_n`; early configs may not have the lowest ping or best stability. |
@@ -241,13 +244,13 @@ Windows users replace `v2raydar` with `v2raydar.exe`. On macOS open the bundled 
 | `proxy.enabled` | `false` | Starts a persistent `sing-box` process exposing a mixed SOCKS5/HTTP proxy. |
 | `proxy.port` | `27910` | Port for the mixed SOCKS5/HTTP proxy. |
 | `proxy.discoverable` | `false` | Binds to `0.0.0.0` and adds a firewall rule for LAN access. |
-| `proxy.rotating_proxy` | `true` | `true` switches the proxy to the best-ranked config on each cycle; `false` keeps the current config while it stays reachable. Live traffic holds the current link through ranking jitter; a measured slow/stalled link switches fast. |
+| `proxy.rotating_proxy` | `true` | `true` switches the proxy to the best-ranked config on each cycle when no connections are open; `false` keeps the current config while it stays reachable. Open connections hold the current link through ranking jitter; a measured slow/stalled link switches fast. |
 | `proxy.health_check_url` | `https://cp.cloudflare.com` | URL tested through the proxy to verify it's alive. |
 | `proxy.health_check_interval_seconds` | `60` | Seconds between proxy health checks. Auto-failover on failure; live connections that starve or stay below 64 KB/s trigger a deep 10 MB check and a switch when the proxy is at fault. A manual pin is suspended after it fails, and auto-select resumes. |
 | `proxy.slow_traffic_kbps` | `64` | Slow-link floor; `0` disables the slow-traffic switch. |
 | `proxy.bulk_check_interval_seconds` | `300` | Minimum gap between deep 10 MB checks; `0` disables them. |
 | `probe.mode` | `active` | `active` uses `sing-box`; `tcp` is diagnostic only. |
-| `probe.sing_box_path` | `null` | Optional path to `sing-box`. Leave `null` for desktop `_with_singbox` or Termux builds with bundled `sing-box`. |
+| `probe.sing_box_path` | `null` | Optional path to `sing-box`. Set it from the dashboard Settings tab or TUI Configurations (verified on save). Leave `null` for desktop `_with_singbox` or Termux builds with bundled `sing-box`. |
 | `probe.connect_timeout_ms` | `5000` | TCP connect timeout for diagnostic probing. |
 | `probe.active_timeout_ms` | `30000` | HTTP test timeout in active mode. |
 | `probe.startup_timeout_ms` | `5000` | Wait time for the temporary proxy to come up. |
@@ -259,9 +262,9 @@ Windows users replace `v2raydar` with `v2raydar.exe`. On macOS open the bundled 
 | `probe.download_url` | `https://download.thinkbroadband.com/10MB.zip` | Real-body throughput target; `null` turns speed ranking off. |
 | `probe.download_bytes_limit` | `4194304` | Bytes read per speed test; the tail two seconds decide the rate. |
 | `probe.speedtest_top_n` | `2` | Top configs speedtested per run; `0` turns speed tests off. |
+| `probe.upload_url` | `https://postman-echo.com/post` | 16 KB POST target for the upload probe; `off` disables upload ranking. |
 | `probe.speedtest_interval_seconds` | `900` | Reuse a speedtest for this long; `0` retests every cycle. |
 | `probe.require_transport_security` | `false` | Drop no-TLS and fake-Reality configs before probing. |
-| `probe.download_bytes_limit` | `1048576` | Upper bound for the optional download test. |
 | `geoip_db_path` | `null` | Optional path to a `GeoLite2-Country.mmdb` file or a country-zone directory (`zones.txt`, or legacy `<cc>.zone` files). If `null`, uses `<data-root>/geoip` (MaxMind database first, zone fallback; both refreshed by the installer). Country data: GeoLite2 by MaxMind (CC BY-SA 4.0); fallback zones by ipdeny. |
 | `subscriptions` | _(pre-selected sources)_ | List of `{ name, url, enabled, priority }` sources. Add your own for better results. |
 
@@ -376,7 +379,7 @@ V2RayDAR does not create or distribute V2Ray-compatible configs. It only scans s
 
 ### Security warning
 
-The owner of the V2Ray server you connect to may be able to intercept your traffic and read your unencrypted data. Prefer `127.0.0.1:27141` for same-machine use, use `sharing.require_token: true` on shared or less trusted LANs, and never expose V2RayDAR's HTTP endpoint to the public internet. Treat subscription URLs and share links as sensitive.
+The owner of the V2Ray server you connect to may be able to intercept your traffic and read your unencrypted data. Prefer `127.0.0.1:27141` for same-machine use, use `sharing.require_token: true` on shared or less trusted LANs, and never expose V2RayDAR's HTTP endpoint raw to the public internet. On a public network or VPS, enable the dashboard password and put the endpoint behind a VPN or an HTTPS tunnel. Treat subscription URLs and share links as sensitive.
 
 ## ☕ Support
 
