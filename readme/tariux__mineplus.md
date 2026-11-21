@@ -2,7 +2,7 @@
 
 # ⚙️ Mineplus
 
-### Data-driven machines & custom structures for Minecraft — rendered with **100% vanilla clients**.
+### Data-driven machines, items & mobs for Minecraft — **no client mods**, rendered through a self-delivered resource pack.
 
 [![](https://img.shields.io/badge/Minecraft-1.21%2B-green)](https://www.minecraft.net/)
 [![](https://img.shields.io/badge/Server-Paper%20%7C%20Spigot-orange)](https://papermc.io/)
@@ -12,7 +12,7 @@
 [![](https://img.shields.io/badge/Modrinth-minepluscore-1bd96a)](https://modrinth.com/plugin/minepluscore)
 [![](https://img.shields.io/badge/Hangar-MinePlusCore-blue)](https://hangar.papermc.io/Tariux/MinePlusCore)
 
-**Design it in Blockbench → drop it in → it exists in-game. No client mods. No resource packs. No downloads for your players.**
+**Design it in Blockbench → drop it in → it exists in-game. No client mods, ever.** Full-fidelity models, textures, animations and custom items ride through a **resource pack the plugin compiles, hosts and delivers itself**: hash-named artifacts, a built-in HTTP endpoint, per-player URL resolution, automatic push to online players, one accept prompt — never a manual download. And for content that prefers it (or a player who declines the pack), the built-in **virtual/texel axis** renders models out of vanilla `BlockDisplay` entities with per-pixel texel baking — 100% vanilla clients, zero pack, automatic fallback in one place.
 
 **📥 Download:** [Modrinth](https://modrinth.com/plugin/minepluscore) · [Hangar](https://hangar.papermc.io/Tariux/MinePlusCore) · [GitHub Releases](https://github.com/Tariux/MinePlus/releases)
 
@@ -22,14 +22,18 @@
 
 ## 🎯 The Big Idea
 
-Mineplus is a **server-side infrastructure core** for Paper/Spigot 1.21+ that turns Blockbench models (`.bbmodel`) into living, collidable, interactive machines — using nothing but vanilla `BlockDisplay` entities.
+Mineplus is a **server-side infrastructure core** for Paper/Spigot 1.21+ that turns Blockbench models (`.bbmodel`) into living, collidable, interactive machines, custom items, animated mobs and more. It renders through **two axes you choose per model**, and neither requires a client mod:
+
+- 📦 **Resource-pack axis (primary)** — the model compiles into the pack at its authored fidelity: real textures, real UVs, animations baked into item frames, oversized blocks window-fitted exactly. The pack is generated, hosted and auto-delivered by the plugin; players accept once.
+- 🧊 **Virtual / texel axis (built-in option)** — the model is mosaic'd out of vanilla `BlockDisplay` entities, with per-pixel texel baking reconstructing real textures from a 66-entry vanilla palette. No pack involved — and it is also the automatic fallback whenever pack rendering is unavailable or declined, so content never breaks, only degrades.
 
 What does that mean for your server?
 
 | | Mineplus | Traditional custom-content plugins |
 |---|---|---|
-| **Player client** | ✅ 100% vanilla | ❌ Often needs mods or resource packs |
-| **Extra downloads** | ✅ None. Ever. | ❌ Mod pack / texture pack |
+| **Player client** | ✅ No mods; vanilla clients work everywhere | ❌ Often needs mods |
+| **Resource pack** | ✅ Generated & auto-delivered by the plugin — one accept prompt, never a manual download | ❌ Manual texture-pack download and install |
+| **Degradation** | ✅ Pack declined → the built-in texel/virtual render takes over in one place | ❌ Broken or invisible content |
 | **Model authoring** | ✅ Blockbench (free, visual) | ❌ Java code or flat item models |
 | **Collision** | ✅ Per-cube cell-rasterized barriers | ⚠️ Usually one flat bounding box |
 | **Content policy** | ✅ Zero-content core — you decide everything | ⚠️ Opinionated defaults |
@@ -41,6 +45,10 @@ What does that mean for your server?
 ## ✨ Feature Highlights
 
 - 🧱 **Virtual Blockbench rendering** — a single-pass streaming `.bbmodel` importer with negative-coordinate geometry, outliner pivot transforms, per-cube `light_emission`, and per-face UV analysis that maps textures onto vanilla block materials.
+- 📦 **Self-hosted resource packs** — when a model wants full-fidelity rendering, the core compiles a deterministic hash-named pack, serves it from a built-in endpoint (or your static URL), auto-pushes it to online players and tracks per-player accept/decline; declined players see the vanilla/texel fallback instead of broken content.
+- 🔫 **Advanced item models, any Blockbench project** — multi-texture, any-resolution projects compile correctly (UVs scaled to the vanilla window, every texture bound), and a derived item that only re-skins a vanilla item (an emerald sword from the diamond sword) costs a single PNG via vanilla-parent inheritance.
+- 🎬 **Animations beside the model + declarative triggers** — keep all animation work in a separate `.anim.bbmodel` beside the model (merged by bone name), and let modules fire authored event names (`triggerEvent`) that a `.meta.json` trigger map wires to clips — no clip names in code.
+- 📦 **Pack blocks of any size, exactly authored** — models wider than one block are window-fitted with one uniform transform the renderer inverts at display time, so a 4-block alchemy table renders 1:1 with its virtual twin and its collision lattice.
 - 🎞️ **Blockbench animations, playable in-game** — clips, bones, and keyframes ride inside the model file; the core samples them server-side (Folia's global scheduler or the standard scheduler, with viewer culling so off-screen models cost nothing) and the vanilla client interpolates to its own frame rate. Autoplay via JSON, or drive parts from code with selector-based hooks (trigger `turret`, disable `wheel`, play `recoil`).
 - 🎯 **Geometry-aware collision** — per-cube SAT cell rasterization (`GEOMETRY` / `SURFACE` / `AABB` modes) places barrier blocks exactly where your model is solid, with an allocation-free hot loop. Hollow structures stay hollow; empty interiors stay walkable.
 - 🧭 **Rotation-perfect placement** — rotations snap to the 24 orientation-preserving axis permutations, so barriers and visuals *never* drift apart, even on rotated placements.
@@ -71,7 +79,7 @@ What does that mean for your server?
    ```
 
 4. **Reload & spawn** — `/mineplus reload all`, then place it via the API, a module, or `/mineplus model debugspawn <modelKey>`.
-5. **That's it** — every player, on every vanilla client, can already see and touch it.
+5. **That's it** — every player sees and touches it: the default render needs no pack at all, and pack-rendered content arrives as one automatic, server-sent pack prompt.
 
 > 📖 **Full walkthroughs:** [`docs/extension-workflows.md`](docs/extension-workflows.md) • **Sample files:** [`examples/README.md`](examples/README.md)
 
@@ -156,6 +164,7 @@ ADDITIONAL_DEBUG_LOGS: false
 | [**Examples**](examples/README.md) | Ready-to-copy JSON machines, Java snippets, and hybrid patterns |
 | [**MineplusFun Module**](examples/mineplus-fun/README.md) | Complete reference plugin: Juicer + Cannon, built fully outside the core |
 | [**Module Development Prompt**](examples/mineplus-fun/DEVELOPMENT_PROMPT.md) | The context guide for building new modules on the core |
+| [**Mineplus Studio**](devtools/studio/README.md) | The dev tool: render/parse/validate models, mobs, items, blocks, texel baking and the pack in a browser — plus an agent CLI to verify assets from the terminal without launching a server |
 
 ---
 

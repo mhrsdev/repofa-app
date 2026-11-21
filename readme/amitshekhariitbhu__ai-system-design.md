@@ -2696,6 +2696,8 @@ Other voice-specific concerns:
 - **Diarization:** Knowing which speaker said what in a multi-person call.
 - **Noise and accent robustness:** STT quality drops fast in noisy environments and with non-standard accents.
 - **Spoken replies:** The caller hears the reply instead of reading it, so markdown, bullet points, links, and long paragraphs do not work. We have a detailed blog on [How do you write a system prompt for a voice agent, not a chat bot?](https://outcomeschool.com/blog/voice-agent-system-prompt) that explains how the system prompt asks for short, plain replies, numbers written the way we speak them, one question at a time, care for mishearing, and a short line while a tool runs.
+- **Tool calls on a call:** The agent often has to look up an order or book a slot while the caller is on the line. We have a detailed blog on [How does function calling work in a voice AI agent?](https://outcomeschool.com/blog/function-calling-in-voice-agents) that explains how the LLM picks a function and its inputs from what the caller said, how our code runs it and sends the result back, and what changes when the input is a voice, like misheard values, confirmation before risky actions, and silence while the function runs.
+- **Structured inputs:** Dates, phone numbers, order IDs, and addresses must come out exactly right, but the caller speaks them freely over a noisy line. We have a detailed blog on [How does a voice agent handle structured inputs like dates, numbers, and addresses?](https://outcomeschool.com/blog/structured-inputs-in-voice-agents) that explains how the spoken words are turned into written values, how the LLM fills each field, how our code checks the value, how the agent confirms it with the caller and speaks it back clearly, and the tricks for dates, long numbers, spellings, and addresses.
 
 There are two big ways to build a voice agent: the **cascaded pipeline** (STT -> LLM -> TTS) and a single **speech-to-speech** model that takes audio in and gives audio out. Let me tabulate the key differences for your better understanding.
 
@@ -2932,23 +2934,4 @@ The first line of defense is to never let sensitive data reach the LLM in the fi
 - **Restore** the real values in the response (if needed) before showing it to the user.
 
 The same redaction runs on the LLM output. If the model leaks any PII (sometimes from its training data), we catch it on the way out.
-
-Tools: Microsoft Presidio, Gravitee PII Filtering, Tonic.ai, Private AI.
-
-### Data Residency
-
-Many regulations (GDPR, India's **DPDP (Digital Personal Data Protection Act)**, etc.) require that user data stays in a specific region. We have to:
-
-- Pick model providers that offer the right region (OpenAI, Anthropic, AWS Bedrock, Azure all offer EU and US residency).
-- Make sure logs, vector DBs, blob storage, and caches all stay in the same region as the user.
-- Have a clear data flow diagram for every customer who asks.
-
-### No-Train and BAA Clauses
-
-Two contractual checkboxes that matter:
-
-- **No-train clause:** The model provider must not train future models on our prompts and responses. All major providers offer this on enterprise plans.
-- **BAA (Business Associate Agreement):** Required for HIPAA workloads. Without a BAA, we cannot legally send **PHI (Protected Health Information)** to the provider.
-
-### Voice and Multimodal Privacy
 <!-- truncated -->
