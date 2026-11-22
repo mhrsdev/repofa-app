@@ -946,7 +946,7 @@ These approaches can be combined. A smaller KV Cache means more users per GPU, l
 
 ### Prompt Cache
 
-Many apps send the same long system prompt with every request.
+Many apps send the same long [system prompt](https://outcomeschool.com/blog/system-prompt) with every request.
 
 Example: A customer support bot has a 3000-token system prompt that explains the rules. Every user message goes with this same system prompt.
 
@@ -1194,7 +1194,7 @@ A real document parsing pipeline does the following:
 
 - **Format detection:** Figure out what kind of file this is (PDF, image, HTML, DOCX, audio, etc.).
 - **Layout-aware parsing:** Preserve headings, lists, columns, and reading order. A two-column PDF naively flattened becomes nonsense.
-- **OCR (Optical Character Recognition):** For scanned PDFs and images, convert pixels to text. Quality depends on image clarity, font, language, and skew, so preprocessing (deskewing, denoising) matters as much as the OCR engine.
+- **OCR (Optical Character Recognition):** For scanned PDFs and images, convert pixels to text. Quality depends on image clarity, font, language, and skew, so preprocessing (deskewing, denoising) matters as much as the OCR engine. We have a detailed blog on [How does OCR with Deep Learning work?](https://outcomeschool.com/blog/optical-character-recognition-ocr).
 - **Table extraction:** Tables are the single hardest part. We want to keep cell boundaries and headers, often emitting HTML or a row/column model instead of flattening the table into prose. Tables usually carry the most valuable data, so this step is critical.
 - **Image and figure handling:** Caption images, run a vision model to describe charts, store the image in blob storage, and link it from the chunk.
 - **Metadata enrichment:** Add document title, author, date, source URL, page number, section heading. This metadata becomes filters for retrieval later.
@@ -1235,7 +1235,7 @@ Even with good chunking, a chunk can lose its context. A chunk that says "Revenu
 
 Vector search is great at finding meaning. But it is bad at exact-match queries like "Order ID 12345" or "Section 4.2.1".
 
-For exact-match, the old keyword search (**BM25** - Best Matching 25) is much better. Keyword search finds documents fast using an inverted index, which maps each word to the list of documents that contain it. We have a detailed blog on [How does an Inverted Index work?](https://outcomeschool.com/blog/inverted-index).
+For exact-match, the old keyword search ([**BM25**](https://outcomeschool.com/blog/bm25) - Best Matching 25) is much better. Keyword search finds documents fast using an inverted index, which maps each word to the list of documents that contain it. We have a detailed blog on [How does an Inverted Index work?](https://outcomeschool.com/blog/inverted-index).
 
 So in production RAG, we use [**Hybrid Search**](https://outcomeschool.com/blog/how-does-hybrid-search-work): run both vector search and BM25, combine the scores, and return the best results from both.
 
@@ -2698,6 +2698,7 @@ Other voice-specific concerns:
 - **Spoken replies:** The caller hears the reply instead of reading it, so markdown, bullet points, links, and long paragraphs do not work. We have a detailed blog on [How do you write a system prompt for a voice agent, not a chat bot?](https://outcomeschool.com/blog/voice-agent-system-prompt) that explains how the system prompt asks for short, plain replies, numbers written the way we speak them, one question at a time, care for mishearing, and a short line while a tool runs.
 - **Tool calls on a call:** The agent often has to look up an order or book a slot while the caller is on the line. We have a detailed blog on [How does function calling work in a voice AI agent?](https://outcomeschool.com/blog/function-calling-in-voice-agents) that explains how the LLM picks a function and its inputs from what the caller said, how our code runs it and sends the result back, and what changes when the input is a voice, like misheard values, confirmation before risky actions, and silence while the function runs.
 - **Structured inputs:** Dates, phone numbers, order IDs, and addresses must come out exactly right, but the caller speaks them freely over a noisy line. We have a detailed blog on [How does a voice agent handle structured inputs like dates, numbers, and addresses?](https://outcomeschool.com/blog/structured-inputs-in-voice-agents) that explains how the spoken words are turned into written values, how the LLM fills each field, how our code checks the value, how the agent confirms it with the caller and speaks it back clearly, and the tricks for dates, long numbers, spellings, and addresses.
+- **Misheard information:** The STT model can hear "fifty" instead of "fifteen" or "N" instead of "M", and the LLM cannot know that the text is wrong. We have a detailed blog on [How does a voice agent confirm and correct misheard information?](https://outcomeschool.com/blog/confirm-and-correct-in-voice-agents) that explains how the agent uses a confidence score to decide when to confirm, when to use explicit or implicit confirmation, how it reads numbers and spellings back clearly, and how it fixes only the wrong part when the caller says "no".
 
 There are two big ways to build a voice agent: the **cascaded pipeline** (STT -> LLM -> TTS) and a single **speech-to-speech** model that takes audio in and gives audio out. Let me tabulate the key differences for your better understanding.
 
@@ -2926,12 +2927,4 @@ Now, let's talk about a topic that is often skipped in AI System Design but is n
 So privacy and compliance are not optional. They are part of the system design.
 
 ### PII Redaction
-
-The first line of defense is to never let sensitive data reach the LLM in the first place. Before any user input goes to the model, we run it through a **PII redaction** layer:
-
-- **Detect** PII (names, emails, phones, addresses, credit cards, IDs) using regex patterns plus a small **NER (Named Entity Recognition)** model that finds things like person names and locations in free text.
-- **Redact or tokenize** the matches. We can replace `john@example.com` with `<EMAIL_1>`. The LLM sees the placeholder and can still reason about it.
-- **Restore** the real values in the response (if needed) before showing it to the user.
-
-The same redaction runs on the LLM output. If the model leaks any PII (sometimes from its training data), we catch it on the way out.
 <!-- truncated -->
